@@ -60,6 +60,33 @@ function fetchPermissions(userId) {
     });
 }
 
+// Add select all functionality for the top checkbox
+$('#selectAllTop').on('change', function() {
+    const isChecked = $(this).prop('checked');
+    // Select all checkboxes in the table
+    $('#permissionsTable input[type="checkbox"]').prop('checked', isChecked);
+});
+
+// Add select all functionality for column headers
+$('#permissionsTable thead th').on('click', 'input[type="checkbox"]', function() {
+    const columnIndex = $(this).closest('th').index();
+    const isChecked = $(this).prop('checked');
+    
+    // Select all checkboxes in the same column
+    $('#permissionsTable tbody tr').each(function() {
+        $(this).find('td').eq(columnIndex - 2).find('input[type="checkbox"]').prop('checked', isChecked);
+    });
+});
+
+// Update the select all top checkbox when individual checkboxes are clicked
+$('#permissionsTable').on('change', 'tbody input[type="checkbox"]', function() {
+    const totalCheckboxes = $('#permissionsTable tbody input[type="checkbox"]').length;
+    const checkedCheckboxes = $('#permissionsTable tbody input[type="checkbox"]:checked').length;
+    
+    // Update the top checkbox
+    $('#selectAllTop').prop('checked', totalCheckboxes === checkedCheckboxes);
+});
+
 $('#create').on('click', function (e) {
     e.preventDefault();
 

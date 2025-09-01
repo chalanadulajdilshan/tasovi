@@ -4,7 +4,7 @@ include 'class/include.php';
 include 'auth.php';
 
 $DEPARTMENT_MASTER = new DepartmentMaster($US->department_id)
-    ?>
+?>
 
 <html lang="en">
 
@@ -136,18 +136,18 @@ $DEPARTMENT_MASTER = new DepartmentMaster($US->department_id)
                                                             if ($US->type != 1) {
 
                                                                 if ($departments['id'] != $US->department_id) {
-                                                                    ?>
+                                                        ?>
                                                                     <option value="<?php echo $departments['id'] ?>">
                                                                         <?php echo $US->department_id . ' - ' . $departments['name'] ?>
                                                                     </option>
                                                                 <?php }
                                                             } else {
                                                                 if ($departments['id'] != $US->department_id) {
-                                                                    ?>
+                                                                ?>
                                                                     <option value="<?php echo $departments['id'] ?>">
                                                                         <?php echo $departments['name'] ?>
                                                                     </option>
-                                                                    <?php
+                                                        <?php
                                                                 }
                                                             }
                                                         } ?>
@@ -263,7 +263,7 @@ $DEPARTMENT_MASTER = new DepartmentMaster($US->department_id)
     <script src="assets/js/app.js"></script>
     <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
     <script>
-        $(function () {
+        $(function() {
             // Initialize the datepicker
             $(".date-picker").datepicker({
                 dateFormat: 'yy-mm-dd' // or 'dd-mm-yy' as per your format

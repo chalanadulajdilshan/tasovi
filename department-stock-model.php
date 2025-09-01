@@ -8,42 +8,41 @@
 
             <div class="modal-body">
                 <div class="row mb-3">
-                    <?php 
+                    <?php
                     // Check if we're on the stock transfer page
                     $isStockTransferPage = (basename($_SERVER['PHP_SELF']) === 'stock-transfer.php');
-                    
-                    if (!$isStockTransferPage): 
+
+                    if (!$isStockTransferPage):
                     ?>
-                    <div class="col-md-3">
-                        <label for="filter_department_id" class="form-label">Department</label>
-                        <div class="input-group">
-                            <select id="filter_department_id" name="filter_department_id" class="form-select">
-                                <option value="0">-- All Departments --</option>
-                                <?php
-                                $DEPARTMENT_MASTER = new DepartmentMaster(NULL);
-                                foreach ($DEPARTMENT_MASTER->getActiveDepartment() as $department) {
-                                    if ($US->type != 1) {
-                                        if ($department['id'] == $US->department_id) {
+                        <div class="col-md-3">
+                            <label for="filter_department_id" class="form-label">Department</label>
+                            <div class="input-group">
+                                <select id="filter_department_id" name="filter_department_id" class="form-select">
+                                    <?php
+                                    $DEPARTMENT_MASTER = new DepartmentMaster(NULL);
+                                    foreach ($DEPARTMENT_MASTER->getActiveDepartment() as $department) {
+                                        if ($US->type != 1) {
+                                            if ($department['id'] == $US->department_id) {
+                                    ?>
+                                                <option value="<?php echo $department['id'] ?>" selected>
+                                                    <?php echo $department['name'] ?>
+                                                </option>
+                                            <?php }
+                                        } else {
                                             ?>
-                                            <option value="<?php echo $department['id'] ?>" selected>
+                                            <option value="<?php echo $department['id'] ?>">
                                                 <?php echo $department['name'] ?>
                                             </option>
-                                        <?php }
-                                    } else {
-                                        ?>
-                                        <option value="<?php echo $department['id'] ?>">
-                                            <?php echo $department['name'] ?>
-                                        </option>
-                                        <?php
+                                    <?php
+                                        }
                                     }
-                                }
-                                ?>
-                            </select>
+                                    ?>
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                    
+
                     <?php else: ?>
-                    
+
                     <?php endif; ?>
                 </div>
                 <div class="row">

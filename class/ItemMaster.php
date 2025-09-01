@@ -247,6 +247,7 @@ class ItemMaster
 
         $where = "WHERE 1=1";
         $join = "";
+        $having = "";
 
         // Search filter
         if (!empty($search)) {
@@ -274,15 +275,18 @@ class ItemMaster
             }
         }
 
-        // Stock only filter
-        if ($stockOnly) {
-            $where .= " AND im.stock_type = 1";
+        // Stock only filter - filter out items with 0 quantity in the specified department
+        if ($stockOnly && $departmentId > 0) {
+            $join = " LEFT JOIN stock_master sm2 ON im.id = sm2.item_id AND sm2.department_id = $departmentId";
+            $having = " HAVING available_qty > 0";
+        } elseif ($stockOnly) {
+            // If no department is specified but stock_only is true, filter out items with 0 total quantity
+            $having = " HAVING total_qty > 0";
         }
 
         // Department filter
-        if ($departmentId > 0) {
-            $join = " LEFT JOIN stock_master sm2 ON im.id = sm2.item_id";
-            $where .= " AND sm2.department_id = $departmentId";
+        if ($departmentId > 0 && !$stockOnly) {
+            $join = " LEFT JOIN stock_master sm2 ON im.id = sm2.item_id AND sm2.department_id = $departmentId";
         }
 
         // Check if we're on the stock transfer page and need to show all departments
@@ -304,13 +308,14 @@ class ItemMaster
         $filteredSql = "
         SELECT 
             im.*, 
-            " . ($fromDepartmentId > 0 ? 
-               "IFNULL((SELECT SUM(sm.quantity) FROM stock_master sm WHERE sm.item_id = im.id AND sm.department_id = $fromDepartmentId), 0) as total_qty" : 
-               "IFNULL((SELECT SUM(quantity) FROM stock_master WHERE item_id = im.id), 0) as total_qty") . " 
+            " . ($departmentId > 0 ?
+            "IFNULL((SELECT SUM(sm.quantity) FROM stock_master sm WHERE sm.item_id = im.id AND sm.department_id = $departmentId), 0) as available_qty, " : "") . "
+            IFNULL((SELECT SUM(quantity) FROM stock_master WHERE item_id = im.id), 0) as total_qty 
         FROM item_master im
         $join
         $where
-        GROUP BY im.id ";
+        GROUP BY im.id 
+        $having";
 
         $filteredQuery = $db->readQuery($filteredSql);
         $filteredData = mysqli_num_rows($filteredQuery);
@@ -357,7 +362,8 @@ class ItemMaster
                 "note" => $row['note'],
                 "status" => $row['is_active'],
                 "qty" => $row['total_qty'],
-                "department_stock" => $departmentStocks, // Add department stock information
+                "available_qty" => $departmentId > 0 ? $row['available_qty'] : $row['total_qty'],
+                "department_stock" => $departmentStocks,
                 "status_label" => $row['is_active'] == 1
                     ? '<span class="badge bg-soft-success font-size-12">Active</span>'
                     : '<span class="badge bg-soft-danger font-size-12">Inactive</span>'
@@ -403,16 +409,77 @@ class ItemMaster
                 'code' => $row['code'],
                 'name' => $row['name'],
             ];
-
         }
 
         return $reorderItems;
     }
 
+    public static function getItemsWithStock()
+    {
+        $db = new Database();
+        $query = "SELECT im.*, 
+                 IFNULL((SELECT SUM(quantity) FROM stock_master WHERE item_id = im.id), 0) as total_qty
+                 FROM item_master im
+                 WHERE im.is_active = 1
+                 HAVING total_qty > 0
+                 ORDER BY im.name ASC";
 
+        $result = $db->readQuery($query);
+        $items = [];
 
+        while ($row = mysqli_fetch_assoc($result)) {
+            $items[] = $row;
+        }
 
+        return $items;
+    }
 
+    public static function getItemsByDepartmentAndStock($department_id, $min_quantity = 1, $search = '')
+    {
+        $db = new Database();
+
+        // Prepare the base query
+        $query = "SELECT 
+                im.*, 
+                IFNULL(sm.quantity, 0) as available_qty,
+                b.name as brand_name,
+                c.name as category_name,
+                g.name as group_name
+              FROM item_master im
+              LEFT JOIN (
+                  SELECT item_id, SUM(quantity) as quantity 
+                  FROM stock_master 
+                  WHERE department_id = '" . mysqli_real_escape_string($db->DB_CON, $department_id) . "'
+                  AND is_active = 1
+                  GROUP BY item_id
+              ) sm ON im.id = sm.item_id
+              LEFT JOIN brands b ON im.brand = b.id
+              LEFT JOIN category_master c ON im.category = c.id
+              LEFT JOIN group_master g ON im.group = g.id
+              WHERE im.is_active = 1
+              HAVING available_qty > 0";  // Always filter out items with zero quantity
+
+        // Add search term if provided
+        if (!empty($search)) {
+            $search = mysqli_real_escape_string($db->DB_CON, $search);
+            $query = "SELECT * FROM (" . $query . ") AS filtered 
+                 WHERE code LIKE '%$search%' 
+                 OR name LIKE '%$search%' 
+                 OR brand_name LIKE '%$search%'
+                 OR category_name LIKE '%$search%'";
+        }
+
+        $query .= " ORDER BY im.name ASC";
+
+        $result = $db->readQuery($query);
+        $items = [];
+
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $items[] = $row;
+            }
+        }
+
+        return $items;
+    }
 }
-
-?>
