@@ -10,7 +10,7 @@ jQuery(document).ready(function () {
             data: function (d) {
                 d.filter = true;
                 d.status = 1;
-                d.stock_only = 1;
+                d.stock_only = 1;  // Set to 1 to only show items with stock
                 d.department_id = $('#department_id').val(); // Filter by current department
                 d.search_term = $('#search_item').val();
             },

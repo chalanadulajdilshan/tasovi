@@ -105,15 +105,15 @@ include './auth.php';
                                             </div>
 
                                             <div class="col-md-3">
-                                                <label for="Department" class="form-label">Department</label>
+                                                <label for="filter_department_id" class="form-label">Department</label>
                                                 <div class="input-group mb-3">
-                                                    <select id="department_id" name="department_id" class="form-select">
+                                                    <select id="filter_department_id" name="filter_department_id" class="form-select">
                                                         <?php
                                                         $DEPARTMENT_MASTER = new DepartmentMaster(NUll);
                                                         foreach ($DEPARTMENT_MASTER->getActiveDepartment() as $departments) {
                                                             if ($US->type != 1) {
-                                                                if ($departments['id'] = $US->department_id) {
-                                                                    ?>
+                                                                if ($departments['id'] == $US->department_id) {
+                                                        ?>
                                                                     <option value="<?php echo $departments['id'] ?>">
                                                                         <?php echo $departments['name'] ?>
                                                                     </option>
@@ -123,11 +123,9 @@ include './auth.php';
                                                                 <option value="<?php echo $departments['id'] ?>">
                                                                     <?php echo $departments['name'] ?>
                                                                 </option>
-                                                                <?php
+                                                        <?php
                                                             }
                                                         } ?>
-
-
                                                     </select>
                                                 </div>
                                             </div>

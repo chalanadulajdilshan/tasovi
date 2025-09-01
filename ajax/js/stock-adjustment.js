@@ -1,4 +1,21 @@
 jQuery(document).ready(function () {
+    // Set a default department ID if not set
+    if (!$('#filter_department_id').val()) {
+        var firstDeptId = $('#filter_department_id option:first').val();
+        if (firstDeptId) {
+            $('#filter_department_id').val(firstDeptId);
+        }
+    }
+
+    // Add zero quantity toggle button
+    const zeroQtyToggle = `
+        <div class="form-check form-switch d-inline-block ms-2">
+            <input class="form-check-input" type="checkbox" id="showZeroQty">
+            <label class="form-check-label" for="showZeroQty">Show Zero Quantity Items</label>
+        </div>
+    `;
+    $('.dataTables_filter').append(zeroQtyToggle);
+
     // DataTable config
     var table = $('#datatable').DataTable({
         processing: true,
@@ -7,21 +24,39 @@ jQuery(document).ready(function () {
             url: "ajax/php/item-master.php",
             type: "POST",
             data: function (d) {
-                d.filter = true;
-                d.status = 1;
-                d.stock_only = 1;
+                d.action = 'fetch_for_stock_adjustment';
                 d.department_id = $('#filter_department_id').val();
-                d.search_term = $('#search_item').val();
+                d.show_zero_qty = $('#showZeroQty').is(':checked');
+                console.log('Sending request with:', d);
+                return d;
             },
             dataSrc: function (json) {
+                console.log("Server Response:", json);
+                
+                // Check if the response has an error
+                if (json.error) {
+                    console.error("Error from server:", json.message);
+                    return [];
+                }
+                
+                // Make sure data is an array
+                if (!Array.isArray(json.data)) {
+                    console.error("Expected data to be an array, got:", typeof json.data);
+                    return [];
+                }
+                
                 return json.data;
             },
-            error: function (xhr) {
-                console.error("Server Error Response:", xhr.responseText);
+            error: function (xhr, error, thrown) {
+                console.error("AJAX Error:", error);
+                console.error("Status:", xhr.status);
+                console.error("Response:", xhr.responseText);
+                // Return empty array to prevent DataTables error
+                return [];
             }
         },
         columns: [
-            { data: "key", title: "#ID" },
+            { data: "id", title: "#ID" },
             { data: "code", title: "Code" },
             { data: "name", title: "Name" },
             { data: "brand", title: "Brand" },
@@ -29,18 +64,20 @@ jQuery(document).ready(function () {
             { data: "list_price", title: "List Price" },
             { data: "invoice_price", title: "Invoice Price" },
             {
-                data: "department_stock",
+                data: "available_qty",
                 title: "Available Qty",
                 render: function (data, type, row) {
-                    // Get the selected department ID
-                    const departmentId = $('#filter_department_id').val();
-                    // Find the stock for the current department
-                    const stock = data ? data.find(s => s.department_id == departmentId) : null;
-                    return stock ? parseInt(stock.quantity) : 0;
+                    return parseInt(data) || 0;
                 }
             },
-            { data: "discount", title: "Discount %" },
-            {
+            { 
+                data: "discount", 
+                title: "Discount %",
+                render: function(data) {
+                    return data || '0%';
+                }
+            },
+            { 
                 data: "status_label",
                 title: "Status",
                 orderable: false,
@@ -48,11 +85,26 @@ jQuery(document).ready(function () {
             }
         ],
         order: [[0, 'desc']],
-        pageLength: 100
+        pageLength: 100,
+        error: function(settings, techNote, message) {
+            console.error('DataTables Error:', message);
+            // Show a user-friendly error message
+            $('.dataTables_empty').html(
+                '<div class="alert alert-danger">' +
+                '   <i class="fa fa-exclamation-triangle"></i> ' +
+                '   Error loading data. Please try again or contact support.' +
+                '</div>'
+            );
+        }
     });
 
     // Department filter change handler
     $('#filter_department_id').on('change', function () {
+        table.ajax.reload();
+    });
+
+    // Toggle zero quantity items
+    $(document).on('change', '#showZeroQty', function() {
         table.ajax.reload();
     });
 
@@ -61,7 +113,7 @@ jQuery(document).ready(function () {
     $('#search_item').on('keyup', function () {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(function () {
-            table.ajax.reload();
+            table.search($('#search_item').val()).draw();
         }, 500);
     });
 
@@ -74,45 +126,15 @@ jQuery(document).ready(function () {
         $('#itemCode').val(data.code);
         $('#itemName').val(data.name);
         $('#itemQty').val(1);
+        $('#availableQty').val(data.available_qty || 0);
 
-        const departmentId = $('#department_id').val();
-        const itemId = data.id;
-
-        $.ajax({
-            url: 'ajax/php/stock-adjustment.php',
-            method: 'POST',
-            data: {
-                action: 'get_available_qty',
-                department_id: departmentId,
-                item_id: itemId
-            },
-            success: function (res) {
-                if (res.status === 'success') {
-                    $('#available_qty').val(res.available_qty);
-                } else {
-                    $('#available_qty').val(0);
-                    swal({
-                        title: "Error!",
-                        text: res.message || "Failed to load available quantity.",
-                        type: 'error',
-                        timer: 2500,
-                        showConfirmButton: false
-                    });
-                }
-            },
-            error: function () {
-                $('#available_qty').val(0);
-                swal({
-                    title: "Error!",
-                    text: "Could not load available quantity.",
-                    type: 'error',
-                    timer: 2500,
-                    showConfirmButton: false
-                });
-            }
-        });
-
+        // Enable the adjustment type radio buttons
+        $('input[name="adjustment_type"]').prop('disabled', false);
+        
+        // Set focus to quantity field
         setTimeout(() => $('#itemQty').focus(), 200);
+        
+        // Hide the modal after selection
         $('#department_stock').modal('hide');
     });
 

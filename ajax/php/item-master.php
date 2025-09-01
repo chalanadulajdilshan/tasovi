@@ -114,11 +114,11 @@ if (isset($_POST['update'])) {
 if (isset($_POST['delete']) && isset($_POST['id'])) {
     try {
         $ITEM_MASTER = new ItemMaster($_POST['id']);
-        
+
         if (!$ITEM_MASTER->id) {
             throw new Exception('Item not found');
         }
-        
+
         $result = $ITEM_MASTER->delete();
 
         if ($result) {
@@ -131,7 +131,7 @@ if (isset($_POST['delete']) && isset($_POST['id'])) {
             $AUDIT_LOG->user_id = $_SESSION['id'];
             $AUDIT_LOG->created_at = date('Y-m-d H:i:s');
             $AUDIT_LOG->create();
-            
+
             echo json_encode(['status' => 'success', 'message' => 'Item deleted successfully']);
         } else {
             throw new Exception('Failed to delete item');
@@ -160,4 +160,98 @@ if (isset($_POST['filter'])) {
     exit;
 }
 
-?>
+// Handle DataTable server-side processing
+if (isset($_POST['action']) && $_POST['action'] === 'fetch_for_datatable') {
+    $itemMaster = new ItemMaster();
+
+    // If department_id is provided, ensure it's an integer
+    if (isset($_POST['department_id']) && !empty($_POST['department_id'])) {
+        $_POST['department_id'] = (int)$_POST['department_id'];
+    } else {
+        // If no department is selected, you might want to handle this case
+        // For now, we'll unset it to show all items
+        unset($_POST['department_id']);
+    }
+
+    $result = $itemMaster->fetchForDataTable($_POST);
+    echo json_encode($result);
+    exit();
+}
+
+if (isset($_POST['action']) && $_POST['action'] === 'get_items_with_stock') {
+    $itemMaster = new ItemMaster();
+    $items = $itemMaster::getItemsWithStock();
+    echo json_encode(['data' => $items]);
+    exit();
+}
+
+// Handle stock adjustment item filtering
+if (isset($_POST['action']) && $_POST['action'] === 'fetch_for_stock_adjustment') {
+    $response = [
+        'draw' => isset($_POST['draw']) ? (int)$_POST['draw'] : 1,
+        'recordsTotal' => 0,
+        'recordsFiltered' => 0,
+        'data' => [],
+        'error' => null
+    ];
+
+    try {
+        if (!isset($_POST['department_id']) || empty($_POST['department_id'])) {
+            throw new Exception('Department ID is required');
+        }
+
+        $department_id = (int)$_POST['department_id'];
+        $search = isset($_POST['search']['value']) ? trim($_POST['search']['value']) : '';
+        $show_zero_qty = isset($_POST['show_zero_qty']) ? (bool)$_POST['show_zero_qty'] : false;
+
+        // Get items with department stock
+        $items = ItemMaster::getItemsByDepartmentAndStock(
+            $department_id,
+            $show_zero_qty ? -1 : 1, // 1 means filter out zero quantity items, -1 means show all
+            $search
+        );
+
+        // Ensure $items is an array
+        if (!is_array($items)) {
+            throw new Exception('Invalid data format received from getItemsByDepartmentAndStock');
+        }
+
+        // Format the response for DataTables
+        $formattedData = [];
+        foreach ($items as $item) {
+            $formattedData[] = [
+                'DT_RowId' => 'row_' . $item['id'],
+                'id' => $item['id'],
+                'code' => $item['code'],
+                'name' => $item['name'],
+                'brand' => $item['brand_name'] ?? '',
+                'category' => $item['category_name'] ?? '',
+                'list_price' => number_format($item['list_price'], 2),
+                'invoice_price' => number_format($item['invoice_price'], 2),
+                'available_qty' => (int)($item['available_qty'] ?? 0),
+                'discount' => isset($item['discount']) ? $item['discount'] . '%' : '0%',
+                'status_label' => ($item['is_active'] ?? 0) == 1 ?
+                    '<span class="badge bg-success">Active</span>' :
+                    '<span class="badge bg-danger">Inactive</span>',
+                'department_stock' => [
+                    [
+                        'department_id' => $department_id,
+                        'quantity' => (int)($item['available_qty'] ?? 0)
+                    ]
+                ]
+            ];
+        }
+
+        $response['recordsTotal'] = count($formattedData);
+        $response['recordsFiltered'] = count($formattedData);
+        $response['data'] = $formattedData;
+    } catch (Exception $e) {
+        error_log('Error in fetch_for_stock_adjustment: ' . $e->getMessage());
+        $response['error'] = $e->getMessage();
+    }
+
+    // Ensure we're sending valid JSON
+    header('Content-Type: application/json');
+    echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    exit();
+}

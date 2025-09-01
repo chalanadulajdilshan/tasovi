@@ -5,31 +5,32 @@ jQuery(document).ready(function ($) {
         processing: true,
         serverSide: true,
         ajax: {
-            url: "ajax/php/item-master.php",
-            type: "POST",
-            data: function (d) {
-                d.filter = true;
-                d.status = 1;
-                d.stock_only = 1;
-            },
-            dataSrc: function (json) {
-                return json.data;
-            },
-            error: function (xhr) {
-                console.error("Server Error Response:", xhr.responseText);
-            }
+        url: "ajax/php/item-master.php",
+        type: "POST",
+        data: function (d) {
+            d.action = 'get_items_with_stock';  // Add this line
         },
+        dataSrc: function (json) {
+            return json.data;
+        }
+    },
         columns: [
-            { data: "key", title: "#ID" },
+            { data: "id", title: "#ID" },
             { data: "code", title: "Code" },
             { data: "name", title: "Name" },
             { data: "brand", title: "Brand" },
             { data: "category", title: "Category" },
             { data: "list_price", title: "List Price" },
             { data: "invoice_price", title: "Invoice Price" }, // Add this line
-            { data: "qty", title: "Quantity" },
+            { data: "total_qty", title: "Quantity" },
             { data: "discount", title: "Discount %" },
-            { data: "status_label", title: "Status" }
+            { 
+                data: "is_active", 
+                title: "Status",
+                render: function(data, type, row) {
+                    return parseInt(data) === 1 ? 'Active' : 'Inactive';
+                }
+            }
         ],
         order: [[0, 'desc']],
         pageLength: 100
