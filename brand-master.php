@@ -124,7 +124,7 @@ include 'auth.php';
                                                 <div class="col-md-3">
                                                     <label class="form-label" for="itemCode">Brand Name </label>
                                                     <div class="input-group mb-3">
-                                                        <input id="name" name="name" type="text" class="form-control"
+                                                        <input id="name" name="name"  onkeyup="toUpperCaseInput(this)"  type="text" class="form-control"
                                                             placeholder="Enter Brand Name">
                                                         <button class="btn btn-info" type="button"
                                                             data-bs-toggle="modal"
@@ -256,6 +256,7 @@ include 'auth.php';
     <script src="assets/libs/jquery/jquery.min.js"></script>
     <!-- /////////////////////////// -->
     <script src="ajax/js/brand.js"></script>
+    <script src="ajax/js/common.js"></script>
 
     <!-- include main js  -->
     <?php include 'main-js.php' ?>

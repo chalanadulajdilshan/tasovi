@@ -118,7 +118,7 @@ $department_id = 'DP/0' . ($lastId + 1);
                                             <div class="col-md-3">
                                                 <label for="name" class="form-label">Department Name</label>
                                                 <div class="input-group mb-3">
-                                                    <input id="name" name="name" type="text" class="form-control"
+                                                    <input id="name"  onkeyup="toUpperCaseInput(this)"  name="name" type="text" class="form-control"
                                                         placeholder="Enter Department Name">
                                                 </div>
                                             </div>
@@ -221,6 +221,7 @@ $department_id = 'DP/0' . ($lastId + 1);
     <script src="assets/libs/jquery/jquery.min.js"></script>
     <!-- /////////////////////////// -->
     <script src="ajax/js/department-master.js"></script>
+    <script src="ajax/js/common.js"></script>
 
    <!-- include main js  -->
    <?php include 'main-js.php' ?>
