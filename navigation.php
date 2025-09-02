@@ -1,9 +1,10 @@
 <?php
 $COMPANY = new CompanyProfile(1); // Assuming company ID is 1, adjust if needed
 $logoPath = !empty($COMPANY->image_name) ? 'uploads/company-logos/' . $COMPANY->image_name : 'assets/images/logo.png';
+$themeColor = !empty($COMPANY->theme) ? $COMPANY->theme : '#3b5de7';
 ?>
 
-<header id="page-topbar">
+<header id="page-topbar" style="background-color: <?php echo $themeColor; ?>">
     <div class="navbar-header">
         <div class="d-flex">
             <div class="navbar-brand-box mt-3">
@@ -27,7 +28,8 @@ $logoPath = !empty($COMPANY->image_name) ? 'uploads/company-logos/' . $COMPANY->
 
             <!-- Responsive Menu Toggle -->
             <button type="button" class="btn btn-sm px-3 font-size-16 d-lg-none header-item waves-effect waves-light"
-                data-bs-toggle="collapse" data-bs-target="#topnav-menu-content">
+                data-bs-toggle="collapse" data-bs-target="#topnav-menu-content"
+                style="color: white;">
                 <i class="fa fa-fw fa-bars"></i>
             </button>
         </div>

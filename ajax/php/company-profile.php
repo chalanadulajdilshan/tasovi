@@ -90,7 +90,7 @@ if (isset($_POST['create']) || isset($_POST['update'])) {
     $COMPANY->is_vat = isset($_POST['is_vat']) ? 1 : 0;
     $COMPANY->vat_percentage = isset($_POST['vat_percentage']) ? (float)$_POST['vat_percentage'] : 0;
     $COMPANY->company_code = $_POST['company_code'] ?? '';
-    $COMPANY->theme = $_POST['theme'] ?? 'default';
+    $COMPANY->theme = $_POST['theme'] ?? '#3b5de7';
 
     // Save to database
     $result = $isUpdate ? $COMPANY->update() : $COMPANY->create();

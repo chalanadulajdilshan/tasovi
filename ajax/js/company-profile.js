@@ -1,4 +1,49 @@
 jQuery(document).ready(function () {
+    // Color Theme Handling
+    const themeInput = document.getElementById('theme');
+    const themeResetBtn = document.getElementById('theme-reset');
+    const defaultTheme = '#3b5de7';
+
+    // Apply theme on page load
+    applyTheme(themeInput.value);
+
+    // Handle theme color change
+    if (themeInput) {
+        themeInput.addEventListener('input', function() {
+            applyTheme(this.value);
+        });
+    }
+
+    // Handle theme reset
+    if (themeResetBtn) {
+        themeResetBtn.addEventListener('click', function() {
+            themeInput.value = defaultTheme;
+            applyTheme(defaultTheme);
+        });
+    }
+
+    // Function to apply theme colors
+    function applyTheme(color) {
+        if (!color) return;
+        
+        // Update CSS variables for theme colors
+        document.documentElement.style.setProperty('--bs-primary', color);
+        
+        // Calculate hover and active states
+        const hoverColor = adjustColor(color, -10);
+        const activeColor = adjustColor(color, -20);
+        
+        document.documentElement.style.setProperty('--bs-primary-hover', hoverColor);
+        document.documentElement.style.setProperty('--bs-primary-active', activeColor);
+    }
+
+    // Helper function to adjust color brightness
+    function adjustColor(color, amount) {
+        return '#' + color.replace(/^#/, '').replace(/../g, color => 
+            ('0' + Math.min(255, Math.max(0, parseInt(color, 16) + amount)).toString(16)).substr(-2)
+        );
+    }
+
     // Image Cropping Functionality
     let cropper;
     const logoInput = document.getElementById('logo');
