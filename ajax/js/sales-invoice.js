@@ -1066,6 +1066,7 @@ jQuery(document).ready(function () {
                 <td class="item-price">${price.toFixed(2)}</td>
                 <td class="item-qty">${qty}</td>
                 <td class="item-discount">${discount}</td>
+                <td class="item-sell-price">${sale_price.toFixed(2)}</td>
                 <td>${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                 <td>
                     <button type="button" class="btn btn-sm btn-danger btn-remove-item" data-code="${code}" data-qty="${qty}" data-arn-id="${arnId}">Remove</button>

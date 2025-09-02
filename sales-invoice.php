@@ -268,19 +268,19 @@ include './auth.php';
                                                             data-bs-toggle="modal" data-bs-target="#item_master">
                                                             <i class="uil uil-search me-1"></i>
                                                         </button>
-                                                        <button class="btn btn-danger" type="button" data-bs-toggle="modal" data-bs-target="#all_item_master">
+                                                        <button class="btn btn-danger" type="button" data-bs-toggle="modal" name="all_item_master" data-bs-target="#all_item_master">
                                                             <i class="uil uil-search me-1"></i>
                                                         </button>
                                                     </div>
                                                 </div>
 
-                                                <div class="col-md-3">
+                                                <div class="col-md-2">
                                                     <label class="form-label">Name</label>
                                                     <input type="text" id="itemName" class="form-control"
                                                         placeholder="Name" readonly>
                                                 </div>
                                                 <div class="col-md-2">
-                                                    <label class="form-label">Price</label>
+                                                    <label class="form-label">List Price</label>
                                                     <input type="number" id="itemPrice" class="form-control"
                                                         placeholder="Price" oninput="calculatePayment()">
                                                 </div>
@@ -295,6 +295,11 @@ include './auth.php';
                                                         placeholder="Discount" oninput="calculatePayment()">
                                                 </div>
                                                 <div class="col-md-2">
+                                                    <label class="form-label">Sale Price</label>
+                                                    <input type="number" id="itemSalePrice" class="form-control"
+                                                        placeholder="Sale Price" oninput="calculatePayment()">
+                                                </div>
+                                                <div class="col-md-1">
                                                     <button type="button" class="btn btn-success w-100"
                                                         id="addItemBtn">Add</button>
                                                 </div>
@@ -364,9 +369,10 @@ include './auth.php';
                                                         <tr>
                                                             <th>Code</th>
                                                             <th>Name</th>
-                                                            <th>Price</th>
+                                                             <th>List Price</th>
                                                             <th>Qty</th>
                                                             <th>Discount</th>
+                                                            <th>Sale Price</th>
                                                             <th>Total</th>
                                                             <th>Action</th>
                                                         </tr>
