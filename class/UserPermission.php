@@ -192,6 +192,7 @@ class UserPermission
               FROM `user_permission` 
               WHERE `user_id` = " . (int) $user_id . " 
               AND `page_id` = " . (int) $page_id . " 
+              ORDER BY `queue` ASC 
               LIMIT 1";
 
         $db = new Database();

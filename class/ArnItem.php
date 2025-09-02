@@ -105,4 +105,17 @@ class ArnItem
 
         return $db->readQuery($query);
     }
+
+    public function getArnCostByArnId($arn_id)
+    {
+        $db = new Database();
+        $query = "SELECT `cost` FROM `arn_items` WHERE `arn_id` = '{$arn_id}'";
+        $result = $db->readQuery($query);
+
+        if ($row = mysqli_fetch_assoc($result)) {
+            return $row['cost'];
+        }
+        
+        return false;
+    }
 }
