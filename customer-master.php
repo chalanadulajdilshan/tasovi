@@ -127,7 +127,7 @@ $customer_id = 'CM/' . $_SESSION['id'] . '/0' . ($lastId + 1);
                                                 <div class="col-md-4">
                                                     <label for="fullName" class="form-label">Full Name <span
                                                             class="text-danger">*</span></label>
-                                                    <input id="name" name="name" type="text" class="form-control"
+                                                    <input id="name" name="name"  onkeyup="toUpperCaseInput(this)"  type="text" class="form-control"
                                                         placeholder="Enter full name">
                                                 </div>
 

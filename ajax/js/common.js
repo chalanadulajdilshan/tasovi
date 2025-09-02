@@ -545,11 +545,12 @@ jQuery(document).ready(function () {
             expanded = !expanded;
         });
     });
-
-    function toUpperCaseInput(element) {
-        element.value = element.value.toUpperCase();
-    }
-
+    
 
 });
+
+// Global function to convert input to uppercase
+function toUpperCaseInput(element) {
+    element.value = element.value.toUpperCase();
+}
 

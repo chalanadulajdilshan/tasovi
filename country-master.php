@@ -119,7 +119,7 @@ $country_id = 'COU/0' . ($lastId + 1);
                                             <div class="col-md-2">
                                                 <label for="name" class="form-label">Country Name</label>
                                                 <div class="input-group mb-3">
-                                                    <input id="name" name="name" type="text"
+                                                    <input id="name" name="name"  onkeyup="toUpperCaseInput(this)"  type="text"
                                                     placeholder="Enter Country Name" class="form-control">
                                                 </div>
                                             </div>
@@ -221,7 +221,7 @@ $country_id = 'COU/0' . ($lastId + 1);
     <script src="assets/libs/jquery/jquery.min.js"></script>
     <!-- /////////////////////////// -->
     <script src="ajax/js/country.js"></script>
-
+    <script src="ajax/js/common.js"></script>
 
        <!-- include main js  -->
        <?php include 'main-js.php' ?>
