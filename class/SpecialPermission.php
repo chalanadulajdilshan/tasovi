@@ -96,7 +96,7 @@ class SpecialUserPermission
             return $this->id; // Return the ID on success
         }
 
-        error_log("Failed to update permission. Query: " . $query . " Error: " . mysqli_error($db->DB_CON));
+        error_log("Failed to update permission. Query: " . $query . " Error: " . ($db->DB_CON ? mysqli_error($db->DB_CON) : 'No database connection'));
         return false;
     }
 
@@ -139,5 +139,32 @@ class SpecialUserPermission
         }
 
         return $array_res;
+    }
+/**
+     * Check if a user has a specific permission
+     * @param int $userId The ID of the user
+     * @param string $permissionName The name of the permission to check
+     * @return bool Returns true if the user has the permission, false otherwise
+     */
+    public function hasAccess($userId, $permissionName)
+    {
+        $db = new Database();
+        $permissionName = $db->escapeString($permissionName);
+        
+        $query = "SELECT COUNT(*) as count 
+                 FROM `special_user_permissions` 
+                 WHERE `user_id` = " . (int)$userId . " 
+                 AND `permission_name` = '" . $permissionName . "' 
+                 AND `status` = 'active'";
+        
+        $result = $db->readQuery($query);
+        
+        if ($result) {
+            $row = mysqli_fetch_assoc($result);
+            return ($row['count'] > 0);
+        }
+        
+        error_log("Error in hasAccess: " . ($db->DB_CON ? mysqli_error($db->DB_CON) : 'No database connection'));
+        return false;
     }
 }

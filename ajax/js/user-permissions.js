@@ -190,9 +190,15 @@ function loadSpecialPermissions(userId) {
 
 // Handle status toggle for special permissions
 $(document).on('change', '.status-toggle', function () {
-    const permissionId = $(this).data('permission-id');
-    const isActive = $(this).is(':checked') ? 'active' : 'inactive';
-
+    const $toggle = $(this);
+    const permissionId = $toggle.data('permission-id');
+    const isActive = $toggle.is(':checked') ? 'active' : 'inactive';
+    
+    // Store the current state in case we need to revert
+    const originalState = $toggle.is(':checked');
+    
+    // Disable the toggle during the request
+    $toggle.prop('disabled', true);
     $('.someBlock').preloader();
 
     $.ajax({
@@ -206,17 +212,40 @@ $(document).on('change', '.status-toggle', function () {
         dataType: 'json',
         success: function (response) {
             $('.someBlock').preloader('remove');
+            $toggle.prop('disabled', false);
+            
             if (response.status !== 'success') {
-                swal('Error', response.message || 'Failed to update permission status', 'error');
                 // Revert the toggle on error
-                $(`[data-permission-id="${permissionId}"] .status-toggle`).prop('checked', !$(this).is(':checked'));
+                $toggle.prop('checked', !originalState);
+                swal('Error', response.message || 'Failed to update permission status', 'error');
+                return;
+            }
+            
+            // Show success message
+            swal('Success', 'Permission status updated successfully', 'success');
+            
+            // Update any UI elements that might depend on this permission
+            if (response.data && response.data.status === 'active') {
+                $toggle.closest('tr').find('.status-badge')
+                    .removeClass('badge-soft-danger')
+                    .addClass('badge-soft-success')
+                    .text('Active');
+            } else {
+                $toggle.closest('tr').find('.status-badge')
+                    .removeClass('badge-soft-success')
+                    .addClass('badge-soft-danger')
+                    .text('Inactive');
             }
         },
-        error: function () {
+        error: function (xhr, status, error) {
             $('.someBlock').preloader('remove');
-            swal('Error', 'An error occurred while updating permission status', 'error');
+            $toggle.prop('disabled', false);
+            
             // Revert the toggle on error
-            $(`[data-permission-id="${permissionId}"] .status-toggle`).prop('checked', !$(this).is(':checked'));
+            $toggle.prop('checked', originalState);
+            
+            console.error('Error updating permission status:', error);
+            swal('Error', 'An error occurred while updating permission status. Please try again.', 'error');
         }
     });
 });
