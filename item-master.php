@@ -140,17 +140,17 @@ $item_id = 'TI/0' . ($lastId + 1);
                                                 <div class="mb-3">
                                                     <label class="form-label" for="size">Item Size <span
                                                             class="text-danger">*</span></label>
-                                                    <input id="size" name="size" type="text" class="form-control"
+                                                    <input id="size" onkeyup="toUpperCaseInput(this)" name="size" type="text" class="form-control"
                                                         placeholder="Enter item size">
                                                 </div>
                                             </div>
 
                                             <!-- Pattern -->
-                                            <div class="col-md-2">
+                                            <div class="col-md-3">
                                                 <div class="mb-3">
                                                     <label class="form-label" for="pattern">Item Pattern <span
                                                             class="text-danger">*</span></label>
-                                                    <input id="pattern" name="pattern" type="text" class="form-control"
+                                                    <input id="pattern" onkeyup="toUpperCaseInput(this)" name="pattern" type="text" class="form-control"
                                                         placeholder="Enter item pattern">
                                                 </div>
                                             </div>
@@ -208,7 +208,7 @@ $item_id = 'TI/0' . ($lastId + 1);
                                                 </div>
                                             </div>
                                             <!-- DIS Column -->
-                                            <div class="col-md-1">
+                                            <div class="col-md-2">
                                                 <div class="mb-3">
                                                     <label class="form-label" for="discount">DIS % <span
                                                             class="text-danger">*</span></label>
@@ -273,7 +273,7 @@ $item_id = 'TI/0' . ($lastId + 1);
                                             <div class="col-md-1 d-flex justify-content-center align-items-center">
                                                 <div class="form-check">
                                                     <input class="form-check-input" type="checkbox" id="is_active"
-                                                        name="is_active">
+                                                        name="is_active" checked>
                                                     <label class="form-check-label" for="is_active">
                                                         Active
                                                     </label>
@@ -284,7 +284,7 @@ $item_id = 'TI/0' . ($lastId + 1);
                                         <!-- Notes -->
                                         <div class="mb-3">
                                             <label class="form-label" for="note">Item Notes</label>
-                                            <textarea class="form-control" id="note" name="note" rows="4"
+                                            <textarea class="form-control" id="note" onkeyup="toUpperCaseInput(this)" name="note" rows="4"
                                                 placeholder="Enter any additional notes about the item..."></textarea>
                                         </div>
                                         <input type="hidden" name="item_id" id="item_id" />
