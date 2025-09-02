@@ -118,7 +118,7 @@ $design_id = 'DM/0' . ($lastId + 1);
                                             <div class="col-md-2">
                                                 <label for="name" class="form-label">Design Name</label>
                                                 <div class="input-group mb-3">
-                                                    <input id="name" name="name" type="text"
+                                                    <input onkeyup="toUpperCaseInput(this)" id="name" name="name" type="text"
                                                     placeholder="Enter Name" class="form-control">
                                                 </div>
                                             </div>

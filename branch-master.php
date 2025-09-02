@@ -131,7 +131,7 @@ include 'auth.php';
                                             <div class="col-md-3">
                                                 <label for="name" class="form-label">Branch Name</label>
                                                 <div class="input-group mb-3">
-                                                    <input id="name" name="name" type="text" class="form-control"
+                                                    <input id="name" onkeyup="toUpperCaseInput(this)" name="name" type="text" class="form-control"
                                                         placeholder="Enter Branch Name">
                                                 </div>
                                             </div>
