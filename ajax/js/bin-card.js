@@ -1,39 +1,83 @@
 jQuery(document).ready(function ($) {
 
+    // Set a default department ID if not set
+    if (!$('#filter_department_id').val()) {
+        var firstDeptId = $('#filter_department_id option:first').val();
+        if (firstDeptId) {
+            $('#filter_department_id').val(firstDeptId);
+        }
+    }
+
     // DataTable config
     var table = $('#datatable').DataTable({
         processing: true,
         serverSide: true,
         ajax: {
-        url: "ajax/php/item-master.php",
-        type: "POST",
-        data: function (d) {
-            d.action = 'get_items_with_stock';  // Add this line
+            url: "ajax/php/item-master.php",
+            type: "POST",
+            data: function (d) {
+                d.action = 'fetch_for_stock_adjustment';
+                d.department_id = $('#filter_department_id').val();
+                d.show_zero_qty = $('#showZeroQty').is(':checked');
+                return d;
+            },
+            dataSrc: function (json) {
+                if (json.error) {
+                    console.error("Error from server:", json.message);
+                    return [];
+                }
+                return json.data || [];
+            },
+            error: function (xhr, error, thrown) {
+                console.error("AJAX Error:", error);
+                console.error("Status:", xhr.status);
+                console.error("Response:", xhr.responseText);
+                return [];
+            }
         },
-        dataSrc: function (json) {
-            return json.data;
-        }
-    },
         columns: [
-            { data: "id", title: "#ID" },
+            { 
+                data: null,
+                title: "#",
+                render: function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                },
+                orderable: false
+            },
             { data: "code", title: "Code" },
             { data: "name", title: "Name" },
-            { data: "brand", title: "Brand" },
             { data: "category", title: "Category" },
             { data: "list_price", title: "List Price" },
-            { data: "invoice_price", title: "Invoice Price" }, // Add this line
-            { data: "total_qty", title: "Quantity" },
-            { data: "discount", title: "Discount %" },
-            { 
-                data: "is_active", 
-                title: "Status",
-                render: function(data, type, row) {
-                    return parseInt(data) === 1 ? 'Active' : 'Inactive';
+            { data: "invoice_price", title: "Invoice Price" },
+            {
+                data: "available_qty",
+                title: "Available Qty",
+                render: function (data, type, row) {
+                    return parseInt(data) || 0;
                 }
-            }
+            },
         ],
-        order: [[0, 'desc']],
-        pageLength: 100
+        order: [[1, 'asc']],
+        pageLength: 100,
+        error: function(settings, techNote, message) {
+            console.error('DataTables Error:', message);
+            $('.dataTables_empty').html(
+                '<div class="alert alert-danger">' +
+                '   <i class="fa fa-exclamation-triangle"></i> ' +
+                '   Error loading data. Please try again or contact support.' +
+                '</div>'
+            );
+        }
+    });
+
+    // Department filter change handler
+    $('#filter_department_id').on('change', function() {
+        table.ajax.reload();
+    });
+
+    // Toggle zero quantity items
+    $(document).on('change', '#showZeroQty', function() {
+        table.ajax.reload();
     });
 
     // On row click, load selected item into input fields
@@ -70,7 +114,7 @@ jQuery(document).ready(function ($) {
         initializeStockInfoListener();
         setTimeout(() => $('#itemQty').focus(), 200);
 
-        $('#main_item_master').modal('hide');
+        $('#department_stock').modal('hide');
     });
 
     // Show/hide transactions table on checkbox toggle
@@ -82,7 +126,14 @@ jQuery(document).ready(function ($) {
         }
     });
 
-
+    // Department change handler
+    $('#department_id').on('change', function () {
+        const itemId = $('#item_id').val();
+        if (itemId) {
+            loadTransactionData(itemId, $(this).val());
+            updateStockInfo(itemId, $(this).val(), parseInt($('#selectDays').val()));
+        }
+    });
 
     // Date select handling
     const $selectDays = $('#selectDays');
@@ -140,8 +191,6 @@ jQuery(document).ready(function ($) {
     // When from date changes manually, update to date
     $dateFrom.on('change', updateToByFromAndDays);
 
-
-
     initializeStockInfoListener();
 
     function initializeStockInfoListener() {
@@ -181,7 +230,7 @@ jQuery(document).ready(function ($) {
                 loadTransactionData($itemId.val(), $departmentId.val());
             } else {
                 $('#transactionTable').hide();
-                $('#transactionTableBody').html('<tr><td colspan="6" class="text-muted text-center">No items added</td></tr>');
+                $('#transactionTableBody').html('<tr><td colspan="6" class="text-center">No items added</td></tr>');
             }
         });
 
@@ -248,18 +297,17 @@ jQuery(document).ready(function ($) {
     function loadTransactionData(itemId, departmentId) {
         const dateFrom = $('#dateFrom').val();
         const dateTo = $('#dateTo').val();
-
+        
         if (!itemId || !departmentId || !dateFrom || !dateTo) {
-            $('#transactionTableBody').html('<tr><td colspan="6" class="text-center text-warning">Please select Item, Department, and Date range first.</td></tr>');
+            $('#transactionTableBody').html('<tr><td colspan="8" class="text-center text-warning">Please select Item, Department, and Date range first.</td></tr>');
             return;
         }
 
-        $('#transactionTableBody').html('<tr><td colspan="6" class="text-center">Loading...</td></tr>');
-
-
+        $('#transactionTableBody').html('<tr><td colspan="8" class="text-center">Loading...</td></tr>');
+        
         $.ajax({
             url: 'ajax/php/stock-transfer.php',
-            method: 'POST',
+            type: 'POST',
             data: {
                 action: 'get_transaction_records',
                 item_id: itemId,
@@ -268,36 +316,35 @@ jQuery(document).ready(function ($) {
                 date_to: dateTo
             },
             dataType: 'json',
-            success: function (response) {
-                if (response.status === 'success' && response.transactions.length > 0) {
-                    let rows = '';
+            success: function(response) {
+                if (response.status === 'success' && response.transactions && response.transactions.length > 0) {
+                    let html = '';
                     let runningBalance = 0;
-
-                    response.transactions.forEach(function (tx, index) {
-                        runningBalance += parseFloat(tx.qty_in) - parseFloat(tx.qty_out);
-
-                        rows += `
-                       <tr>
-    <td style="text-align: left;">${index + 1}</td>
-    <td style="text-align: left;">${tx.created_at}</td>
-    <td style="text-align: left;">${tx.type_name}</td>
-    <td style="text-align: left;">${tx.remark}</td>
-    <td style="text-align: left;">${tx.type_direction}</td>
-    <td style="text-align: left;">${tx.qty_in}</td>
-    <td style="text-align: left;">${tx.qty_out}</td>
-    <td style="text-align: left;">${runningBalance}</td>
-</tr>
-
-                    `;
+                    
+                    response.transactions.forEach((tx, index) => {
+                        runningBalance += parseFloat(tx.qty_in || 0) - parseFloat(tx.qty_out || 0);
+                        
+                        html += `
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${tx.created_at || ''}</td>
+                                <td>${tx.type_name || ''}</td>
+                                <td>${tx.remark || ''}</td>
+                                <td>${tx.type_direction || ''}</td>
+                                <td class="text-end">${tx.qty_in || '0.00'}</td>
+                                <td class="text-end">${tx.qty_out || '0.00'}</td>
+                                <td class="text-end">${runningBalance.toFixed(2)}</td>
+                            </tr>`;
                     });
-
-                    $('#transactionTableBody').html(rows);
+                    
+                    $('#transactionTableBody').html(html);
                 } else {
-                    $('#transactionTableBody').html('<tr><td colspan="6" class="text-center text-muted">No transactions found</td></tr>');
+                    $('#transactionTableBody').html('<tr><td colspan="8" class="text-center text-muted">No transactions found</td></tr>');
                 }
             },
-            error: function () {
-                $('#transactionTableBody').html('<tr><td colspan="6" class="text-center text-danger">Failed to load data</td></tr>');
+            error: function(xhr, status, error) {
+                console.error('Error loading transactions:', error);
+                $('#transactionTableBody').html('<tr><td colspan="8" class="text-center text-danger">Error loading transactions</td></tr>');
             }
         });
     }
@@ -347,5 +394,15 @@ jQuery(document).ready(function ($) {
         });
     }
 
+    // Update the department stock button click handler
+    $(document).on('click', '.btn-department-stock', function() {
+        var itemCode = $('#itemCode').val();
+        if (!itemCode) {
+            alert('Please select an item first');
+            return;
+        }
+        // Redirect to department-stock-model.php with item code as parameter
+        window.location.href = 'department-stock-model.php?item_code=' + encodeURIComponent(itemCode);
+    });
 
 });

@@ -13,6 +13,7 @@ include './auth.php';
     <meta content="<?php echo $COMPANY_PROFILE_DETAILS->name ?>" name="author" />
     <!-- include main CSS -->
     <?php include 'main-css.php' ?>
+    <?php include 'department-stock-model.php' ?>
 
 </head>
 
@@ -99,10 +100,9 @@ include './auth.php';
                                                 class="form-control" readonly>
 
                                             <button class="btn btn-info" type="button" data-bs-toggle="modal"
-                                                data-bs-target="#main_item_master">
+                                                data-bs-target="#department_stock">
                                                 <i class="uil uil-search me-1"></i>
                                             </button>
-
                                         </div>
                                     </div>
                                     <div class="col-md-2 d-flex align-items-end">
