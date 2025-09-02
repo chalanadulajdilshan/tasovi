@@ -1,4 +1,86 @@
 jQuery(document).ready(function () {
+    // Image Cropping Functionality
+    let cropper;
+    const logoInput = document.getElementById('logo');
+    const logoPreview = document.getElementById('logo-preview');
+    const croppedLogoInput = document.getElementById('cropped-logo');
+    const preview = document.querySelector('.img-preview');
+
+    // Initialize cropper when logo is selected
+    if (logoInput) {
+        logoInput.addEventListener('change', function(e) {
+            const files = e.target.files;
+            const file = files[0];
+            
+            if (!file) return;
+
+            // Check file type
+            if (!file.type.match('image/jpeg') && !file.type.match('image/png')) {
+                swal("Error", "Only JPG and PNG files are allowed.", "error");
+                $(this).val('');
+                return;
+            }
+
+            // Check file size (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                swal("Error", "File size should not exceed 2MB.", "error");
+                $(this).val('');
+                return;
+            }
+
+            const reader = new FileReader();
+            
+            reader.onload = function(event) {
+                // Destroy previous cropper instance if exists
+                if (cropper) {
+                    cropper.destroy();
+                }
+                
+                // Show preview image
+                logoPreview.src = event.target.result;
+                logoPreview.style.display = 'block';
+                
+                // Initialize cropper
+                cropper = new Cropper(logoPreview, {
+                    aspectRatio: 250 / 60,
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    responsive: true,
+                    preview: '.img-preview',
+                    crop: function(event) {
+                        // Get cropped canvas
+                        const canvas = cropper.getCroppedCanvas({
+                            width: 250,
+                            height: 60,
+                            minWidth: 250,
+                            minHeight: 60,
+                            maxWidth: 1000,
+                            maxHeight: 1000,
+                            fillColor: '#fff',
+                            imageSmoothingEnabled: true,
+                            imageSmoothingQuality: 'high',
+                        });
+                        
+                        // Convert canvas to base64 and set to hidden input
+                        croppedLogoInput.value = canvas.toDataURL('image/jpeg', 0.9);
+                    }
+                });
+            };
+            
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Update form submission to include cropped image
+    $("#form-data").on('submit', function(e) {
+        // If logo is selected but not cropped
+        if (logoInput && logoInput.files.length > 0 && (!croppedLogoInput || !croppedLogoInput.value)) {
+            e.preventDefault();
+            swal("Error", "Please crop the logo before saving.", "error");
+            return false;
+        }
+        return true;
+    });
 
     // Create Company Profile
     $("#create").click(function (event) {
@@ -28,7 +110,7 @@ jQuery(document).ready(function () {
                 type: 'error',
                 timer: 2000,
                 showConfirmButton: false
-            }); F
+            }); 
         } else {
 
             $('.someBlock').preloader();
@@ -171,15 +253,59 @@ jQuery(document).ready(function () {
         $('#company_code').val($(this).data('companycode')).prop('readonly', false);
         $('#image_name').val($(this).data('image'));
 
-        var imageUrl = 'uploads/company-logos/' + $(this).data('image');
-        $('#logo-preview-show').attr('src', imageUrl);
+        // Update logo preview
+        var imagePath = $(this).data('image');
+        var logoPreview = $('#logo-preview');
+        
+        // Clear previous cropper instance if exists
+        if (cropper) {
+            cropper.destroy();
+            cropper = null;
+        }
+        
+        if (imagePath) {
+            var imageUrl = 'uploads/company-logos/' + imagePath;
+            logoPreview.attr('src', imageUrl).css('display', 'block');
+            
+            // Initialize cropper for the preview
+            logoPreview.on('load', function() {
+                if (cropper) {
+                    cropper.destroy();
+                }
+                cropper = new Cropper(logoPreview[0], {
+                    aspectRatio: 250 / 60,
+                    viewMode: 1,
+                    autoCropArea: 0.8,
+                    responsive: true,
+                    preview: '.img-preview',
+                    crop: function(event) {
+                        const canvas = cropper.getCroppedCanvas({
+                            width: 250,
+                            height: 60,
+                            minWidth: 250,
+                            minHeight: 60,
+                            fillColor: '#fff',
+                            imageSmoothingEnabled: true,
+                            imageSmoothingQuality: 'high',
+                        });
+                        $('#cropped-logo').val(canvas.toDataURL('image/jpeg', 0.9));
+                    }
+                });
+            });
+        } else {
+            logoPreview.hide();
+            $('.img-preview').css('background-image', 'none');
+        }
 
         $('#is_active').prop('checked', $(this).data('active') == 1);
         $('#is_vat').prop('checked', $(this).data('isvat') == 1);
 
         if ($('#is_vat').is(':checked')) {
             $('#vat-number-group').show();
+        } else {
+            $('#vat-number-group').hide();
         }
+        
         $("#create").hide();
         $('.bs-example-modal-xl').modal('hide');
     });
@@ -275,30 +401,28 @@ jQuery(document).ready(function () {
 
     const previewContainer = document.getElementById("logo-preview");
 
-    $('#logo').on('change', function (e) {
-        const file = e.target.files[0];
-        if (!file) return;
+    // Logo preview
+    $('#logo').on('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                $('#logo-preview').attr('src', e.target.result).show();
+            }
+            reader.readAsDataURL(file);
+        }
+    });
 
-        $('#logo-preview-show').hide();
-        const reader = new FileReader();
-        reader.onload = function (event) {
-            previewContainer.innerHTML = `<img id="crop-image" src="${event.target.result}" style="max-width: 100%;">`;
-
-            const image = document.getElementById('crop-image');
-            image.onload = () => {
-                if (cropper) cropper.destroy();
-                cropper = new Cropper(image, {
-                    aspectRatio: 3,
-                    viewMode: 1,
-                    autoCropArea: 1,
-                    minCropBoxWidth: 600,
-                    minCropBoxHeight: 200
-                });
-            };
-        };
-        reader.readAsDataURL(file);
-
-
+    // Favicon preview
+    $('#favicon').on('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                $('#favicon-preview').attr('src', e.target.result).show();
+            }
+            reader.readAsDataURL(file);
+        }
     });
 
     // Crop and Upload (if used separately)
@@ -356,7 +480,7 @@ jQuery(document).ready(function () {
         fetch("https://api.remove.bg/v1.0/removebg", {
             method: "POST",
             headers: {
-                "X-Api-Key": "XKydp6uaquCcMK8WK7Agga4D" // 🔑 Replace with your key
+                "X-Api-Key": "XKydp6uaquCcMK8WK7Agga4D" // Replace with your key
             },
             body: formData
         })

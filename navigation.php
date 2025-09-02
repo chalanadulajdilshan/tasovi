@@ -1,21 +1,26 @@
+<?php
+$COMPANY = new CompanyProfile(1); // Assuming company ID is 1, adjust if needed
+$logoPath = !empty($COMPANY->image_name) ? 'uploads/company-logos/' . $COMPANY->image_name : 'assets/images/logo.png';
+?>
+
 <header id="page-topbar">
     <div class="navbar-header">
         <div class="d-flex">
             <div class="navbar-brand-box mt-3">
                 <a href="index.html" class="logo logo-dark">
                     <span class="logo-sm">
-                        <img src="assets/images/logo.png" alt="" height="52">
+                        <img src="<?php echo $logoPath; ?>" alt="" height="52">
                     </span>
                     <span class="logo-lg">
-                        <img src="assets/images/logo.png" alt="" height="60">
+                        <img src="<?php echo $logoPath; ?>" alt="" height="60">
                     </span>
                 </a>
                 <a href="index.html" class="logo logo-light">
                     <span class="logo-sm">
-                        <img src="assets/images/logo.png" alt="" height="52">
+                        <img src="<?php echo $logoPath; ?>" alt="" height="52">
                     </span>
                     <span class="logo-lg">
-                        <img src="assets/images/logo.png" alt="" height="60">
+                        <img src="<?php echo $logoPath; ?>" alt="" height="60">
                     </span>
                 </a>
             </div>
@@ -139,7 +144,7 @@
                                     $permissions = $USER_PERMISSION->hasPermission($user_id, $dashboardPage['id']);
                                     if (in_array(true, $permissions, true)): ?>
                                         <li class="nav-item">
-                                            <a class="nav-link" href="<?php echo $dashboardPage['page_url'] . '?page_id=' . $dashboardPage['id']; ?>"  >
+                                            <a class="nav-link" href="<?php echo $dashboardPage['page_url'] . '?page_id=' . $dashboardPage['id']; ?>">
                                                 <i class="<?php echo $category['icon']; ?> me-2"></i> <?php echo $category['name']; ?>
                                             </a>
                                         </li>
@@ -189,8 +194,7 @@
                                                                 $permissions = $USER_PERMISSION->hasPermission($user_id, $page['id']);
                                                                 if (in_array(true, $permissions, true)): ?>
                                                                     <a class="dropdown-item"
-                                                                        href="<?php echo $page['page_url'] . '?page_id=' . $page['id']; ?>"
-                                                                         >
+                                                                        href="<?php echo $page['page_url'] . '?page_id=' . $page['id']; ?>">
                                                                         - <?php echo $page['page_name']; ?>
                                                                     </a>
                                                             <?php endif;
@@ -237,8 +241,7 @@
                                                     if (in_array(true, $permissions, true)): ?>
                                                         <div class="col-lg-3">
                                                             <a class="dropdown-item"
-                                                                href="<?php echo $page['page_url'] . '?page_id=' . $page['id']; ?>"
-                                                                 >
+                                                                href="<?php echo $page['page_url'] . '?page_id=' . $page['id']; ?>">
                                                                 - <?php echo $page['page_name']; ?>
                                                             </a>
                                                         </div>
