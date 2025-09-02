@@ -1,3 +1,15 @@
+<?php
+include 'class/include.php';
+
+// Get active company logo
+$company = new CompanyProfile();
+$activeCompany = $company->getActiveCompany();
+$logoPath = 'assets/images/logo.png'; // Default logo path
+
+if ($activeCompany && !empty($activeCompany['image_name'])) {
+    $logoPath = 'uploads/company-logos/' . $activeCompany['image_name'];
+}
+?>
 <!doctype html>
 <html lang="en">
 
@@ -26,9 +38,8 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="text-center">
-                        <a href="#" class="  d-block auth-logo" style="margin-bottom: 18px;">
-                            <img src="assets/images/logo.png" alt="" width="30% " class="logo logo-dark">
-
+                        <a href="#" class="d-block auth-logo" style="margin-bottom: 18px;">
+                            <img src="<?php echo $logoPath; ?>" alt="Company Logo" class="img-fluid" style="max-height: 100px; max-width: 300px;">
                         </a>
                     </div>
                 </div>
@@ -75,7 +86,7 @@
                     </div>
 
                     <div class="mt-5 text-center" style="color:white;">
-                        <p>© <script>
+                        <p> &copy; <script>
                                 document.write(new Date().getFullYear())
                             </script> AI ERP Development <i class="mdi mdi-heart text-danger"></i> by sourcecode.lk</p>
                     </div>

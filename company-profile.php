@@ -8,12 +8,28 @@ include 'auth.php';
 <head>
 
     <meta charset="utf-8" />
-    <title>Company Profile | <?php echo $COMPANY_PROFILE_DETAILS->name ?></title> 
+    <title>Company Profile | <?php echo $COMPANY_PROFILE_DETAILS->name ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="<?php echo $COMPANY_PROFILE_DETAILS->name ?>" name="author" />
     <!-- include main CSS -->
     <?php include 'main-css.php' ?>
- 
+
+    <!-- Cropper CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css" rel="stylesheet">
+    <style>
+        .img-container {
+            max-width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .img-preview {
+            width: 250px;
+            height: 60px;
+            overflow: hidden;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+        }
+    </style>
 
 </head>
 
@@ -37,21 +53,21 @@ include 'auth.php';
                             </a>
 
                             <?php if ($PERMISSIONS['add_page']): ?>
-                            <a href="#" class="btn btn-primary" id="create">
-                                <i class="uil uil-save me-1"></i> Save
-                            </a>
+                                <a href="#" class="btn btn-primary" id="create">
+                                    <i class="uil uil-save me-1"></i> Save
+                                </a>
                             <?php endif; ?>
 
                             <?php if ($PERMISSIONS['edit_page']): ?>
-                            <a href="#" class="btn btn-warning" id="update">
-                                <i class="uil uil-edit me-1"></i> Update
-                            </a>
+                                <a href="#" class="btn btn-warning" id="update">
+                                    <i class="uil uil-edit me-1"></i> Update
+                                </a>
                             <?php endif; ?>
 
                             <?php if ($PERMISSIONS['delete_page']): ?>
-                            <a href="#" class="btn btn-danger delete-brand">
-                                <i class="uil uil-trash-alt me-1"></i> Delete
-                            </a>
+                                <a href="#" class="btn btn-danger delete-brand">
+                                    <i class="uil uil-trash-alt me-1"></i> Delete
+                                </a>
                             <?php endif; ?>
 
                         </div>
@@ -84,7 +100,7 @@ include 'auth.php';
                                             <div class="flex-grow-1 overflow-hidden">
                                                 <h5 class="font-size-16 mb-1">Company Profile </h5>
                                                 <p class="text-muted text-truncate mb-0">Fill all information below to
-                                                   Company Profile </p>
+                                                    Company Profile </p>
                                             </div>
                                             <div class="flex-shrink-0">
                                                 <i class="mdi mdi-chevron-up accor-down-icon font-size-24"></i>
@@ -106,7 +122,7 @@ include 'auth.php';
                                                         <button class="btn btn-info" type="button"
                                                             data-bs-toggle="modal"
                                                             data-bs-target="#companyProfileModel">
-                                                            <i class="uil uil-search me-1"></i> 
+                                                            <i class="uil uil-search me-1"></i>
                                                         </button>
                                                     </div>
                                                 </div>
@@ -180,16 +196,23 @@ include 'auth.php';
                                                 </div>
 
                                                 <!-- Logo Upload -->
-                                                <div class="col-md-3 mt-3">
+                                                <div class="mb-3">
                                                     <label for="logo" class="form-label">Company Logo</label>
-                                                    <input type="file" id="logo" name="logo" accept="image/*"
-                                                        class="form-control">
-                                                    <small class="text-muted">Allowed: JPG, PNG. Crop size:
-                                                        250x60</small>
+                                                    <input type="file" class="form-control" id="logo" name="logo" accept="image/*">
+                                                    <small class="text-muted">Recommended size: 250x60 pixels</small>
+                                                    <div class="mt-2">
+                                                        <img id="logo-preview" src="<?php echo !empty($COMPANY->image_name) ? 'uploads/company-logos/' . $COMPANY->image_name : 'assets/images/default-company.png'; ?>" alt="Logo Preview" style="max-height: 60px; max-width: 100%;">
+                                                    </div>
+                                                </div>
 
-                                                    <!-- Image Preview Placeholder -->
-                                                    <div id="logo-preview" class="mt-2"></div>
-                                                    <img id="logo-preview-show">
+                                                <!-- Favicon Upload -->
+                                                <div class="mb-3">
+                                                    <label for="favicon" class="form-label">Favicon</label>
+                                                    <input type="file" class="form-control" id="favicon" name="favicon" accept="image/x-icon,image/vnd.microsoft.icon,.ico">
+                                                    <small class="text-muted">Recommended format: .ico, size: 32x32 or 16x16 pixels</small>
+                                                    <div class="mt-2">
+                                                        <img id="favicon-preview" src="<?php echo !empty($COMPANY->favicon) ? 'uploads/company-logos/' . $COMPANY->favicon : 'assets/images/favicon.ico'; ?>" alt="Favicon Preview" style="width: 32px; height: 32px;">
+                                                    </div>
                                                 </div>
 
                                                 <?php if (!empty($company_profile['image_name'])): ?>
@@ -240,10 +263,12 @@ include 'auth.php';
     <!-- JAVASCRIPT -->
     <script src="assets/libs/jquery/jquery.min.js"></script>
     <!-- /////////////////////////// -->
-    <script src="ajax/js/company-profile.js"></script>
+    <?php include 'main-js.php' ?>
 
-        <!-- include main js  -->
-        <?php include 'main-js.php' ?>
+    <!-- Cropper JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+
+    <script src="ajax/js/company-profile.js"></script>
 
 </body>
 
