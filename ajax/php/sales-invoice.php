@@ -297,11 +297,11 @@ if (isset($_POST['action']) && $_POST['action'] == 'cancel') {
     $invoiceId = $_POST['id'];
     $arnIds = $_POST['arnIds'];
 
-    $SALES_INVOICE = new SalesInvoice(NULL);
+    $SALES_INVOICE = new SalesInvoice($invoiceId);
 
 
-    $result = $SALES_INVOICE->cancel($invoiceId);
-
+    $result = $SALES_INVOICE->cancel();
+ 
     if ($result) {
         $STOCK_TRANSACTION = new StockTransaction(NULL);
         $SALES_INVOICE_ITEM = new SalesInvoiceItem(NULL);
@@ -313,16 +313,24 @@ if (isset($_POST['action']) && $_POST['action'] == 'cancel') {
         foreach ($items as $item) {
             $STOCK_MASTER = new StockMaster(NULL);
             $currentQty = $STOCK_MASTER->getAvailableQuantity($SALES_INVOICE->department_id, $item['item_code']);
+        
             $newQty = $currentQty + $item['quantity'];
+          
             $STOCK_MASTER->quantity = $newQty;
             $STOCK_MASTER->updateQtyByItemAndDepartment($SALES_INVOICE->department_id, $item['item_code'], $newQty);
-
+           
 
             // Update stock transaction with ARN reference if available
 
             $STOCK_TRANSACTION->item_id = $item['item_code'];
-
-            // Update stock_item_tmp for ARN-based inventorysss           
+            $STOCK_TRANSACTION->type = 14; // get this id from stock adjustment type table PK
+            $STOCK_TRANSACTION->date = date("Y-m-d");
+            $STOCK_TRANSACTION->qty_in = $item['quantity'];
+            $STOCK_TRANSACTION->qty_out = 0;
+            $STOCK_TRANSACTION->remark = "INVOICE CANCELLED #$invoiceId " . (!empty($item['arn_id']) ? "(ARN: {$item['arn']}) " : "") . "Cancelled " . date("Y-m-d H:i:s");
+            $STOCK_TRANSACTION->created_at = date("Y-m-d H:i:s");
+            $STOCK_TRANSACTION->create();
+                        
 
             // Use negative qty to Increase stock
             $qtyToAdd = abs($item['quantity']);
@@ -337,15 +345,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'cancel') {
                     );
                 }
             }
-        }
-
-        $STOCK_TRANSACTION->type = 14; // get this id from stock adjustment type table PK
-        $STOCK_TRANSACTION->date = date("Y-m-d");
-        $STOCK_TRANSACTION->qty_in = $item['quantity'];
-        $STOCK_TRANSACTION->qty_out = 0;
-        $STOCK_TRANSACTION->remark = "INVOICE CANCELLED #$invoiceId " . (!empty($item['arn_id']) ? "(ARN: {$item['arn']}) " : "") . "Cancelled " . date("Y-m-d H:i:s");
-        $STOCK_TRANSACTION->created_at = date("Y-m-d H:i:s");
-        $STOCK_TRANSACTION->create();
+        } 
 
 
         //audit log
@@ -356,6 +356,13 @@ if (isset($_POST['action']) && $_POST['action'] == 'cancel') {
         $AUDIT_LOG->description = 'CANCEL INVOICE NO #' . $SALES_INVOICE->invoice_no;
         $AUDIT_LOG->user_id = $_SESSION['id'];
         $AUDIT_LOG->created_at = date("Y-m-d H:i:s");
-        $AUDIT_LOG->create();
+        $result =   $AUDIT_LOG->create();
+
+
+        if ($result) {
+            echo json_encode(['status' => 'success']);
+        } else {
+            echo json_encode(['status' => 'error']);
+        }
     }
 }

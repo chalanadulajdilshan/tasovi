@@ -117,11 +117,12 @@ class CompanyProfile
         $query = "SELECT * FROM `company_profile` WHERE `is_active` = 1 LIMIT 1";
         $db = new Database();
         $result = $db->readQuery($query);
+        $array = [];
 
-        if ($result && mysqli_num_rows($result) > 0) {
-            return mysqli_fetch_assoc($result);
+        while ($row = mysqli_fetch_array($result)) {
+            array_push($array, $row);
         }
 
-        return false;
+        return $array;
     }
 }

@@ -116,11 +116,11 @@ class SalesInvoice
         }
     }
 
-    public function cancel($invoiceId)
+    public function cancel()
     {
 
         // Use prepared statement to prevent SQL injection
-        $query = "UPDATE `sales_invoice` SET `is_cancel` = 1 WHERE `id` = $invoiceId";
+        $query = "UPDATE `sales_invoice` SET `is_cancel` = 1 WHERE `id` = $this->id";
 
         $db = new Database();
         $result = $db->readQuery($query); // Assuming your Database class supports parameters

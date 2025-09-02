@@ -12,7 +12,7 @@ class Database
         if ($this->isLocalServer()) {
             // Local DB settings
             $this->host = 'localhost';
-            $this->name = 'source_code_erp';
+            $this->name = 'tasovi';
             $this->user = 'root';
             $this->password = '';
         } else {

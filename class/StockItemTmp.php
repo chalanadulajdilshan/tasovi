@@ -177,8 +177,7 @@ class StockItemTmp
                       AND `department_id` = '{$department_id}' 
                     LIMIT 1";
 
-
-
+  
         $result = $db->readQuery($selectQuery);
 
         if ($row = mysqli_fetch_assoc($result)) {
