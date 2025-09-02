@@ -452,6 +452,7 @@ jQuery(document).ready(function () {
 
                 // Close the modal first
                 $('#invoiceModal').modal('hide');
+                
 
                 // Reset form first to clear any previous values
                 $('#form-data')[0].reset();
@@ -459,6 +460,12 @@ jQuery(document).ready(function () {
                 // Set payment type radio button
                 $('input[name="payment_type"]').prop('checked', false);
                 $('input[name="payment_type"][value="' + (response.payment_type || '1') + '"]').prop('checked', true);
+            
+                if(response.is_cancel == 1){
+                    $('.cancel-invoice').hide();
+                }else{
+                    $('.cancel-invoice').show();
+                }
 
                 // Set basic information
                 $('#invoice_id').val(response.id || '');
@@ -484,19 +491,19 @@ jQuery(document).ready(function () {
 
                 // Load invoice items
                 fetchInvoiceItems(invoiceId);
-
-                // Show delete button if invoice is not cancelled
-                if (response.status !== 'cancelled') {
-                    $('.delete-category').show();
-                } else {
-                    $('.delete-category').hide();
-                }
+                
 
                 // Show cancel button if invoice is not cancelled
-                if (response.status !== 'cancelled') {
-                    $('.cancel-category').show();
+                if (response.is_cancel == 1) {
+                    $('#cancelled-badge').show();
+                    $('#payment').hide();
+                    $('#save').hide();
+                    $('#update').hide();
                 } else {
-                    $('.cancel-category').hide();
+                    $('#cancelled-badge').hide();
+                    $('#payment').show();
+                    $('#save').show();
+                    $('#update').show();
                 }
             },
             error: function (xhr, status, error) {

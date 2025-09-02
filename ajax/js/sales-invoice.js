@@ -29,6 +29,8 @@ jQuery(document).ready(function () {
         loadAllItems();
     });
 
+    
+
     //PAYMENT TYPE CHANGE
     $('input[name="payment_type"]').on('change', function () {
         getInvoiceData();
@@ -692,10 +694,70 @@ jQuery(document).ready(function () {
         }
     });
 
+    $("#save").click(function (event) {
+        event.preventDefault();
+
+        if (!$('#customer_id').val()) {
+            swal({
+                title: "Error!",
+                text: "Please enter customer code",
+                type: 'error',
+                timer: 2000,
+                showConfirmButton: false
+            });
+            return;
+        }
+
+        const invoiceNo = $('#invoice_no').val().trim();
+        const dag_id = $('#dag_id').val();
+
+        if (dag_id != 0) {
+            processDAGInvoiceCreation();
+        } else {
+
+            $.ajax({
+                url: 'ajax/php/sales-invoice.php',
+                method: 'POST',
+                data: {
+                    action: 'check_invoice_id',
+                    invoice_no: invoiceNo
+                },
+                dataType: 'json',
+                success: function (checkRes) {
+                    if (checkRes.exists) {
+                        swal({
+                            title: "Duplicate!",
+                            text: "Invoice No <strong>" + invoiceNo + "</strong> already exists.",
+                            type: 'error',
+                            html: true,
+                            timer: 2500,
+                            showConfirmButton: false
+                        });
+                        return;
+                    }
+
+                    processInvoiceCreation();
+
+
+                },
+                error: function () {
+                    swal({
+                        title: "Error!",
+                        text: "Unable to verify Invoice No. right now.",
+                        type: 'error',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        }
+    });
+
+
+
+
     //ITEM INVOICE PROCESS
     function processInvoiceCreation() {
-
-
         const items = [];
         const dagItems = [];
 
@@ -726,9 +788,6 @@ jQuery(document).ready(function () {
                 });
             }
         });
-
-
-
 
         if (items.length === 0 && dagItems.length === 0) {
             swal({
@@ -813,7 +872,7 @@ jQuery(document).ready(function () {
         });
 
 
-        if (totalAmount !== finalTotal) {
+        if (totalAmount !== finalTotal && $('input[name="payment_type"]:checked').val() == '1') {
             swal({
                 title: "Error!",
                 text: "Total amount does not match the final total.",
@@ -1254,7 +1313,6 @@ jQuery(document).ready(function () {
 
         $("#invoiceItemsBody .btn-remove-item").each(function () {
             let arnId = $(this).data("arn-id");
-          
             arnIds.push(arnId);
         });
 
@@ -1262,13 +1320,12 @@ jQuery(document).ready(function () {
     }
 
     // CANCEL INVOICE FUNCTION
-
-    $(document).on("click", ".cancel-category", function () {
+    $(document).on("click", ".cancel-invoice", function () {
 
         const invoiceId = $('#invoice_id').val();
         let arnIds = getAllArnIds();
- 
 
+        
         swal(
             {
                 title: "Are you sure?",
@@ -1281,7 +1338,7 @@ jQuery(document).ready(function () {
             },
             function () {
                 $.ajax({
-                url: 'ajax/php/sales-invoice.php',
+                    url: 'ajax/php/sales-invoice.php',
                     type: "POST",
                     data: {
                         action: 'cancel',
@@ -1290,17 +1347,35 @@ jQuery(document).ready(function () {
                     },
                     dataType: "JSON",
                     success: function (jsonStr) {
-                        if (jsonStr.status) {
+                        if (jsonStr.status === 'already_cancelled') {
+                            swal({
+                                title: "Already Cancelled!",
+                                text: "This invoice has already been cancelled.",
+                                type: "warning",
+                                timer: 2000,
+                                showConfirmButton: true,
+                            });
+                            return;
+                        } else if (jsonStr.status) {
                             swal({
                                 title: "Cancelled!",
-                                text: "Your approvel course request has been cancelled.",
+                                text: "The invoice has been cancelled successfully.",
                                 type: "success",
                                 timer: 2000,
                                 showConfirmButton: false,
                             });
 
-                            $("#div" + id).remove();
-                            window.location.reload();
+                            // Update UI to show cancelled state
+                            $(".cancel-invoice").hide();
+                            $("#cancelled-badge").show();
+                            
+                            // Optional: Disable form elements
+                            $("#form-data :input").prop("disabled", true);
+                            
+                            // Remove any existing success messages after delay
+                            setTimeout(function() {
+                                $(".swal2-container").fadeOut();
+                            }, 2000);
                         }
                     },
                 });
