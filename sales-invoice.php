@@ -49,7 +49,7 @@ include './auth.php';
                             <?php endif; ?>
 
                             <?php if ($PERMISSIONS['edit_page']): ?>
-                                <a href="#" class="btn btn-warning" id="update">
+                                <a href="#" class="btn btn-warning" id="update" style="display: none;">
                                     <i class="uil uil-edit me-1"></i> Update
                                 </a>
                             <?php endif; ?>
@@ -59,11 +59,11 @@ include './auth.php';
                             </a>
 
                             <?php if ($PERMISSIONS['delete_page']): ?>
-                                <a href="#" class="btn btn-danger cancel-category" style="display: none;">
+                                <a href="#" class="btn btn-danger cancel-invoice" style="display: none;">
                                     <i class="uil uil-ban me-1"></i> Cancel
                                 </a>
                             <?php endif; ?>
-
+                            
                         </div>
 
                         <div class="col-md-4 text-md-end text-start mt-3 mt-md-0">
@@ -92,10 +92,14 @@ include './auth.php';
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="flex-grow-1 overflow-hidden">
-                                            <h5 class="font-size-16 mb-1">Sales Invoice </h5>
-                                            <p class="text-muted text-truncate mb-0">Fill all information below to add
-                                                Invoice</p>
+                                        <div class="d-flex align-items-center flex-grow-1">
+                                            <div class="me-3">
+                                                <h5 class="font-size-16 mb-1">Sales Invoice </h5>
+                                                <p class="text-muted text-truncate mb-0">Fill all information below to add Invoice</p>
+                                            </div>
+                                            <span id="cancelled-badge" class="badge bg-danger" style="font-size: 1.2rem; display: none; padding: 0.75rem 1.2rem;">
+                                                <i class="uil uil-ban me-2"></i> This Invoice Already Cancelled
+                                            </span>
                                         </div>
                                         <div class="flex-shrink-0">
                                             <i class="mdi mdi-chevron-up accor-down-icon font-size-24"></i>
@@ -472,7 +476,10 @@ include './auth.php';
                                                 </div>
 
 
-                                                <div class="col-md-3"></div>
+                                                <div class="col-md-3">
+
+                                                
+                                                </div>
 
                                                 <div class="col-md-4 mb-4">
                                                     <div class="  p-2 border rounded bg-light"
@@ -519,6 +526,7 @@ include './auth.php';
                                                                 <input type="text" class="form-control  fw-bold"
                                                                     id="finalTotal" value="0.00" disabled>
                                                             </div>
+                                                            
                                                         </div>
                                                     </div>
                                                 </div>

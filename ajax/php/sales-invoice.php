@@ -174,9 +174,9 @@ if (isset($_POST['create'])) {
             }
 
 
-            //audit log
+            //audit log 
             $AUDIT_LOG = new AuditLog(NUll);
-            $AUDIT_LOG->ref_id = 1;
+            $AUDIT_LOG->ref_id = $invoiceTableId;
             $AUDIT_LOG->ref_code = $_POST['invoice_no'];
             $AUDIT_LOG->action = 'CREATE';
             $AUDIT_LOG->description = 'CREATE INVOICE NO #' . $invoiceTableId;
@@ -291,15 +291,30 @@ if (isset($_POST['action']) && $_POST['action'] == 'latest') {
 
 
 // Handle cancel invoice action
+// Check invoice status
+if (isset($_POST['action']) && $_POST['action'] == 'check_status') {
+    $invoiceId = $_POST['id'];
+    $SALES_INVOICE = new SalesInvoice($invoiceId);
+    echo json_encode(['is_cancelled' => ($SALES_INVOICE->is_cancel == 1)]);
+    exit();
+}
+
+// Cancel invoice
 if (isset($_POST['action']) && $_POST['action'] == 'cancel') {
 
 
     $invoiceId = $_POST['id'];
-    $arnIds = $_POST['arnIds'];
+    $arnIds = isset($_POST['arnIds']) ? $_POST['arnIds'] : [];
 
     $SALES_INVOICE = new SalesInvoice($invoiceId);
 
 
+
+
+    if($SALES_INVOICE->is_cancel == 1){
+        echo json_encode(['status' => 'already_cancelled']);
+        exit();
+    }
     $result = $SALES_INVOICE->cancel();
  
     if ($result) {
@@ -357,7 +372,6 @@ if (isset($_POST['action']) && $_POST['action'] == 'cancel') {
         $AUDIT_LOG->user_id = $_SESSION['id'];
         $AUDIT_LOG->created_at = date("Y-m-d H:i:s");
         $result =   $AUDIT_LOG->create();
-
 
         if ($result) {
             echo json_encode(['status' => 'success']);

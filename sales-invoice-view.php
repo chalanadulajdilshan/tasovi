@@ -63,7 +63,7 @@ $CUSTOMER = new CustomerMaster($SALES_INVOICE->customer_id);
                             </a>
 
                             <?php if ($PERMISSIONS['delete_page']): ?>
-                                <a href="#" class="btn btn-danger cancel-category" style="display: none;">
+                                <a href="#" class="btn btn-danger cancel-invoice" style="display: none;">
                                     <i class="uil uil-ban me-1"></i> Cancel
                                 </a>
                             <?php endif; ?> -->
