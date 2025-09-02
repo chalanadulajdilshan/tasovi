@@ -160,7 +160,7 @@ $item_id = 'TI/0' . ($lastId + 1);
                                                 <div class="mb-3">
                                                     <label class="form-label" for="name">Item Name <span
                                                             class="text-danger">*</span></label>
-                                                    <input id="name" name="name" type="text" class="form-control"
+                                                    <input id="name" name="name" onkeyup="toUpperCaseInput(this)" type="text" class="form-control"
                                                         placeholder="Enter item name">
                                                 </div>
                                             </div>
@@ -309,8 +309,9 @@ $item_id = 'TI/0' . ($lastId + 1);
     <!-- JAVASCRIPT -->
     <script src="assets/libs/jquery/jquery.min.js"></script>
     <!-- /////////////////////////// -->
-    <script src="ajax/js/item-master.js"></script>
-    
+    <script src="ajax/js/item-master.js"></script>    
+    <script src="ajax/js/common.js"></script>
+
     <script>
         $(document).ready(function() {
             // Function to update item name

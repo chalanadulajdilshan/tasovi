@@ -117,6 +117,14 @@ include './auth.php';
                                                         </div>
                                                     </div>
                                                 </div>
+                                                <div class="mb-3 col-md-2">
+                                                    <label for="searchInput" class="form-label">|</label>
+                                                    <div class="input-group">
+                                                        <button type="button" id="BtnSpecialPermissionModal" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#permissionModal">
+                                                            <i class="ri-settings-4-line align-bottom me-1"></i> Special Permissions
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             </div>
 
                                             <div class="mt-3 " id="permissionsTable"
