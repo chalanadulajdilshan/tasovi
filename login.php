@@ -1,27 +1,61 @@
 <?php
 include 'class/include.php';
 
-// Get active company logo
+// Get active company logo and theme
 $company = new CompanyProfile();
 $activeCompany = $company->getActiveCompany();
 $logoPath = 'assets/images/logo.png'; // Default logo path
+$themeColor = '#3b5de7'; // Default theme color
 
-if ($activeCompany && !empty($activeCompany['image_name'])) {
-    $logoPath = 'uploads/company-logos/' . $activeCompany['image_name'];
+if ($activeCompany) {
+    if (!empty($activeCompany['image_name'])) {
+        $logoPath = 'uploads/company-logos/' . $activeCompany['image_name'];
+    }
+    if (!empty($activeCompany['theme'])) {
+        $themeColor = $activeCompany['theme'];
+    }
 }
 ?>
 <!doctype html>
 <html lang="en">
 
 <head>
-
     <meta charset="utf-8" />
-    <title>Login | Admin & Dashboard </title>
+    <title>Login | <?php echo $activeCompany ? $activeCompany['name'] : 'Admin'; ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="#" name="description" />
     <meta content="Themesbrand" name="author" />
-    <!-- App favicon -->
+    <!-- Favicon -->
     <link rel="shortcut icon" href="assets/images/favicon.ico">
+
+    <!-- Theme Color Variables -->
+    <style>
+        :root {
+            --bs-primary: <?php echo $themeColor; ?>;
+            --bs-primary-rgb: <?php echo implode(', ', sscanf(ltrim($themeColor, '#'), '%02x%02x%02x')); ?>;
+        }
+
+        .authentication-bg {
+            background-color: <?php echo $themeColor; ?>;
+            background: linear-gradient(135deg, <?php echo $themeColor; ?> 0%, <?php echo adjustBrightness($themeColor, -30); ?> 100%);
+        }
+
+        .btn-primary {
+            background-color: <?php echo $themeColor; ?>;
+            border-color: <?php echo $themeColor; ?>;
+        }
+
+        .btn-primary:hover,
+        .btn-primary:focus {
+            background-color: <?php echo adjustBrightness($themeColor, -10); ?>;
+            border-color: <?php echo adjustBrightness($themeColor, -10); ?>;
+        }
+
+        .form-check-input:checked {
+            background-color: <?php echo $themeColor; ?>;
+            border-color: <?php echo $themeColor; ?>;
+        }
+    </style>
 
     <!-- Bootstrap Css -->
     <link href="assets/css/bootstrap.min.css" id="bootstrap-style" rel="stylesheet" type="text/css" />
@@ -30,6 +64,30 @@ if ($activeCompany && !empty($activeCompany['image_name'])) {
     <!-- App Css-->
     <link href="assets/css/app.min.css" id="app-style" rel="stylesheet" type="text/css" />
     <link href="assets/libs/sweetalert/sweetalert.css" rel="stylesheet" type="text/css" />
+
+    <?php
+    // Helper function to adjust color brightness
+    function adjustBrightness($hex, $steps)
+    {
+        // Remove # if present
+        $hex = str_replace('#', '', $hex);
+
+        // Convert to RGB
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+
+        // Adjust brightness
+        $r = max(0, min(255, $r + $steps));
+        $g = max(0, min(255, $g + $steps));
+        $b = max(0, min(255, $b + $steps));
+
+        // Convert back to hex
+        return '#' . str_pad(dechex($r), 2, '0', STR_PAD_LEFT)
+            . str_pad(dechex($g), 2, '0', STR_PAD_LEFT)
+            . str_pad(dechex($b), 2, '0', STR_PAD_LEFT);
+    }
+    ?>
 </head>
 
 <body class="authentication-bg">

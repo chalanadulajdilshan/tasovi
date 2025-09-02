@@ -172,6 +172,16 @@ include 'auth.php';
                                                         placeholder="Enter email address">
                                                 </div>
 
+                                                <!-- Color Theme -->
+                                                <div class="col-md-3">
+                                                    <label class="form-label" for="theme">Color Theme</label>
+                                                    <div class="input-group mb-3">
+                                                        <span class="input-group-text"><i class="ri-palette-line"></i></span>
+                                                        <input type="color" class="form-control form-control-color" id="theme" name="theme" value="<?php echo $COMPANY_PROFILE_DETAILS->theme ?: '#3b5de7'; ?>">
+                                                        <button type="button" class="btn btn-light" id="theme-reset">Reset</button>
+                                                    </div>
+                                                </div>
+
                                                 <!-- VAT Registered -->
                                                 <div class="col-md-1 d-flex align-items-center">
                                                     <div class="form-check mt-4">
