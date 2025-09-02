@@ -134,7 +134,7 @@ jQuery(document).ready(function () {
         } else if (!$('#name').val() || $('#name').val().length === 0) {
             swal({
                 title: "Error!",
-                text: "Please enter branch name",
+                text: "Please enter name",
                 type: 'error',
                 timer: 2000,
                 showConfirmButton: false

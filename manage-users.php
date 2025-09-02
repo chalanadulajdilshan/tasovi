@@ -1,13 +1,8 @@
 <!doctype html>
 <?php
 include 'class/include.php';
-include './auth.php';
+include 'auth.php';
 
-$USER = new User(NUll);
-
-// Get the last inserted package id
-$lastId = $USER->getLastID();
-$user_id = 'US00' . ($lastId + 1);
 ?>
 <html lang="en">
 
@@ -105,7 +100,11 @@ $user_id = 'US00' . ($lastId + 1);
                                                     <div class="input-group mb-3">
                                                         <input id="code" name="code" type="text" class="form-control"
                                                             placeholder="Enter Category Code" readonly
-                                                            value="<?php echo $user_id ?>">
+                                                            value="<?php
+                                                            $USER = new User(NULL);
+                                                            $lastId = $USER->getLastID();
+                                                            $user_id = 'US00' . ($lastId + 1);
+                                                            echo $user_id ?>">
                                                         <button class="btn btn-info" type="button"
                                                             data-bs-toggle="modal" data-bs-target="#userModal">
                                                             <i class="uil uil-search me-1"></i>

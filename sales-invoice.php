@@ -290,12 +290,8 @@ include './auth.php';
                                                             name="all-item-master" 
                                                             data-bs-target="#all_item_master"
                                                             style="display: <?php echo $hasViewAllItemsPermission ? 'inline-block' : 'none'; ?>">
-                                                            <i class="uil uil-search me-1"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-2">
+                                                       <button class="btn btn-danger" type="button" data-bs-toggle="modal" name="all_item_master" data-bs-target="#all_item_master">
+                                 <div class="col-md-2">
                                                     <label class="form-label">Name</label>
                                                     <input type="text" id="itemName" class="form-control"
                                                         placeholder="Name" readonly>

@@ -1267,7 +1267,7 @@ jQuery(document).ready(function () {
         const invoiceId = $('#invoice_id').val();
         let arnIds = getAllArnIds();
 
-
+        
         swal(
             {
                 title: "Are you sure?",
