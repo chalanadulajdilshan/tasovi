@@ -344,10 +344,11 @@ jQuery(document).ready(function () {
         let rows = "";
         if (invoices.length > 0) {
             invoices.forEach(inv => {
+                const isCancelled = inv.is_cancel == 1;
                 rows += `
-                <tr data-id="${inv.id}">
+                <tr data-id="${inv.id}" ${isCancelled ? 'style="background-color: #fff5f5;"' : ''}>
                     <td>${inv.id}</td>
-                    <td>${inv.invoice_no}</td>
+                    <td>${inv.invoice_no} ${isCancelled ? '<span class="badge bg-danger ms-2">Cancelled</span>' : ''}</td>
                     <td>${inv.invoice_date}</td>
                     <td>${inv.department_name}</td>
                     <td>${inv.customer_name}</td>
