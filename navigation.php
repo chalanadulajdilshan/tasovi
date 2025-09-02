@@ -139,7 +139,7 @@
                                     $permissions = $USER_PERMISSION->hasPermission($user_id, $dashboardPage['id']);
                                     if (in_array(true, $permissions, true)): ?>
                                         <li class="nav-item">
-                                            <a class="nav-link" href="<?php echo $dashboardPage['page_url'] . '?page_id=' . $dashboardPage['id']; ?>" target="_blank">
+                                            <a class="nav-link" href="<?php echo $dashboardPage['page_url'] . '?page_id=' . $dashboardPage['id']; ?>"  >
                                                 <i class="<?php echo $category['icon']; ?> me-2"></i> <?php echo $category['name']; ?>
                                             </a>
                                         </li>
@@ -190,7 +190,7 @@
                                                                 if (in_array(true, $permissions, true)): ?>
                                                                     <a class="dropdown-item"
                                                                         href="<?php echo $page['page_url'] . '?page_id=' . $page['id']; ?>"
-                                                                        target="_blank">
+                                                                         >
                                                                         - <?php echo $page['page_name']; ?>
                                                                     </a>
                                                             <?php endif;
@@ -238,7 +238,7 @@
                                                         <div class="col-lg-3">
                                                             <a class="dropdown-item"
                                                                 href="<?php echo $page['page_url'] . '?page_id=' . $page['id']; ?>"
-                                                                target="_blank">
+                                                                 >
                                                                 - <?php echo $page['page_name']; ?>
                                                             </a>
                                                         </div>
