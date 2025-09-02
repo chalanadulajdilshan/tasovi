@@ -42,8 +42,10 @@ if (isset($_POST['create'])) {
         $arn_id = $ARN_MASTER->getArnIdByArnNo($item['arn_no']);
 
         $ITEM_MASTER = new ItemMaster($item['item_id']);
-
-        $cost = $item['cost'];
+        
+        
+        $ARN_ITEM = new ArnItem(NULL); 
+        $cost = $ARN_ITEM->getArnCostByArnId($arn_id);
         $final_cost_item = $cost * $item['qty'];
         $final_cost += $final_cost_item;
 
