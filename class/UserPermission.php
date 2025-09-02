@@ -191,8 +191,7 @@ class UserPermission
         $query = "SELECT `add_page`, `edit_page`, `search_page`, `delete_page`, `print_page`, `other_page`
               FROM `user_permission` 
               WHERE `user_id` = " . (int) $user_id . " 
-              AND `page_id` = " . (int) $page_id . " 
-              ORDER BY `queue` ASC 
+              AND `page_id` = " . (int) $page_id . "  
               LIMIT 1";
 
         $db = new Database();

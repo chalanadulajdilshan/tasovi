@@ -142,8 +142,8 @@ include './auth.php';
                                                     <select id="company_id" name="company_id" class="form-select">
 
                                                         <?php
-                                                        $COMPANY = new CompanyProfile(NULL);
-                                                        foreach ($COMPANY->getActiveCompany() as $company) {
+                                                        $COMPANYS = new CompanyProfile(NULL);
+                                                        foreach ($COMPANYS->getActiveCompany() as $company) {
                                                         ?>
                                                             <option value="<?php echo $company['id'] ?>">
                                                                 <?php echo $company['name'] ?>

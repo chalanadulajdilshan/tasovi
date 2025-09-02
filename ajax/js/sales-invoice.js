@@ -1254,6 +1254,7 @@ jQuery(document).ready(function () {
 
         $("#invoiceItemsBody .btn-remove-item").each(function () {
             let arnId = $(this).data("arn-id");
+          
             arnIds.push(arnId);
         });
 
@@ -1266,7 +1267,7 @@ jQuery(document).ready(function () {
 
         const invoiceId = $('#invoice_id').val();
         let arnIds = getAllArnIds();
-
+ 
 
         swal(
             {
@@ -1280,7 +1281,7 @@ jQuery(document).ready(function () {
             },
             function () {
                 $.ajax({
-                    url: 'ajax/php/sales-invoice.php',
+                url: 'ajax/php/sales-invoice.php',
                     type: "POST",
                     data: {
                         action: 'cancel',
