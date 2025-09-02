@@ -56,10 +56,16 @@ jQuery(document).ready(function () {
             }
         },
         columns: [
-            { data: "id", title: "#ID" },
+            { 
+                data: null,
+                title: "#",
+                render: function (data, type, row, meta) {
+                    return meta.row + meta.settings._iDisplayStart + 1;
+                },
+                orderable: false
+            },
             { data: "code", title: "Code" },
             { data: "name", title: "Name" },
-            { data: "brand", title: "Brand" },
             { data: "category", title: "Category" },
             { data: "list_price", title: "List Price" },
             { data: "invoice_price", title: "Invoice Price" },
@@ -70,19 +76,6 @@ jQuery(document).ready(function () {
                     return parseInt(data) || 0;
                 }
             },
-            { 
-                data: "discount", 
-                title: "Discount %",
-                render: function(data) {
-                    return data || '0%';
-                }
-            },
-            { 
-                data: "status_label",
-                title: "Status",
-                orderable: false,
-                searchable: false
-            }
         ],
         order: [[0, 'desc']],
         pageLength: 100,
