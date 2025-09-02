@@ -178,7 +178,17 @@ include './auth.php';
                                                         data-bs-target="#customerModal" title="Search Customer">
                                                         <i class="uil uil-search"></i>
                                                     </button>
-                                                    <button class="btn btn-danger" type="button" title="Add New Customer" data-bs-toggle="modal" data-bs-target="#customerAddModal">
+                                                    <?php 
+                                                    $hasAddCustomerPermission = false;
+                                                    if (isset($_SESSION['id'])) {
+                                                        $specialPermission = new SpecialUserPermission();
+                                                        $hasAddCustomerPermission = $specialPermission->hasAccess($_SESSION['id'], 'add_customer');
+                                                    }
+                                                    ?>
+                                                    <button class="btn btn-danger" type="button" title="Add New Customer" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#customerAddModal"
+                                                        style="display: <?php echo $hasAddCustomerPermission ? 'inline-block' : 'none'; ?>">
                                                         <i class="uil uil-plus"></i>
                                                     </button>
                                                 </div>
@@ -268,7 +278,18 @@ include './auth.php';
                                                             data-bs-toggle="modal" data-bs-target="#item_master">
                                                             <i class="uil uil-search me-1"></i>
                                                         </button>
-                                                        <button class="btn btn-danger" type="button" data-bs-toggle="modal" name="all_item_master" data-bs-target="#all_item_master">
+                                                        <?php 
+                                                        $hasViewAllItemsPermission = false;
+                                                        if (isset($_SESSION['id'])) {
+                                                            $specialPermission = new SpecialUserPermission();
+                                                            $hasViewAllItemsPermission = $specialPermission->hasAccess($_SESSION['id'], 'view_all_items');
+                                                        }
+                                                        ?>
+                                                        <button class="btn btn-danger view-all-items-btn" type="button" 
+                                                            data-bs-toggle="modal" 
+                                                            name="all-item-master" 
+                                                            data-bs-target="#all_item_master"
+                                                            style="display: <?php echo $hasViewAllItemsPermission ? 'inline-block' : 'none'; ?>">
                                                             <i class="uil uil-search me-1"></i>
                                                         </button>
                                                     </div>

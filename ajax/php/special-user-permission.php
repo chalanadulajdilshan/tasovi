@@ -25,23 +25,44 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Handle status update
     if (isset($_POST['action']) && $_POST['action'] === 'update_status') {
+        header('Content-Type: application/json');
+        
         if (!isset($_POST['permission_id']) || !isset($_POST['status'])) {
+            http_response_code(400);
             echo json_encode(['status' => 'error', 'message' => 'Missing required parameters']);
             exit();
         }
 
         $permission = new SpecialUserPermission((int)$_POST['permission_id']);
         if (!$permission->id) {
+            http_response_code(404);
             echo json_encode(['status' => 'error', 'message' => 'Permission not found']);
             exit();
         }
 
-        $permission->status = $_POST['status'] === 'active' ? 'active' : 'inactive';
+        // Ensure status is either 'active' or 'inactive'
+        $newStatus = ($_POST['status'] === 'active') ? 'active' : 'inactive';
+        $permission->status = $newStatus;
+        
         $result = $permission->update();
+        
+        if ($result === false) {
+            error_log("Failed to update permission ID: " . $permission->id . " to status: " . $newStatus);
+            http_response_code(500);
+            echo json_encode([
+                'status' => 'error', 
+                'message' => 'Database error while updating status'
+            ]);
+            exit();
+        }
 
         echo json_encode([
-            'status' => $result ? 'success' : 'error',
-            'message' => $result ? 'Status updated successfully' : 'Failed to update status'
+            'status' => 'success',
+            'message' => 'Status updated successfully',
+            'data' => [
+                'id' => $permission->id,
+                'status' => $newStatus
+            ]
         ]);
         exit();
     }
