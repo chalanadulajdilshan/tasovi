@@ -133,6 +133,22 @@ class SalesInvoice
         }
     }
 
+    // Update customer outstanding balance
+    public function updateCustomerOutstanding($customerId, $amount, $isCredit = false) {
+        $db = new Database();
+        
+        // Determine whether to add or subtract the amount based on credit/debit
+        $operator = $isCredit ? '+' : '-';
+        
+        $query = "UPDATE `customer_master` 
+                 SET `outstanding` = GREATEST(0, `outstanding` $operator $amount)
+                 WHERE `id` = '{$customerId}'";
+        
+        $result = $db->readQuery($query);
+        
+        return $result ? true : false;
+    }
+
     // Delete a sales invoice record by ID
     public function delete()
     {
