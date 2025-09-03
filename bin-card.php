@@ -93,7 +93,7 @@ include './auth.php';
 
                             <div class="col-md-10">
                                 <div class="row mb-3">
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <label for="itemCode" class="form-label">Item Code</label>
                                         <div class="input-group mb-3">
                                             <input id="itemCode" name="itemCode" type="text" placeholder="Item Code"
@@ -105,14 +105,7 @@ include './auth.php';
                                             </button>
                                         </div>
                                     </div>
-                                    <div class="col-md-2 d-flex align-items-end">
-                                        <div class="form-check mb-4">
-                                            <input class="form-check-input" type="checkbox" id="showAll">
-                                            <label class="form-check-label fw-bold" for="showAll">
-                                                Show All Items
-                                            </label>
-                                        </div>
-                                    </div>
+
                                     <!-- hidden item id -->
                                     <input type="hidden" id="item_id" name="item_id">
                                     <div class="col-md-4">
@@ -124,7 +117,7 @@ include './auth.php';
                                     </div>
 
 
-                                    <div class="col-md-3">
+                                    <div class="col-md-4">
                                         <label for="Department" class="form-label">Department</label>
                                         <div class="input-group mb-3">
                                             <select id="department_id" name="department_id" class="form-select">
@@ -154,7 +147,7 @@ include './auth.php';
 
                                 <div class="row">
                                     <div class="col-md-3">
-                                        <label class="form-label" for="date">Select Days</label>
+                                        <label class="form-label" for="date">Select Year</label>
                                         <select class="form-select">
                                             <?php
                                             $DEFAULT_DATA = new DefaultData();
@@ -167,7 +160,6 @@ include './auth.php';
                                     <div class="col-md-3">
                                         <label class="form-label" for="selectDays">Select Days</label>
                                         <select class="form-select" id="selectDays">
-                                            <option>-- Select Days --</option>
                                             <?php
                                             $DEFAULT_DATA = new DefaultData();
                                             foreach ($DEFAULT_DATA->Days() as $key => $days) {
