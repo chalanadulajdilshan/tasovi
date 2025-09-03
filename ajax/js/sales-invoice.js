@@ -317,8 +317,7 @@ jQuery(document).ready(function () {
         $('#item_id').val('0');
 
         $('#itemName').prop('readonly', false).val('').focus();
-        $('#itemQty').val(1);
-        $('#itemQty').prop('readonly', true);
+        
     }
 
     //GET DATA ARN VISE
@@ -952,8 +951,6 @@ jQuery(document).ready(function () {
                         console.error("Item invoice save failed");
                     }
                 });
-                
-alert('ertertetert') ;
 
                 // Save DAG items
                 $.ajax({
@@ -1099,7 +1096,6 @@ alert('ertertetert') ;
 
     //ADD ITEM TO INVOICE TABLE
     function addItem() {
-        $('#itemQty').prop('readonly', false);
 
         const item_id = $('#item_id').val().trim();
         const code = $('#itemCode').val().trim();

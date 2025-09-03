@@ -131,7 +131,7 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                                     </div>
                                                 </div>
 
-                                                <div class="col-md-2">
+                                                <div class="col-md-3">
                                                     <label for="customerCode" class="form-label">Customer Code</label>
                                                     <div class="input-group mb-3">
                                                         <input id="customer_code" name="customer_code" type="text"
@@ -152,7 +152,7 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                                     </div>
                                                 </div>
 
-                                                <div class="col-md-3">
+                                                <div class="col-md-4">
                                                     <label for="customerAddress" class="form-label">Customer
                                                         Address</label>
                                                     <div class="input-group mb-3">
@@ -171,14 +171,6 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                                     </div>
                                                 </div>
 
-                                                <div class="col-md-3">
-                                                    <label for="name" class="form-label">Cash T/T Date</label>
-                                                    <div class="input-group" id="datepicker2">
-                                                        <input type="text" class="form-control date-picker" id="date"
-                                                            name="date"> <span class="input-group-text"><i
-                                                                class="mdi mdi-calendar"></i></span>
-                                                    </div>
-                                                </div>
 
                                                 <div class="col-md-3">
                                                     <label for="entry_date" class="form-label">Entry Date</label>
@@ -190,59 +182,8 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                                     </div>
                                                 </div>
 
-
-
-                                                <div class="col-md-2">
-                                                    <label for="ref_no" class="form-label">T/T Ref No</label>
-                                                    <div class="input-group mb-3">
-                                                        <input id="ref_no" name="ref_no" type="text"
-                                                            placeholder="T/T Ref No" class="form-control">
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-2">
-                                                    <label for="credit_account" class="form-label">Debit
-                                                        Account</label>
-                                                    <div class="input-group mb-3">
-                                                        <input id="credit_account" name="credit_account" type="text"
-                                                            placeholder="Credit Account" class="form-control" readonly>
-                                                        <button class="btn btn-info" type="button"
-                                                            data-bs-toggle="modal" data-bs-target="#creditAccount">
-                                                            <i class="uil uil-search me-1"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-2">
-                                                    <label for="ref_no" class="form-label">Debit Acc Name</label>
-                                                    <div class="input-group mb-3">
-                                                        <input id="ref_no" name="ref_no" type="text"
-                                                            placeholder="Debit Acc Name" class="form-control" readonly>
-                                                    </div>
-                                                </div>
-
-                                                <div class="col-md-2">
-                                                    <label for="credit_account" class="form-label">Credit
-                                                        Account</label>
-                                                    <div class="input-group mb-3">
-                                                        <input id="credit_account" name="credit_account" type="text"
-                                                            placeholder="Credit Account" class="form-control" readonly>
-                                                        <button class="btn btn-info" type="button"
-                                                            data-bs-toggle="modal" data-bs-target="#creditAccount">
-                                                            <i class="uil uil-search me-1"></i>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <label for="ref_no" class="form-label">Credit Acc Name</label>
-                                                    <div class="input-group mb-3">
-                                                        <input id="ref_no" name="ref_no" type="text"
-                                                            placeholder="Credit Acc Name " class="form-control"
-                                                            readonly>
-                                                    </div>
-                                                </div>
-
                                                 <div class="col-md-7">
-                                                    <label for="creditName" class="form-label">#Remark</label>
+                                                    <label for="creditName" class="form-label"># Enter Remark</label>
                                                     <div class="input-group mb-3">
                                                         <input id="creditName" name="creditName" type="text"
                                                             class="form-control" placeholder="">
