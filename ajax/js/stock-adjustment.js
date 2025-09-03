@@ -110,6 +110,8 @@ jQuery(document).ready(function () {
         }, 500);
     });
 
+    let focusAfterModal = false;
+
     // On row click, load selected item into input fields
     $('#datatable tbody').on('click', 'tr', function () {
         var data = table.row(this).data();
@@ -119,16 +121,26 @@ jQuery(document).ready(function () {
         $('#itemCode').val(data.code);
         $('#itemName').val(data.name);
         $('#itemQty').val(1);
-        $('#availableQty').val(data.available_qty || 0);
+        $('#available_qty').val(data.available_qty || 0);
 
         // Enable the adjustment type radio buttons
         $('input[name="adjustment_type"]').prop('disabled', false);
         
-        // Set focus to quantity field
-        setTimeout(() => $('#itemQty').focus(), 200);
+        // Set focusAfterModal flag
+        focusAfterModal = true;
         
         // Hide the modal after selection
         $('#department_stock').modal('hide');
+    });
+
+    // Handle modal hidden event
+    $('#department_stock').on('hidden.bs.modal', function () {
+        if (focusAfterModal) {
+            setTimeout(() => {
+                $('#itemQty').trigger('focus');
+                focusAfterModal = false;
+            }, 100);
+        }
     });
 
     // Rest of your existing code...
@@ -236,15 +248,65 @@ jQuery(document).ready(function () {
         }
     });
 
-    $('#create').on('click', function () {
+    // Add this event listener for when the modal is shown
+    $('#department_stock').on('show.bs.modal', function (event) {
+        // Clear previous values
+        $('#available_qty').val('0');
+        
+        // If we have a selected item, get its available quantity
+        var selectedItemId = $('#item_id').val();
+        var departmentId = $('#filter_department_id').val();
+        
+        if (selectedItemId && departmentId) {
+            getAvailableQuantity(selectedItemId, departmentId, function(qty) {
+                $('#available_qty').val(qty);
+            });
+        }
+    });
 
-        const departmentId = $('#department_id').val();
+    // Update the item selection handler to update available quantity
+    $('#datatable tbody').on('click', 'tr', function () {
+        var data = table.row(this).data();
+        if (!data) return;
+
+        $('#item_id').val(data.id);
+        $('#itemCode').val(data.code);
+        $('#itemName').val(data.name);
+        $('#itemQty').val(1);
+        var departmentId = $('#filter_department_id').val();
+        if (data.id && departmentId) {
+            getAvailableQuantity(data.id, departmentId, function(qty) {
+                $('#available_qty').val(qty);
+            });
+        } else {
+            $('#available_qty').val('0');
+        }
+    });
+
+    $('#create').on('click', function () {
+        const departmentId = $('#filter_department_id').val();
         const adjustmentType = $('input[name="adjustment_type"]:checked').val();
         const specialInstructions = $('#special_instructions').val();
 
-        const hasItems = $('#itemTable tbody tr:not(#noItemRow)').length > 0;
+        // Debug logging
+        console.log('Department ID:', departmentId);
+        console.log('Adjustment Type:', adjustmentType);
+        
+        // Check table rows
+        const allRows = $('#show_table tr');
+        const itemRows = allRows.not('#noItemRow');
+        console.log('All rows:', allRows.length);
+        console.log('Item rows:', itemRows.length);
+        console.log('Row HTML:', $('#show_table').html());
+
+        const hasItems = itemRows.length > 0;
 
         if (!departmentId || !adjustmentType || !hasItems) {
+            console.log('Validation failed - missing:', {
+                departmentId: !departmentId,
+                adjustmentType: !adjustmentType,
+                hasItems: !hasItems
+            });
             swal({
                 title: "Error!",
                 text: "Please complete all required fields and add at least one item.",
@@ -271,8 +333,8 @@ jQuery(document).ready(function () {
         formData.append('special_instructions', specialInstructions);
 
         // Append item data
-        $('#itemTable tbody tr:not(#noItemRow)').each(function () {
-            const itemId = $(this).find('input[name="item_codes[]"]').val(); // hidden input
+        $('#show_table tr').not('#noItemRow').each(function () {
+            const itemId = $(this).find('input[name="item_codes[]"]').val();
             const code = $(this).find('td:eq(1)').text().trim();
             const name = $(this).find('td:eq(2)').text().trim();
             const qty = $(this).find('td:eq(3)').text().trim();

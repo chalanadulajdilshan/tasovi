@@ -808,7 +808,7 @@ jQuery(document).ready(function () {
         }
 
         const customerName = $('#customer_name').val().trim();
-        if (!customerName) {
+        if (!customerName ) {
             swal({
                 title: "Error!",
                 text: "Please select a customer before creating an invoice.",
@@ -830,9 +830,6 @@ jQuery(document).ready(function () {
             $('#customer_code').focus();
             return;
         }
-
-
-
 
         let payments = [];
         let finalTotal = parseFloat($('#modalFinalTotal').val()) || 0;
@@ -955,6 +952,8 @@ jQuery(document).ready(function () {
                         console.error("Item invoice save failed");
                     }
                 });
+                
+alert('ertertetert') ;
 
                 // Save DAG items
                 $.ajax({

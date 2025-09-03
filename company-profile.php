@@ -150,7 +150,7 @@ include 'auth.php';
                                                 </div>
 
                                                 <!-- Mobile Number 02 -->
-                                                <div class="col-md-3">
+                                                <div class="col-md-2">
                                                     <label for="mobile_number_2" class="form-label">Mobile Number
                                                         02</label>
                                                     <input id="mobile_number_2" name="mobile_number_2" type="text"
@@ -158,7 +158,7 @@ include 'auth.php';
                                                 </div>
 
                                                 <!-- Mobile Number 03 -->
-                                                <div class="col-md-3">
+                                                <div class="col-md-2">
                                                     <label for="mobile_number_3" class="form-label">Mobile Number
                                                         03</label>
                                                     <input id="mobile_number_3" name="mobile_number_3" type="text"
@@ -166,14 +166,14 @@ include 'auth.php';
                                                 </div>
 
                                                 <!-- Email -->
-                                                <div class="col-md-3">
+                                                <div class="col-md-2">
                                                     <label for="email" class="form-label">Email</label>
                                                     <input id="email" name="email" type="email" class="form-control"
                                                         placeholder="Enter email address">
                                                 </div>
 
                                                 <!-- Color Theme -->
-                                                <div class="col-md-3">
+                                                <div class="col-md-2">
                                                     <label class="form-label" for="theme">Color Theme</label>
                                                     <div class="input-group mb-3">
                                                         <span class="input-group-text"><i class="ri-palette-line"></i></span>
@@ -199,14 +199,14 @@ include 'auth.php';
                                                     </div>
                                                 </div>
                                                 <!-- VAT Number -->
-                                                <div class="col-md-3 mt-3" id="vat-number-group" style="display: none;">
+                                                <div class="col-md-2 mt-3" id="vat-number-group" style="display: none;">
                                                     <label for="vat_number" class="form-label">VAT Number</label>
                                                     <input id="vat_number" name="vat_number" type="text"
                                                         class="form-control" placeholder="Enter VAT number">
                                                 </div>
 
                                                 <!-- Logo Upload -->
-                                                <div class="mb-3">
+                                                <div class="col-md-6 mb-3">
                                                     <label for="logo" class="form-label">Company Logo</label>
                                                     <input type="file" class="form-control" id="logo" name="logo" accept="image/*">
                                                     <small class="text-muted">Recommended size: 250x60 pixels</small>
@@ -216,7 +216,7 @@ include 'auth.php';
                                                 </div>
 
                                                 <!-- Favicon Upload -->
-                                                <div class="mb-3">
+                                                <div class="col-md-6 mb-3">
                                                     <label for="favicon" class="form-label">Favicon</label>
                                                     <input type="file" class="form-control" id="favicon" name="favicon" accept="image/x-icon,image/vnd.microsoft.icon,.ico">
                                                     <small class="text-muted">Recommended format: .ico, size: 32x32 or 16x16 pixels</small>
