@@ -5,14 +5,19 @@ include 'class/include.php';
 $company = new CompanyProfile();
 $activeCompany = $company->getActiveCompany();
 $logoPath = 'assets/images/logo.png'; // Default logo path
-$themeColor = '#3b5de7'; // Default theme color
+$themeColor = '#5b73e8'; // Default theme color
+$companyName = '';
 
-if ($activeCompany) {
-    if (!empty($activeCompany['image_name'])) {
-        $logoPath = 'uploads/company-logos/' . $activeCompany['image_name'];
+if (!empty($activeCompany[0])) {
+    $companyData = $activeCompany[0];
+    if (!empty($companyData['image_name'])) {
+        $logoPath = 'uploads/company-logos/' . $companyData['image_name'];
     }
-    if (!empty($activeCompany['theme'])) {
-        $themeColor = $activeCompany['theme'];
+    if (!empty($companyData['theme'])) {
+        $themeColor = $companyData['theme'];
+    }
+    if (!empty($companyData['name'])) {
+        $companyName = $companyData['name'];
     }
 }
 ?>
@@ -21,7 +26,7 @@ if ($activeCompany) {
 
 <head>
     <meta charset="utf-8" />
-    <title>Login | <?php echo $activeCompany ? $activeCompany['name'] : 'Admin'; ?></title>
+    <title>Login | <?php echo $companyName; ?></title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta content="#" name="description" />
     <meta content="Themesbrand" name="author" />

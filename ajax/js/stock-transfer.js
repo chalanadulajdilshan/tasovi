@@ -38,7 +38,6 @@ jQuery(document).ready(function () {
             { data: "key", title: "#ID" },
             { data: "code", title: "Code" },
             { data: "name", title: "Name" },
-            { data: "brand", title: "Brand" },
             { data: "category", title: "Category" },
             { data: "list_price", title: "List Price" },
             { data: "invoice_price", title: "Invoice Price" },
@@ -52,13 +51,6 @@ jQuery(document).ready(function () {
                     return stock ? parseInt(stock.quantity) : 0;
                 }
             },
-            { data: "discount", title: "Discount %" },
-            {
-                data: "status_label",
-                title: "Status",
-                orderable: false,
-                searchable: false
-            }
         ],
         order: [[0, 'desc']],
         pageLength: 100

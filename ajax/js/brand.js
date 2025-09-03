@@ -141,13 +141,14 @@ jQuery(document).ready(function () {
         $('#category_id').prop('selectedIndex', 0);
         $("#create").show();
     });
- 
+
 
     // Populate form from modal click
     $(document).on('click', '.select-brand', function () {
         $('#brand_id').val($(this).data('id'));
         $('#category_id').val($(this).data('category'));
         $('#name').val($(this).data('name'));
+        $('#country_id').val($(this).data('country'));
         $('#discount').val($(this).data('discount'));
         $('#remark').val($(this).data('remark'));
 
