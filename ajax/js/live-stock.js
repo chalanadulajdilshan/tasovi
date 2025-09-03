@@ -85,7 +85,7 @@ jQuery(document).ready(function () {
                         statusText = 'Out of Stock';
                         statusClass = 'danger';
                     } else if (isLowStock) {
-                        statusText = 'Low Stock';
+                        statusText = 'Re-order';
                         statusClass = 'warning';
                     } else {
                         statusText = 'In Stock';

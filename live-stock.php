@@ -54,9 +54,8 @@ $departments = $DEPARTMENT_MASTER->all();
                                         <div class="col-md-3">
                                             <label for="filter_department_id" class="form-label">Filter by Department</label>
                                             <select class="form-control select2" id="filter_department_id" name="filter_department_id">
-                                                <option value="">All Departments</option>
                                                 <?php foreach ($departments as $department): ?>
-                                                    <option value="<?php echo $department['id']; ?>">
+                                                    <option value="<?php echo $department['id']; ?>" <?php echo ($department['id'] == 1) ? 'selected' : ''; ?>>
                                                         <?php echo htmlspecialchars($department['name']); ?>
                                                     </option>
                                                 <?php endforeach; ?>
@@ -109,10 +108,10 @@ $departments = $DEPARTMENT_MASTER->all();
     <script src="assets/libs/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
     <script src="assets/libs/datatables.net-responsive/js/dataTables.responsive.min.js"></script>
     <script src="assets/libs/datatables.net-responsive-bs4/js/responsive.bootstrap4.min.js"></script>
-    
+
     <!-- include main js  -->
     <?php include 'main-js.php' ?>
-    
+
     <!-- Live Stock JS -->
     <script src="ajax/js/live-stock.js"></script>
 
