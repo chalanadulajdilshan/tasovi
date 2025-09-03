@@ -82,6 +82,7 @@ jQuery(document).ready(function () {
 
     // BIND BUTTON CLICK
     $('#addItemBtn').click(addItem);
+    $('#serviceItemBtn').click(addServiceItem);
 
 
 
@@ -308,6 +309,16 @@ jQuery(document).ready(function () {
 
         $('#all_itemMaster tbody').html(tbody);
         renderPaginationControls(page);
+    }
+
+    function addServiceItem() {
+        // Set service item code
+        $('#itemCode').val('TI/SERVICE');
+        $('#item_id').val('0');
+
+        $('#itemName').prop('readonly', false).val('').focus();
+        $('#itemQty').val(1);
+        $('#itemQty').prop('readonly', true);
     }
 
     //GET DATA ARN VISE
@@ -762,7 +773,7 @@ jQuery(document).ready(function () {
             const code = $(this).find('td:eq(0)').text().trim();
             const name = $(this).find('td:eq(1)').text().trim();
             const price = parseFloat($(this).find('td:eq(2)').text()) || 0;
-            const qty = parseFloat($(this).find('td:eq(3)').text()) || 0;
+            let qty = parseFloat($(this).find('td:eq(3)').text()) || 0;
             const discount = parseFloat($(this).find('td:eq(4)').text()) || 0;
             const totalItem = parseFloat($(this).find('td:eq(6)').text()) || 0;
             const item_id = $(this).find('input[name="item_id[]"]').val();
@@ -808,7 +819,7 @@ jQuery(document).ready(function () {
             $('#customer_name').focus();
             return;
         }
-        if ($('#customer_code').val()=="CM/01") {
+        if ($('#customer_code').val()=="CM/01" && $('#payment_type').val() == '2') {
             swal({
                 title: "Error!",
                 text: "Cash sales customer is not allowed to create an credit invoice.",
@@ -846,7 +857,7 @@ jQuery(document).ready(function () {
                 chequeDate = dateInput ? dateInput : '1000-01-01'; // Use default date if not provided
             }
 
-            if (!methodId) {
+            if (!methodId &&  $('#customer_id').val() == 'CM/01') {
                 swal({
                     title: "Error!",
                     text: "Please select a payment method in all rows.",
@@ -857,7 +868,7 @@ jQuery(document).ready(function () {
                 return false; // break out of each
             }
 
-            if (amount <= 0) {
+            if (amount <= 0 &&  $('#customer_id').val() == 'CM/01') {
                 swal({
                     title: "Error!",
                     text: "Please enter a valid amount in all rows.",
@@ -1089,6 +1100,8 @@ jQuery(document).ready(function () {
 
     //ADD ITEM TO INVOICE TABLE
     function addItem() {
+        $('#itemQty').prop('readonly', false);
+
         const item_id = $('#item_id').val().trim();
         const code = $('#itemCode').val().trim();
         const name = $('#itemName').val().trim();
@@ -1099,8 +1112,7 @@ jQuery(document).ready(function () {
         
         let availableQty = parseFloat($('#available_qty').val()) || 0;
 
-
-        if (!code || !name || price <= 0 || qty <= 0) {
+        if (code !== 'TI/SERVICE' && (!code || !name || price <= 0 || qty <= 0)) {
             swal({
                 title: "Error!",
                 text: "Please enter valid item details including quantity and price.",
@@ -1109,7 +1121,7 @@ jQuery(document).ready(function () {
                 showConfirmButton: false
             });
             return;
-        } else if (qty > availableQty) {
+        } else if (code !== 'TI/SERVICE' && qty > availableQty) {
             swal({
                 title: "Error!",
                 text: "Transfer quantity cannot exceed available quantity!",
@@ -1119,6 +1131,7 @@ jQuery(document).ready(function () {
             });
             return;
         }
+        
 
         // Find the active ARN row
         const activeArn = $('.arn-row.active-arn').first();

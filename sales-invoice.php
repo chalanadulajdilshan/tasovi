@@ -305,6 +305,12 @@ include './auth.php';
                                                             style="display: <?php echo $hasViewAllItemsPermission ? 'inline-block' : 'none'; ?>">
                                                             <i class="uil uil-search me-1"></i>
                                                         </button>
+                                                        <button class="btn btn-warning" type="button"
+                                                            data-bs-toggle="tooltip" id="serviceItemBtn"
+                                                            title="Service Item"
+                                                            style="color: #fff">
+                                                            <i class="uil uil-wrench"></i>
+                                                        </button>
                                                     </div>
                                                 </div>
 
@@ -550,7 +556,7 @@ include './auth.php';
                                                                 value="Outstanding Invoice Amount" disabled>
                                                         </div>
                                                         <div class="col-5">
-                                                            <input type="text" class="form-control" value="0.00"
+                                                            <input type="text" id="outstandingInvoiceAmount" class="form-control" value="0.00"
                                                                 disabled>
                                                         </div>
                                                     </div>
@@ -561,7 +567,7 @@ include './auth.php';
                                                                 value="Return Cheque Amount" disabled>
                                                         </div>
                                                         <div class="col-5">
-                                                            <input type="text" class="form-control" value="0.00"
+                                                            <input type="text" id="returnChequeAmount" class="form-control" value="0.00"
                                                                 disabled>
                                                         </div>
                                                     </div>
@@ -572,7 +578,7 @@ include './auth.php';
                                                                 value="Pending Cheque Amount" disabled>
                                                         </div>
                                                         <div class="col-5">
-                                                            <input type="text" class="form-control" value="0.00"
+                                                            <input type="text" id="pendingChequeAmount" class="form-control" value="0.00"
                                                                 disabled>
                                                         </div>
                                                     </div>
@@ -583,7 +589,7 @@ include './auth.php';
                                                                 value="PSD Cheque Settlements" disabled>
                                                         </div>
                                                         <div class="col-5">
-                                                            <input type="text" class="form-control" value="0.00"
+                                                            <input type="text" id="psdChequeSettlements" class="form-control" value="0.00"
                                                                 disabled>
                                                         </div>
                                                     </div>
@@ -595,7 +601,7 @@ include './auth.php';
                                                                 value="Total" disabled>
                                                         </div>
                                                         <div class="col-5">
-                                                            <input type="text" class="form-control fw-bold" value="0.00"
+                                                            <input type="text" id="totalAmount" class="form-control fw-bold" value="0.00"
                                                                 disabled>
                                                         </div>
                                                     </div>

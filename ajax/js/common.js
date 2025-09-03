@@ -104,9 +104,8 @@ jQuery(document).ready(function () {
                 { data: "name", title: "Name" },
                 { data: "mobile_number", title: "Mobile" },
                 { data: "email", title: "Email" },
-                { data: "category", title: "Category" },
-                { data: "province", title: "Province" },
                 { data: "credit_limit", title: "Credit Limit" },
+                { data: "outstanding", title: "Outstanding" },
                 { data: "vat_no", title: "Is Vat" },
                 { data: "status_label", title: "Status" }
             ],
@@ -124,10 +123,21 @@ jQuery(document).ready(function () {
                 $('#customer_address').val(data.address);
                 $('#customer_mobile').val(data.mobile_number);
                 $('#customerModal').modal('hide');
+                $('#outstandingInvoiceAmount').val(data.outstanding);
+
+                let total = 
+                    (parseFloat(toNumber($('#outstandingInvoiceAmount').val())) || 0) +
+                    (parseFloat(toNumber($('#returnChequeAmount').val())) || 0) +
+                    (parseFloat(toNumber($('#pendingChequeAmount').val())) || 0) +
+                    (parseFloat(toNumber($('#psdChequeSettlements').val())) || 0);
+
+                $('#totalAmount').val(total.toFixed(2)); 
             }
         });
     }
-
+    function toNumber(val) {
+        return parseFloat(val.replace(/,/g, '')) || 0;
+    }
 
 
     //get first row cash sales customer
