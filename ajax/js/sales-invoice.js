@@ -294,8 +294,6 @@ jQuery(document).ready(function () {
                 tbody += `<tr class="table-primary">
                     <td>${rowIndex}</td>
                     <td>${item.code} - ${item.name}</td> 
-                    <td>${item.brand}</td>
-                    <td>${item.category}</td>
                     <td>${item.total_available_qty}</td>
                     <td>${item.list_price}</td>
                     <td>${item.invoice_price}</td>
@@ -414,22 +412,20 @@ jQuery(document).ready(function () {
     $(document).on('click', '#all_itemMaster tbody tr', function () {
         let mainRow = $(this).closest('tr.table-primary'); // ✅ pick the clicked row
 
-        let itemText = mainRow.find('td').eq(1).text().trim();
-        let parts = itemText.split(' - ');
-        let itemCode = parts[0] || '';
-        let itemName = parts[1] || '';
-        let itemPrice = mainRow.find('td').eq(6).text().trim();
-        let availableQty = mainRow.find('td').eq(4).text().trim();
-        let item_id = mainRow.find('td').eq(7).text().trim();
-        // Store available qty in map and hidden field
+        let itemCode = mainRow.find('td').eq(1).text().trim().split(' - ')[0] || '';
+        let itemName = mainRow.find('td').eq(1).text().trim().split(' - ')[1] || '';
+        let availableQty = mainRow.find('td').eq(2).text().trim();
+        let itemPrice = mainRow.find('td').eq(3).text().trim(); // invoice_price is at index 4
+        let itemSalePrice = mainRow.find('td').eq(4).text().trim(); // invoice_price is at index 4
+        let item_id = mainRow.find('td').eq(5).text().trim(); // id is at index 5 and hidden
 
         $('#available_qty').val(availableQty);
 
         $('#itemCode').val(itemCode);
         $('#itemName').val(itemName);
-
         $('#item_id').val(item_id);
         $('#itemPrice').val(itemPrice);
+        $('#itemSalePrice').val(itemSalePrice);
 
         calculatePayment();
 
@@ -812,6 +808,18 @@ jQuery(document).ready(function () {
             $('#customer_name').focus();
             return;
         }
+        if ($('#customer_code').val()=="CM/01") {
+            swal({
+                title: "Error!",
+                text: "Cash sales customer is not allowed to create an credit invoice.",
+                type: 'error',
+                timer: 3000,
+                showConfirmButton: false
+            });
+            $('#customer_code').focus();
+            return;
+        }
+
 
 
 
@@ -870,6 +878,17 @@ jQuery(document).ready(function () {
                 cheque_date: chequeDate || null
             });
         });
+
+        if ($('input[name="payment_type"]:checked').val() == '1' &&  $('#customer_id').val() == 'CM/01') {
+            swal({
+                title: "Error!",
+                text: "Credit payment is not allowed for Cash Customers.",
+                type: "error",
+                timer: 2000,
+                showConfirmButton: false
+            });
+            return false;
+        }
 
 
         if (totalAmount !== finalTotal && $('input[name="payment_type"]:checked').val() == '1') {

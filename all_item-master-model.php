@@ -117,11 +117,9 @@
                                     <tr>
                                         <th>#id</th>
                                         <th>Item</th>
-                                        <th>Note</th>
                                         <th>All Qty</th>
-                                        <th>Group</th>
-                                        <th>Brand</th>
-                                        <th>Category</th>
+                                        <th>List Price</th>
+                                        <th>Sale Price</th>
                                     </tr>
                                 </thead>
                                 <tbody></tbody>

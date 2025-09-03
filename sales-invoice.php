@@ -63,7 +63,7 @@ include './auth.php';
                                     <i class="uil uil-ban me-1"></i> Cancel
                                 </a>
                             <?php endif; ?>
-                            
+
                         </div>
 
                         <div class="col-md-4 text-md-end text-start mt-3 mt-md-0">
@@ -182,15 +182,15 @@ include './auth.php';
                                                         data-bs-target="#customerModal" title="Search Customer">
                                                         <i class="uil uil-search"></i>
                                                     </button>
-                                                    <?php 
+                                                    <?php
                                                     $hasAddCustomerPermission = false;
                                                     if (isset($_SESSION['id'])) {
                                                         $specialPermission = new SpecialUserPermission();
                                                         $hasAddCustomerPermission = $specialPermission->hasAccess($_SESSION['id'], 'add_customer');
                                                     }
                                                     ?>
-                                                    <button class="btn btn-danger" type="button" title="Add New Customer" 
-                                                        data-bs-toggle="modal" 
+                                                    <button class="btn btn-danger" type="button" title="Add New Customer"
+                                                        data-bs-toggle="modal"
                                                         data-bs-target="#customerAddModal"
                                                         style="display: <?php echo $hasAddCustomerPermission ? 'inline-block' : 'none'; ?>">
                                                         <i class="uil uil-plus"></i>
@@ -278,20 +278,29 @@ include './auth.php';
                                                     <div class="input-group">
                                                         <input id="itemCode" type="text" class="form-control"
                                                             placeholder="Item Code" readonly>
-                                                        <button class="btn btn-info" type="button"
-                                                            data-bs-toggle="modal" data-bs-target="#item_master">
+
+                                                        <?php
+                                                        $hasViewAllItemsPermission = false;
+                                                        if (isset($_SESSION['id'])) {
+                                                            $specialPermission = new SpecialUserPermission();
+                                                            $hasViewAllItemsPermission = $specialPermission->hasAccess($_SESSION['id'], 'item-Search-Btn');
+                                                        }
+                                                        ?>
+                                                        <button class="btn btn-info" type="button" id="item-Search-Btn"
+                                                            data-bs-toggle="modal" data-bs-target="#item_master"
+                                                            style="display: <?php echo $hasViewAllItemsPermission ? 'inline-block' : 'none'; ?>">
                                                             <i class="uil uil-search me-1"></i>
                                                         </button>
-                                                        <?php 
+                                                        <?php
                                                         $hasViewAllItemsPermission = false;
                                                         if (isset($_SESSION['id'])) {
                                                             $specialPermission = new SpecialUserPermission();
                                                             $hasViewAllItemsPermission = $specialPermission->hasAccess($_SESSION['id'], 'view_all_items');
                                                         }
                                                         ?>
-                                                        <button class="btn btn-danger view-all-items-btn" type="button" 
-                                                            data-bs-toggle="modal" 
-                                                            name="all-item-master" 
+                                                        <button class="btn btn-danger view-all-items-btn" type="button"
+                                                            data-bs-toggle="modal"
+                                                            name="all-item-master"
                                                             data-bs-target="#all_item_master"
                                                             style="display: <?php echo $hasViewAllItemsPermission ? 'inline-block' : 'none'; ?>">
                                                             <i class="uil uil-search me-1"></i>
@@ -394,7 +403,7 @@ include './auth.php';
                                                         <tr>
                                                             <th>Code</th>
                                                             <th>Name</th>
-                                                             <th>List Price</th>
+                                                            <th>List Price</th>
                                                             <th>Qty</th>
                                                             <th>Discount</th>
                                                             <th>Sale Price</th>
@@ -478,7 +487,7 @@ include './auth.php';
 
                                                 <div class="col-md-3">
 
-                                                
+
                                                 </div>
 
                                                 <div class="col-md-4 mb-4">
@@ -526,7 +535,7 @@ include './auth.php';
                                                                 <input type="text" class="form-control  fw-bold"
                                                                     id="finalTotal" value="0.00" disabled>
                                                             </div>
-                                                            
+
                                                         </div>
                                                     </div>
                                                 </div>
