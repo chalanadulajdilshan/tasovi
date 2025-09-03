@@ -68,6 +68,8 @@ if (isset($_POST['create'])) {
     // Grand total = net total + VAT
     $grandTotal = $netTotal + $tax;
 
+
+
     // Create invoice
     $SALES_INVOICE = new SalesInvoice(NULL);
 
@@ -90,6 +92,10 @@ if (isset($_POST['create'])) {
     $SALES_INVOICE->remark = !empty($_POST['remark']) ? $_POST['remark'] : null;
 
     $invoiceResult = $SALES_INVOICE->create();
+
+    if ($paymentType == 2) {
+        $SALES_INVOICE->updateCustomerOutstanding($_POST['customer_id'], $grandTotal, true);
+    }
 
     $DOCUMENT_TRACKING = new DocumentTracking(null);
 

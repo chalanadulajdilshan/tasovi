@@ -797,7 +797,7 @@ jQuery(document).ready(function () {
         }
 
         const customerName = $('#customer_name').val().trim();
-        if (!customerName) {
+        if (!customerName ) {
             swal({
                 title: "Error!",
                 text: "Please select a customer before creating an invoice.",
@@ -808,7 +808,7 @@ jQuery(document).ready(function () {
             $('#customer_name').focus();
             return;
         }
-        if ($('#customer_code').val()=="CM/01") {
+        if ($('#customer_code').val()=="CM/01" && $('input[name="payment_type"]:checked').val() == '2' ) {
             swal({
                 title: "Error!",
                 text: "Cash sales customer is not allowed to create an credit invoice.",
@@ -819,9 +819,6 @@ jQuery(document).ready(function () {
             $('#customer_code').focus();
             return;
         }
-
-
-
 
         let payments = [];
         let finalTotal = parseFloat($('#modalFinalTotal').val()) || 0;
@@ -846,7 +843,7 @@ jQuery(document).ready(function () {
                 chequeDate = dateInput ? dateInput : '1000-01-01'; // Use default date if not provided
             }
 
-            if (!methodId) {
+            if (!methodId && $('input[name="payment_type"]:checked').val() == '1') {
                 swal({
                     title: "Error!",
                     text: "Please select a payment method in all rows.",
@@ -857,7 +854,7 @@ jQuery(document).ready(function () {
                 return false; // break out of each
             }
 
-            if (amount <= 0) {
+            if (amount <= 0 && $('input[name="payment_type"]:checked').val() == '1' ) {
                 swal({
                     title: "Error!",
                     text: "Please enter a valid amount in all rows.",
@@ -944,6 +941,8 @@ jQuery(document).ready(function () {
                         console.error("Item invoice save failed");
                     }
                 });
+                
+alert('ertertetert') ;
 
                 // Save DAG items
                 $.ajax({
