@@ -124,7 +124,7 @@ include 'auth.php';
                                                 <div class="col-md-3">
                                                     <label class="form-label" for="itemCode">Brand Name </label>
                                                     <div class="input-group mb-3">
-                                                        <input id="name" name="name"  onkeyup="toUpperCaseInput(this)"  type="text" class="form-control"
+                                                        <input id="name" name="name" onkeyup="toUpperCaseInput(this)"  type="text" class="form-control"
                                                             placeholder="Enter Brand Name">
                                                         <button class="btn btn-info" type="button"
                                                             data-bs-toggle="modal"
