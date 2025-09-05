@@ -61,18 +61,6 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                 </a>
                             <?php endif; ?>
 
-                            <?php if ($PERMISSIONS['edit_page']): ?>
-                                <a href="#" class="btn btn-warning" id="update">
-                                    <i class="uil uil-edit me-1"></i> Update
-                                </a>
-                            <?php endif; ?>
-
-                            <?php if ($PERMISSIONS['delete_page']): ?>
-                                <a href="#" class="btn btn-danger delete-recipt  " style="display:none">
-                                    <i class="uil uil-trash-alt me-1"></i> Delete
-                                </a>
-                            <?php endif; ?>
-
                         </div>
 
                         <div class="col-md-4 text-md-end text-start mt-3 mt-md-0">
@@ -117,6 +105,8 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                             <div class="row">
                                                 <!-- hidden customer id -->
                                                 <input type="hidden" id="customer_id">
+
+
                                                 <div class="col-md-2">
                                                     <label for="reciptNo" class="form-label">Recipt No</label>
                                                     <div class="input-group mb-3">
@@ -183,9 +173,9 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                                 </div>
 
                                                 <div class="col-md-7">
-                                                    <label for="creditName" class="form-label"># Enter Remark</label>
+                                                    <label for="remark" class="form-label"># Enter Remark</label>
                                                     <div class="input-group mb-3">
-                                                        <input id="creditName" name="creditName" type="text"
+                                                        <input id="remark" name="remark" type="text"
                                                             class="form-control" placeholder="">
                                                     </div>
                                                 </div>
@@ -203,7 +193,7 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                             <div class="col-md-7 d-flex">
                                 <div class="card w-100 h-100">
                                     <div class="p-4">
-                                        <form id="form-data" autocomplete="off">
+                                        <form id="form-data-cheque" autocomplete="off">
                                             <div class="row">
                                                 <div class="row align-items-center mb-3">
                                                     <div class="col-md-6">
@@ -339,7 +329,7 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                         <div class="row mt-4">
                             <div class="  col-md-12">
                                 <div class="card p-4">
-                                    <form id="form-data-3" autocomplete="off">
+                                    <form id="form-data-invoice" autocomplete="off">
 
                                         <div class="row align-items-center mb-3">
                                             <div class="col-md-2">
@@ -407,42 +397,44 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                             <div class="col-md-8"></div>
 
                                             <div class="col-md-4">
-                                                <div class="  p-2 border rounded bg-light" style="max-width: 600px;">
-                                                    <div class="row mb-2">
-                                                        <div class="col-7">
-                                                            <input type="text" class="form-control  " value="Sub Total"
-                                                                disabled>
+                                                <form id="form-data-invoice" autocomplete="off">
+                                                    <div class="  p-2 border rounded bg-light" style="max-width: 600px;">
+                                                        <div class="row mb-2">
+                                                            <div class="col-7">
+                                                                <input type="text" class="form-control  " value="Sub Total"
+                                                                    disabled>
+                                                            </div>
+                                                            <div class="col-5">
+                                                                <input type="text" class="form-control" id="finalTotal"
+                                                                    value="0.00" disabled>
+                                                            </div>
                                                         </div>
-                                                        <div class="col-5">
-                                                            <input type="text" class="form-control" id="finalTotal"
-                                                                value="0.00" disabled>
+
+                                                        <div class="row mb-2">
+                                                            <div class="col-7">
+                                                                <input type="text" class="form-control  "
+                                                                    value="Discount Total:" disabled>
+                                                            </div>
+                                                            <div class="col-5">
+                                                                <input type="text" class="form-control" id="disTotal"
+                                                                    value="0.00" disabled>
+                                                            </div>
+                                                        </div>
+
+
+                                                        <div class="row mb-2">
+                                                            <div class="col-7">
+                                                                <input type="text" class="form-control   fw-bold"
+                                                                    value="Grand Total:" disabled>
+                                                            </div>
+                                                            <div class="col-5">
+                                                                <input type="text" class="form-control  fw-bold"
+                                                                    id="grandTotal" value="0.00" disabled>
+                                                            </div>
                                                         </div>
                                                     </div>
-
-                                                    <div class="row mb-2">
-                                                        <div class="col-7">
-                                                            <input type="text" class="form-control  "
-                                                                value="Discount Total:" disabled>
-                                                        </div>
-                                                        <div class="col-5">
-                                                            <input type="text" class="form-control" id="disTotal"
-                                                                value="0.00" disabled>
-                                                        </div>
-                                                    </div>
-
-
-                                                    <div class="row mb-2">
-                                                        <div class="col-7">
-                                                            <input type="text" class="form-control   fw-bold"
-                                                                value="Grand Total:" disabled>
-                                                        </div>
-                                                        <div class="col-5">
-                                                            <input type="text" class="form-control  fw-bold"
-                                                                id="grandTotal" value="0.00" disabled>
-                                                        </div>
-                                                    </div>
-                                                </div>
                                             </div>
+
                                         </div>
                                     </form>
                                 </div>
@@ -541,10 +533,6 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
 
             <!-- include main js  -->
             <?php include 'main-js.php' ?>
-
-            <!-- App js -->
-            <script src="assets/js/app.js"></script>
-            <script src="https://code.jquery.com/ui/1.14.1/jquery-ui.js"></script>
             <script>
                 $('#quotation_table').DataTable();
                 $(function() {
