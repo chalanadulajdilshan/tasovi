@@ -40,6 +40,7 @@ columns: [
     { data: 'name' },
     { data: 'mobile_number' },
     { data: 'email' },
+    { data: 'category' },
     { data: 'credit_limit' },  // Credit Discount
     { data: 'outstanding' },   // Outstanding amount
     { 
