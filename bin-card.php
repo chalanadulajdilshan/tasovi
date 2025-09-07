@@ -160,6 +160,7 @@ include './auth.php';
                                     <div class="col-md-3">
                                         <label class="form-label" for="selectDays">Select Days</label>
                                         <select class="form-select" id="selectDays">
+                                            <option value="0">-- Select Days -- </option>
                                             <?php
                                             $DEFAULT_DATA = new DefaultData();
                                             foreach ($DEFAULT_DATA->Days() as $key => $days) {

@@ -39,11 +39,15 @@ try {
                     si.invoice_no,
                     si.invoice_date,
                     si.customer_name,
-                    si.grand_total as invoice_amount
+                    si.grand_total as invoice_amount,
+                    COALESCE(si.outstanding_settle_amount, 0) as paid_amount,
+                    (si.grand_total - COALESCE(si.outstanding_settle_amount, 0)) as outstanding
                   FROM 
                     sales_invoice si
                   WHERE 
-                    si.status = 'active'";  // Add status check to filter only active invoices
+                    si.status = 'active' AND
+                    si.grand_total > 0 AND
+                    si.payment_type = 2";  // Only show credit invoices (payment_type = 2)
 
         // Add conditions based on filter type
         if ($filterType === 'customer') {
@@ -57,23 +61,19 @@ try {
 
         $result = $db->readQuery($query);
         if (!$result) {
-            throw new Exception('Error executing query: ' . $db->getError());
+            throw new Exception('Error executing query: ' . mysqli_error($db->DB_CON));
         }
         $data = [];
 
         while ($row = mysqli_fetch_assoc($result)) {
-            // Get total paid amount for this invoice using InvoicePayment class
-            $invoicePayment = new InvoicePayment();
-            $paidAmount = $invoicePayment->getTotalPaidAmount($row['invoice_no']);
-            $outstanding = (float)$row['invoice_amount'] - $paidAmount;
-
+            // Add invoice data to results
             $data[] = [
                 'invoice_no' => $row['invoice_no'],
                 'invoice_date' => $row['invoice_date'],
                 'customer_name' => $row['customer_name'],
                 'invoice_amount' => (float)$row['invoice_amount'],
-                'paid_amount' => $paidAmount,
-                'outstanding' => $outstanding
+                'paid_amount' => (float)$row['paid_amount'],
+                'outstanding' => (float)$row['outstanding']
             ];
         }
 

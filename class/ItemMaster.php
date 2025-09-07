@@ -244,6 +244,7 @@ class ItemMaster
         $status = $request['status'] ?? null;
         $stockOnly = isset($request['stock_only']) ? filter_var($request['stock_only'], FILTER_VALIDATE_BOOLEAN) : false;
         $departmentId = isset($request['department_id']) ? (int)$request['department_id'] : 0;
+        $expandDepartments = isset($request['expand_departments']) ? filter_var($request['expand_departments'], FILTER_VALIDATE_BOOLEAN) : false;
 
         $where = "WHERE 1=1";
         $join = "";
@@ -298,7 +299,128 @@ class ItemMaster
             $join = " LEFT JOIN stock_master sm2 ON im.id = sm2.item_id AND sm2.department_id = $fromDepartmentId";
         }
 
-        // Total records (no filter)
+        // If expanding departments (All departments as separate rows)
+        if ($expandDepartments && $departmentId === 0) {
+            // Build items base query with filters, but no LIMIT
+            $itemsSql = "
+                SELECT 
+                    im.*, 
+                    IFNULL((SELECT SUM(quantity) FROM stock_master WHERE item_id = im.id), 0) as total_qty 
+                FROM item_master im
+                $join
+                $where
+                GROUP BY im.id
+            ";
+
+            // Apply stock-only filter on total quantity if no specific department is chosen
+            if ($stockOnly) {
+                $itemsSql .= " HAVING total_qty > 0";
+            }
+
+            // Execute items query
+            $itemsQuery = $db->readQuery($itemsSql);
+            $items = [];
+            $itemIds = [];
+            while ($row = mysqli_fetch_assoc($itemsQuery)) {
+                $items[] = $row;
+                $itemIds[] = (int)$row['id'];
+            }
+
+            // Prefetch aggregated department stocks for selected items
+            $deptStockMap = [];
+            if (!empty($itemIds)) {
+                $idsStr = implode(',', array_map('intval', $itemIds));
+                $stockAggSql = "
+                    SELECT item_id, department_id, SUM(quantity) AS quantity
+                    FROM stock_master
+                    WHERE item_id IN ($idsStr)
+                    GROUP BY item_id, department_id
+                ";
+                $stockAggResult = $db->readQuery($stockAggSql);
+                while ($sRow = mysqli_fetch_assoc($stockAggResult)) {
+                    $iid = (int)$sRow['item_id'];
+                    if (!isset($deptStockMap[$iid])) $deptStockMap[$iid] = [];
+                    $deptStockMap[$iid][] = [
+                        'department_id' => (int)$sRow['department_id'],
+                        'quantity' => (float)$sRow['quantity']
+                    ];
+                }
+            }
+
+            // Expand items into per-department rows
+            $expanded = [];
+            $key = 1;
+            foreach ($items as $row) {
+                $CATEGORY = new CategoryMaster($row['category']);
+                $BRAND = new Brand($row['brand']);
+
+                $deptStocks = $deptStockMap[$row['id']] ?? [];
+                // If stockOnly, filter out zero/negative quantities
+                if ($stockOnly) {
+                    $deptStocks = array_values(array_filter($deptStocks, function ($ds) {
+                        return (float)$ds['quantity'] > 0;
+                    }));
+                }
+
+                // If there are no department stocks and stockOnly is false, still show a row with 0 qty per department? Here we skip if none.
+                foreach ($deptStocks as $ds) {
+                    $nestedData = [
+                        "key" => $key,
+                        "id" => $row['id'],
+                        "code" => $row['code'],
+                        "name" => $row['name'],
+                        "pattern" => $row['pattern'],
+                        "size" => $row['size'],
+                        "group" => $row['group'],
+                        "re_order_level" => $row['re_order_level'],
+                        "re_order_qty" => $row['re_order_qty'],
+                        "brand_id" => $row['brand'],
+                        "brand" => $BRAND->name,
+                        "category_id" => $row['category'],
+                        "category" => $CATEGORY->name,
+                        "list_price" => $row['list_price'],
+                        "invoice_price" => $row['invoice_price'],
+                        "discount" => $row['discount'],
+                        "stock_type" => $row['stock_type'],
+                        "note" => $row['note'],
+                        "status" => $row['is_active'],
+                        // For expanded rows, available_qty is the department quantity
+                        "qty" => $row['total_qty'],
+                        "available_qty" => (float)$ds['quantity'],
+                        // department_stock contains only this department
+                        "department_stock" => [
+                            [
+                                'department_id' => (int)$ds['department_id'],
+                                'quantity' => (float)$ds['quantity']
+                            ]
+                        ],
+                        // Helper fields used by frontend to render department row
+                        "row_department_id" => (int)$ds['department_id'],
+                        "row_department_qty" => (float)$ds['quantity'],
+                        "status_label" => $row['is_active'] == 1
+                            ? '<span class="badge bg-soft-success font-size-12">Active</span>'
+                            : '<span class="badge bg-soft-danger font-size-12">Inactive</span>'
+                    ];
+
+                    $expanded[] = $nestedData;
+                    $key++;
+                }
+            }
+
+            // Pagination for expanded rows
+            $recordsFiltered = count($expanded);
+            $recordsTotal = $recordsFiltered; // For simplicity
+            $pagedData = array_slice($expanded, $start, $length);
+
+            return [
+                "draw" => intval($request['draw']),
+                "recordsTotal" => intval($recordsTotal),
+                "recordsFiltered" => intval($recordsFiltered),
+                "data" => $pagedData
+            ];
+        }
+
+        // Total records (no filter) - non-expanded flow
         $totalSql = "SELECT COUNT(*) as total FROM item_master";
         $totalQuery = $db->readQuery($totalSql);
         $totalRow = mysqli_fetch_assoc($totalQuery);
@@ -330,9 +452,9 @@ class ItemMaster
             $CATEGORY = new CategoryMaster($row['category']);
             $BRAND = new Brand($row['brand']);
 
-            // Get department stock information
+            // Get department stock information (aggregate by department)
             $departmentStocks = [];
-            $stockQuery = "SELECT department_id, quantity FROM stock_master WHERE item_id = {$row['id']}";
+            $stockQuery = "SELECT department_id, SUM(quantity) AS quantity FROM stock_master WHERE item_id = {$row['id']} GROUP BY department_id";
             $stockResult = $db->readQuery($stockQuery);
             while ($stockRow = mysqli_fetch_assoc($stockResult)) {
                 $departmentStocks[] = [

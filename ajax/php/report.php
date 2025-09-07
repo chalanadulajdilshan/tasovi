@@ -18,7 +18,7 @@ if (isset($_POST['action']) && $_POST['action'] == 'loard_price_Control') {
     exit;
 }
 
-//profit table loard
+//profit table load
 if (isset($_POST['action']) && $_POST['action'] === 'load_profit_report') {
     // Collect filters into an array
     $filters = [
@@ -27,12 +27,18 @@ if (isset($_POST['action']) && $_POST['action'] === 'load_profit_report') {
         'group_id' => isset($_POST['group_id']) ? (int) $_POST['group_id'] : 0,
         'department_id' => isset($_POST['department_id']) ? (int) $_POST['department_id'] : 0,
         'item_code' => isset($_POST['item_code']) ? trim($_POST['item_code']) : '',
+        'item_name' => isset($_POST['item_name']) ? trim($_POST['item_name']) : '',
         'customer_id' => isset($_POST['customer_id']) ? (int) $_POST['customer_id'] : 0,
         'company_id' => isset($_POST['company_id']) ? (int) $_POST['company_id'] : 0,
         'from_date' => isset($_POST['from_date']) ? $_POST['from_date'] : '',
         'to_date' => isset($_POST['to_date']) ? $_POST['to_date'] : '',
         'all_customers' => isset($_POST['all_customers']) ? $_POST['all_customers'] : false
     ];
+    
+    // If item name is provided but not item code, we'll use that for filtering
+    if (empty($filters['item_code']) && !empty($filters['item_name'])) {
+        // No need to set item_code here as we'll use item_name in the query
+    }
 
     // Load profit data
     $salesInvoice = new SalesInvoice(NULL);

@@ -134,18 +134,19 @@ class SalesInvoice
     }
 
     // Update customer outstanding balance
-    public function updateCustomerOutstanding($customerId, $amount, $isCredit = false) {
+    public function updateCustomerOutstanding($customerId, $amount, $isCredit = false)
+    {
         $db = new Database();
-        
+
         // Determine whether to add or subtract the amount based on credit/debit
         $operator = $isCredit ? '+' : '-';
-        
+
         $query = "UPDATE `customer_master` 
                  SET `outstanding` = GREATEST(0, `outstanding` $operator $amount)
                  WHERE `id` = '{$customerId}'";
-        
+
         $result = $db->readQuery($query);
-        
+
         return $result ? true : false;
     }
 
@@ -337,36 +338,50 @@ class SalesInvoice
     {
         $db = new Database();
         $conditions = [];
+        $join = "";
 
         // Filter: Customer
         if (empty($filters['all_customers']) && !empty($filters['customer_id'])) {
-            $conditions[] = "`customer_id` = '" . $db->escapeString($filters['customer_id']) . "'";
+            $conditions[] = "si.`customer_id` = '" . $db->escapeString($filters['customer_id']) . "'";
         }
 
         // Filter: Department
         if (!empty($filters['department_id'])) {
-            $conditions[] = "`department_id` = '" . $db->escapeString($filters['department_id']) . "'";
+            $conditions[] = "si.`department_id` = '" . $db->escapeString($filters['department_id']) . "'";
         }
 
-        //company vise
+        // Company filter
         if (!empty($filters['company_id'])) {
-            $conditions[] = "`company_id` = '" . $db->escapeString($filters['company_id']) . "'";
+            $conditions[] = "si.`company_id` = '" . $db->escapeString($filters['company_id']) . "'";
         }
 
+        // Item filter
+        if (!empty($filters['item_code'])) {
+            $join = "INNER JOIN `sales_invoice_items` sii ON si.id = sii.invoice_id";
+            $conditions[] = "sii.`item_code` = '" . $db->escapeString($filters['item_code']) . "'";
+        } elseif (!empty($filters['item_name'])) {
+            $join = "INNER JOIN `sales_invoice_items` sii ON si.id = sii.invoice_id";
+            $conditions[] = "sii.`item_name` LIKE '%" . $db->escapeString($filters['item_name']) . "%'";
+        }
 
-        // Filter: Date range
+        // Date range filter
         if (!empty($filters['from_date']) && !empty($filters['to_date'])) {
-            $conditions[] = "`invoice_date` BETWEEN '" . $db->escapeString($filters['from_date']) . "' AND '" . $db->escapeString($filters['to_date']) . "'";
+            $conditions[] = "si.`invoice_date` BETWEEN '" . $db->escapeString($filters['from_date']) . "' AND '" . $db->escapeString($filters['to_date']) . "'";
         }
 
+        // Add condition to exclude canceled invoices
+        $conditions[] = "si.`is_cancel` = 0";
 
         // Build WHERE clause
         $where = count($conditions) > 0 ? "WHERE " . implode(" AND ", $conditions) : "";
 
-        // Final SQL query
-        $sql = "SELECT * FROM `sales_invoice`
-            $where
-            ORDER BY `invoice_date` DESC";
+        // Final SQL query with proper table aliases
+        $sql = "SELECT DISTINCT si.*, si.`grand_total` - IFNULL(si.`outstanding_settle_amount`, 0) as outstanding_balance, 
+                si.`outstanding_settle_amount`
+                FROM `sales_invoice` si
+                $join
+                $where
+                ORDER BY si.`invoice_date` DESC";
 
         $result = $db->readQuery($sql);
 

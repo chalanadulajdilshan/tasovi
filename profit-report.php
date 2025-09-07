@@ -87,7 +87,7 @@ include './auth.php';
                                                         <input id="code" name="code" type="text" placeholder="Item Code"
                                                             class="form-control" readonly>
                                                         <button class="btn btn-info" type="button"
-                                                            data-bs-toggle="modal" data-bs-target="#codeModal">
+                                                            data-bs-toggle="modal" data-bs-target="#main_item_master">
                                                             <i class="uil uil-search me-1"></i>
                                                         </button>
                                                     </div>
@@ -181,20 +181,6 @@ include './auth.php';
                                                     </div>
                                                 </div>
 
-                                                <div class="col-md-3">
-                                                    <label for="company" class="form-label">Filter
-                                                        Types</Select></label>
-                                                    <div class="input-group mb-3">
-                                                        <select id="company" name="company" class="form-select">
-                                                            <option value="">-- Select Status--</option>
-                                                            <option value="1">Summary</option>
-                                                            <option value="2">Detail</option>
-                                                            <option value="3">Brand Wise</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-
                                             </div>
                                         </form>
 
@@ -247,6 +233,8 @@ include './auth.php';
     <!-- /////////////////////////// -->
     <script src="ajax/js/report.js"></script>
 
+    <!-- Main Item Master Modal -->
+    <?php include 'main-item-master-model.php'; ?>
 
     <!-- include main js  -->
     <?php include 'main-js.php' ?>

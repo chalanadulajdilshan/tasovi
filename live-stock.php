@@ -6,6 +6,18 @@ include 'auth.php';
 // Fetch departments for the filter
 $DEPARTMENT_MASTER = new DepartmentMaster();
 $departments = $DEPARTMENT_MASTER->all();
+
+// Resolve Item Master page ID for permission-safe redirects
+$ITEM_MASTER_PAGE_ID = 0;
+try {
+    $dbTmp = new Database();
+    $resTmp = $dbTmp->readQuery("SELECT id FROM `pages` WHERE LOWER(`page_url`) LIKE '%item-master%' LIMIT 1");
+    if ($resTmp && ($rowTmp = mysqli_fetch_assoc($resTmp))) {
+        $ITEM_MASTER_PAGE_ID = (int)$rowTmp['id'];
+    }
+} catch (Exception $e) {
+    // ignore
+}
 ?>
 
 <html lang="en">
@@ -54,8 +66,9 @@ $departments = $DEPARTMENT_MASTER->all();
                                         <div class="col-md-3">
                                             <label for="filter_department_id" class="form-label">Filter by Department</label>
                                             <select class="form-control select2" id="filter_department_id" name="filter_department_id">
+                                                <option value="all" selected>Show All Departments</option>
                                                 <?php foreach ($departments as $department): ?>
-                                                    <option value="<?php echo $department['id']; ?>" <?php echo ($department['id'] == 1) ? 'selected' : ''; ?>>
+                                                    <option value="<?php echo $department['id']; ?>">
                                                         <?php echo htmlspecialchars($department['name']); ?>
                                                     </option>
                                                 <?php endforeach; ?>
@@ -70,7 +83,7 @@ $departments = $DEPARTMENT_MASTER->all();
                                                 <tr>
                                                     <th>Item Code</th>
                                                     <th>Item Description</th>
-                                                    <th>Brand</th>
+                                                    <th>Department</th>
                                                     <th>Pattern</th>
                                                     <th>Category</th>
                                                     <th>Cost</th>
@@ -111,6 +124,11 @@ $departments = $DEPARTMENT_MASTER->all();
 
     <!-- include main js  -->
     <?php include 'main-js.php' ?>
+
+    <!-- Expose Item Master Page ID to JS for permission-safe redirect -->
+    <script>
+        window.ITEM_MASTER_PAGE_ID = <?php echo (int)$ITEM_MASTER_PAGE_ID; ?>;
+    </script>
 
     <!-- Live Stock JS -->
     <script src="ajax/js/live-stock.js"></script>

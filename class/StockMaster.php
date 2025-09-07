@@ -81,7 +81,7 @@ class StockMaster
               SET `quantity` = '" . (float) $new_quantity . "'
               WHERE `item_id` = '" . (int) $item_id . "' 
               AND `department_id` = '" . (int) $department_id . "'";
-       
+
         return $db->readQuery($query);
     }
 
@@ -237,7 +237,6 @@ class StockMaster
             $STOCK_TRANSACTION_IN->qty_out = 0;
             $STOCK_TRANSACTION_IN->remark = 'Quantity added to ' . $TO_DEPARTMENT->name . ' From ' . $FROM_DEPARTMENT->name;
             $STOCK_TRANSACTION_IN->create();
-
         } else {
             // Not exists: Insert new record
             $insert = "INSERT INTO `stock_master` (`item_id`, `department_id`, `quantity`, `is_active`, `remark`, `created_at`)
@@ -250,7 +249,7 @@ class StockMaster
             $STOCK_TRANSACTION_IN->date = date('Y-m-d');
             $STOCK_TRANSACTION_IN->qty_in = $transfer_qty;
             $STOCK_TRANSACTION_IN->qty_out = 0;
-            $STOCK_TRANSACTION_IN->remark = 'New department added with quantity';
+            $STOCK_TRANSACTION_IN->remark = 'New Quantity added to ' . $TO_DEPARTMENT->name . ' From ' . $FROM_DEPARTMENT->name;
             $STOCK_TRANSACTION_IN->create();
         }
 
@@ -290,7 +289,6 @@ class StockMaster
             $update = "UPDATE `stock_master` SET `quantity` = '" . (int) $newQty . "', `remark` = '" . $remark . "' 
                    WHERE `id` = '" . (int) $result['id'] . "'";
             $db->readQuery($update);
-
         } else {
             // No existing record, only allow increase
             if ($adjust_type !== 'additions') {
@@ -328,8 +326,9 @@ class StockMaster
         return (int) $row['total_quantity'];
     }
 
-    public static function getDepartmentWiseStock($item_id) {
-    $query = "SELECT 
+    public static function getDepartmentWiseStock($item_id)
+    {
+        $query = "SELECT 
                 sm.department_id,
                 d.name AS department_name,
                 IFNULL(sm.quantity, 0) AS quantity
@@ -340,23 +339,18 @@ class StockMaster
                 AND sm.is_active = 1
               ORDER BY d.name ASC";
 
-    $db = new Database();
-    $result = $db->readQuery($query);
+        $db = new Database();
+        $result = $db->readQuery($query);
 
-    $departments = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        $departments[] = [
-            'department_id'   => (int)$row['department_id'],
-            'department_name' => $row['department_name'],
-            'quantity'        => (int)$row['quantity']
-        ];
+        $departments = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $departments[] = [
+                'department_id'   => (int)$row['department_id'],
+                'department_name' => $row['department_name'],
+                'quantity'        => (int)$row['quantity']
+            ];
+        }
+
+        return $departments;
     }
-
-    return $departments;
 }
-
-
-
-}
-
-?>
