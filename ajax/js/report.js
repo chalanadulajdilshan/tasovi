@@ -1,11 +1,157 @@
 jQuery(document).ready(function () {
+    // Initialize datatable for item selection
+    if ($.fn.DataTable.isDataTable('#datatable')) {
+        $('#datatable').DataTable().destroy();
+    }
 
-    //profit report
-    $('#view_price_report').on('click', function (e) {
-        e.preventDefault();
-
-        loadPriceControlItems();
+    var itemTable = $('#datatable').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "ajax/php/item-master.php",
+            type: "POST",
+            data: function (d) {
+                d.filter = true;
+                d.status = 0;
+                d.stock_only = 0;
+            },
+            dataSrc: function (json) {
+                return json.data;
+            },
+            error: function (xhr) {
+                console.error("Server Error Response:", xhr.responseText);
+            }
+        },
+        columns: [
+            { data: "key", title: "#ID" },
+            { data: "code", title: "Code" },
+            { data: "name", title: "Name" },
+            { data: "brand", title: "Brand" },
+            { data: "category", title: "Category" },
+            { data: "list_price", title: "List Price" },
+            { data: "invoice_price", title: "Invoice Price" },
+            { data: "qty", title: "Quantity" },
+            { data: "discount", title: "Discount %" },
+            { data: "status_label", title: "Status" }
+        ],
+        order: [[0, 'desc']],
+        pageLength: 100
     });
+
+    // On row click in the item selection modal
+    $('#datatable tbody').on('click', 'tr', function () {
+        var data = itemTable.row(this).data();
+        if (!data) return;
+
+        // Set the selected item's code, name, and ID in the input fields
+        $('#code').val(data.code);
+        $('#name').val(data.name);
+        $('#item_id').val(data.id);
+        
+        // Close the modal
+        $('#main_item_master').modal('hide');
+        
+        // Show success message
+        toastr.success('Item selected successfully!', 'Success');
+        
+        // Load profit report for the selected item
+        loadProfitReport();
+    });
+
+    // Profit report - Load when view report button is clicked
+    $('#view_profit_report').on('click', function (e) {
+        e.preventDefault();
+        loadProfitReport();
+    });
+
+    // Function to load profit report with filters
+    function loadProfitReport() {
+        // Get filter values
+        const itemCode = $('#code').val();
+        const itemName = $('#name').val();
+        const fromDate = $('#from_date').val();
+        const toDate = $('#to_date').val();
+        const companyId = $('#company').val();
+        const brandId = $('#brand').val();
+        const departmentId = $('#department_id').val();
+        const customerId = $('#customer_id').val();
+        const allCustomers = $('#all_customers').is(':checked');
+
+        // Show loading state
+        const table = $('#profitReport').DataTable({
+            processing: true,
+            serverSide: true,
+            destroy: true, // Destroy any existing table
+            ajax: {
+                url: 'ajax/php/report.php',
+                type: 'POST',
+                data: {
+                    action: 'load_profit_report',
+                    item_code: itemCode,
+                    item_name: itemName,
+                    from_date: fromDate,
+                    to_date: toDate,
+                    company_id: companyId,
+                    brand_id: brandId,
+                    department_id: departmentId,
+                    customer_id: customerId,
+                    all_customers: allCustomers
+                },
+                dataSrc: function(json) {
+                    return json.sales_data || [];
+                }
+            },
+            rowCallback: function (row, data, index) {
+                if (
+                    data.sales_type === "CREDIT" &&
+                    parseFloat(data.outstanding_settle_amount) > 0
+                ) {
+                    $(row).addClass('bg-warning text-white');
+                }
+            },
+            columns: [
+                { data: 'id' },
+                { data: 'invoice_no' },
+                { data: 'invoice_date' },
+                { data: 'company_name' },
+                { data: 'customer_name' },
+                { data: 'department_name' }, // fix mismatch (was department)
+                { data: 'sales_type' },
+                { 
+                    data: 'cost',
+                    render: function(data) {
+                        return parseFloat(data || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    }
+                },
+                { 
+                    data: 'selling_price',
+                    render: function(data) {
+                        return parseFloat(data || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    }
+                },
+                { 
+                    data: 'profit',
+                    render: function(data) {
+                        return parseFloat(data || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    }
+                },
+                { data: 'outstanding_settle_amount', visible: false } // hidden column
+            ],
+
+            order: [[1, 'desc']], // Sort by invoice date by default
+            pageLength: 25,
+            dom: 'Bfrtip',
+            buttons: [
+                'copy', 'csv', 'excel', 'pdf', 'print'
+            ],
+            initComplete: function() {
+                // Update the date range display
+                const fromDate = $('#from_date').val() || 'Start Date';
+                const toDate = $('#to_date').val() || 'End Date';
+                $('#profitReportDateRange').html(`<h5>Showing profit report for item: ${$('#name').val()} (${$('#code').val()}) | Date Range: ${fromDate} to ${toDate}</h5>`);
+            }
+        });
+    }
     //loard Price Control
     $('#brand_id, #category_id, #group_id,#department_id').on('change', function () {
         loadPriceControlItems();
@@ -332,25 +478,30 @@ jQuery(document).ready(function () {
                         totalGrandTotal += grandTotal;
                         totalProfit += profit;
 
-                        tbody += `<tr class="invoice-row" data-id="${row.id}">
-                <td>${index}</td>
-                <td style="display: none;">${row.id}</td>
-                <td>${row.invoice_no}</td>
-                <td>${row.invoice_date}</td>  
-                <td>${row.company_name}</td>
-                <td>${row.customer_name}</td>
-                <td>${row.department_name}</td>
-                <td style="color: ${row.sales_type === 'CASH' ? 'green' : row.sales_type === 'CREDIT' ? 'blue' : 'black'};">
-                    ${row.sales_type}
-                </td>
-                <td>${finalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                <td>${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-                <td>
-                    <strong style="color: red;">
-                        ${profit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                    </strong>
-                </td>
-            </tr>`;
+                        let rowClass = '';
+if (
+    row.sales_type === "CREDIT" &&
+    parseFloat(row.outstanding_settle_amount) > 0
+) {
+    rowClass = 'bg-warning text-dark';
+}
+
+tbody += `<tr class="invoice-row ${rowClass}" data-id="${row.id}">
+    <td>${index}</td>
+    <td style="display: none;">${row.id}</td>
+    <td>${row.invoice_no}</td>
+    <td>${row.invoice_date}</td>
+    <td>${row.company_name}</td>
+    <td>${row.customer_name}</td>
+    <td>${row.department_name}</td>
+    <td style="color: ${row.sales_type === 'CASH' ? 'green' : row.sales_type === 'CREDIT' ? 'blue' : 'black'};">
+        ${row.sales_type}
+    </td>
+    <td>${finalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+    <td>${grandTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+    <td><strong style="color: red;">${profit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong></td>
+</tr>`;
+
                     });
 
                     // Calculate final profit after expenses

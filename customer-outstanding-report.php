@@ -16,6 +16,19 @@ include 'auth.php';
     <?php include 'main-css.php' ?>
     <link href="assets/libs/datatables.net-bs4/css/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css">
     <link href="assets/libs/daterangepicker/daterangepicker.css" rel="stylesheet" type="text/css">
+    <style>
+        /* Target only the Payable Outstanding column in the report table */
+        #reportTable thead th.outstanding-column,
+        #reportTable tbody td.outstanding-column {
+            background-color: #ffebee !important;
+        }
+
+        /* Style for total outstanding cell */
+        #totalOutstanding {
+            background-color: #eb4034 !important;
+            color: #ffffff !important;
+        }
+    </style>
 </head>
 
 <body data-layout="horizontal" data-topbar="colored" class="someBlock">
@@ -77,21 +90,27 @@ include 'auth.php';
 
                                         <!-- Date Filter -->
                                         <div class="row mt-3" id="dateFilter" style="display: none;">
-                                            <div class="col-md-6">
+                                            <div class="col-md-8">
                                                 <div class="row">
-                                                    <div class="col-md-5">
+                                                    <div class="col-md-3">
                                                         <label for="fromDate" class="form-label">From Date <span class="text-danger">*</span></label>
-                                                        <input type="date" class="form-control" id="fromDate" name="fromDate" required>
+                                                        <div class="input-group" id="datepicker1">
+                                                            <input type="text" class="form-control date-picker" id="fromDate" name="fromDate" required>
+                                                            <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                                        </div>
                                                     </div>
-                                                    <div class="col-md-5">
+                                                    <div class="col-md-3">
                                                         <label for="toDate" class="form-label">To Date <span class="text-danger">*</span></label>
-                                                        <input type="date" class="form-control" id="toDate" name="toDate" required>
+                                                        <div class="input-group" id="datepicker2">
+                                                            <input type="text" class="form-control date-picker" id="toDate" name="toDate" required>
+                                                            <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                                        </div>
                                                     </div>
                                                     <div class="col-md-2 d-flex align-items-end">
                                                         <button type="button" class="btn btn-sm btn-outline-primary" id="setToday">Today</button>
                                                     </div>
                                                 </div>
-                                                <small class="text-muted">Select a date range to filter the report</small>
+                                                <small class="text-muted">Select a date range and optionally filter by customer</small>
                                             </div>
                                         </div>
 
@@ -122,9 +141,9 @@ include 'auth.php';
                                                 <th>Invoice No</th>
                                                 <th>Date</th>
                                                 <th>Customer</th>
-                                                <th>Invoice Amount</th>
-                                                <th>Paid Amount</th>
-                                                <th>Outstanding</th>
+                                                <th class="text-end">Invoice Amount</th>
+                                                <th class="text-end">Paid Amount</th>
+                                                <th class="text-end outstanding-column">Payable Outstanding</th>
                                             </tr>
                                         </thead>
                                         <tbody id="reportTableBody">
@@ -133,9 +152,9 @@ include 'auth.php';
                                         <tfoot>
                                             <tr>
                                                 <th colspan="3" class="text-end">Total:</th>
-                                                <th id="totalInvoice" class="text-danger">0.00</th>
-                                                <th id="totalPaid" class="text-danger">0.00</th>
-                                                <th id="totalOutstanding" class="text-danger">0.00</th>
+                                                <td id="totalInvoice" class="text-danger text-end">0.00</td>
+                                                <td id="totalPaid" class="text-danger text-end">0.00</td>
+                                                <td id="totalOutstanding" class="text-danger text-end outstanding-column">0.00</td>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -167,6 +186,39 @@ include 'auth.php';
 
     <script>
         $(document).ready(function() {
+            // Initialize the datepicker
+            $(".date-picker").datepicker({
+                dateFormat: 'yy-mm-dd',
+                changeMonth: true,
+                changeYear: true,
+                yearRange: '1900:2099',
+                showButtonPanel: true
+            });
+
+            // Set today's date when clicking the Today button
+            $('#setToday').click(function() {
+                const today = new Date();
+                const todayFormatted = $.datepicker.formatDate('yy-mm-dd', today);
+                $('.date-picker').val(todayFormatted);
+            });
+
+            // Handle customer selection from modal
+            $(document).on('click', '.select-customer', function(e) {
+                e.preventDefault();
+                const customerId = $(this).data('id');
+                const customerCode = $(this).data('code');
+                const customerType = $('.modal.show').find('[data-customer-type]').data('customer-type');
+
+                if (customerType === 'date') {
+                    $('#date_customer_id').val(customerId);
+                    $('#date_customer_code').val(customerCode);
+                } else {
+                    $('#customer_id').val(customerId);
+                    $('#customer_code').val(customerCode);
+                }
+                $('#customerModal').modal('hide');
+            });
+
             // Toggle between customer and date views
             $('input[name="filterType"]').change(function() {
                 const selectedValue = $(this).val();
@@ -174,32 +226,41 @@ include 'auth.php';
                     $('#customer_code').closest('.col-md-2').hide();
                     $('#dateFilter').show();
                     // Set default dates
-                    const today = new Date().toISOString().split('T')[0];
-                    $('#toDate').val(today);
+                    const today = new Date();
+                    $('#toDate').datepicker('setDate', today);
                     // Set from date to first day of current month
-                    const firstDay = new Date();
-                    firstDay.setDate(1);
-                    $('#fromDate').val(firstDay.toISOString().split('T')[0]);
+                    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                    $('#fromDate').datepicker('setDate', firstDay);
+                    // Clear any previous customer selection
+                    $('#date_customer_id').val('');
+                    $('#date_customer_code').val('');
                 } else {
                     $('#customer_code').closest('.col-md-2').show();
                     $('#dateFilter').hide();
+                    // Clear date filter values
+                    $('#fromDate').val('');
+                    $('#toDate').val('');
                 }
             });
 
             // Set to today's date
-            $('#setToday').click(function() {
-                const today = new Date().toISOString().split('T')[0];
-                $('#toDate').val(today);
+            $('#setToday').click(function(e) {
+                e.preventDefault();
+                const today = new Date();
+                $('#toDate').datepicker('setDate', today);
+                // Set from date to first day of current month
+                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                $('#fromDate').datepicker('setDate', firstDay);
             });
 
             // Validate date range
             $('#fromDate, #toDate').change(function() {
-                const fromDate = new Date($('#fromDate').val());
-                const toDate = new Date($('#toDate').val());
+                const fromDate = new Date($('#fromDate').datepicker('getDate'));
+                const toDate = new Date($('#toDate').datepicker('getDate'));
 
                 if (fromDate > toDate) {
                     alert('From date cannot be after To date');
-                    $(this).val('');
+                    $(this).datepicker('setDate', null);
                 }
             });
         });

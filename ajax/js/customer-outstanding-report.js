@@ -20,6 +20,7 @@ $(document).ready(function () {
                 d.category = '1'; // Filter for category = 1 only
                 d.status = 'active'; // Keep the active status filter
             },
+            // No need to modify customer table styling here
             dataSrc: function (json) {
                 console.log('Server response:', json); // Log the server response
                 if (json && json.data) {
@@ -32,19 +33,33 @@ $(document).ready(function () {
                 console.error('Server response:', xhr.responseText);
             }
         },
-        columns: [
-            { data: 'id' },
-            { data: 'code' },
-            { data: 'name' },
-            { data: 'mobile_number' },
-            { data: 'email' },
-            { data: 'category' },
-            { data: 'province' },
-            { data: 'credit_limit' }
-        ],
+        // Update the columns configuration to handle is_vat properly
+columns: [
+    { data: 'id' },
+    { data: 'code' },
+    { data: 'name' },
+    { data: 'mobile_number' },
+    { data: 'email' },
+    { data: 'credit_limit' },  // Credit Discount
+    { data: 'outstanding' },   // Outstanding amount
+    { 
+        data: 'is_vat',
+        render: function(data) {
+            return (data === 1 || data === '1') ? 'Yes' : 'No';
+        }
+    },
+    { 
+        data: 'status_label',
+        orderable: false
+    }
+],
         order: [[0, 'desc']],
         pageLength: 10,
         responsive: true,
+        createdRow: function(row, data, index) {
+            // Ensure styling is not accidentally applied to email; target credit column (index 5)
+            $('td:eq(5)', row).removeClass('text-danger');
+        },
         // Enable server-side processing parameters
         serverParams: function (data) {
             // Map DataTables parameters to server-side parameters
@@ -207,7 +222,7 @@ $(document).ready(function () {
                     <td>${item.customer_name || ''}</td>
                     <td class="text-end">${parseFloat(item.invoice_amount || 0).toFixed(2)}</td>
                     <td class="text-end">${parseFloat(item.paid_amount || 0).toFixed(2)}</td>
-                    <td class="text-end">${parseFloat(item.outstanding || 0).toFixed(2)}</td>
+                    <td class="text-end text-danger" style="background-color: #ffebee;">${parseFloat(item.outstanding || 0).toFixed(2)}</td>
                 </tr>`;
 
             tbody.append(row);
@@ -220,6 +235,8 @@ $(document).ready(function () {
         // Update totals
         $('#totalInvoice').text(totalInvoice.toFixed(2));
         $('#totalPaid').text(totalPaid.toFixed(2));
-        $('#totalOutstanding').text(totalOutstanding.toFixed(2));
+        $('#totalOutstanding')
+            .text(totalOutstanding.toFixed(2))
+            .attr('style', 'background-color: #eb4034 !important; color: #ffffff !important;');
     }
 });

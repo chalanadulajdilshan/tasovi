@@ -1,5 +1,141 @@
 jQuery(document).ready(function () {
 
+
+    // Prefill from Live Stock via URL parameters
+    (function prefillFromLiveStockToItemMaster() {
+        try {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('from') !== 'live_stock') return;
+
+            const prefillId = parseInt(params.get('prefill_item_id') || '0', 10);
+            const prefillCode = params.get('prefill_item_code');
+
+            // Prefer ID if available
+            if (prefillId && prefillId > 0) {
+                $.ajax({
+                    url: 'ajax/php/item-master.php',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: { action: 'get_by_id', id: prefillId },
+                    success: function (resp) {
+                        if (resp && resp.status === 'success' && resp.item) {
+                            fillItemMasterForm(resp.item);
+                            return;
+                        }
+                        // Fallback to code if ID fetch fails
+                        if (prefillCode) {
+                            prefillByCode(prefillCode);
+                        } else {
+                            console.warn('Item Master prefill: ID lookup failed and no code provided');
+                        }
+                    },
+                    error: function (xhr) {
+                        console.error('Prefill (get_by_id) failed:', xhr.responseText || xhr.statusText);
+                        if (prefillCode) prefillByCode(prefillCode);
+                    }
+                });
+                return;
+            }
+
+            // Otherwise use code
+            if (prefillCode) {
+                prefillByCode(prefillCode);
+            }
+        } catch (e) {
+            console.error('Prefill init error (Item Master):', e);
+        }
+    })();
+
+    function prefillByCode(prefillCode) {
+        // Primary: exact match by code for reliability
+        $.ajax({
+            url: 'ajax/php/item-master.php',
+            type: 'POST',
+            dataType: 'json',
+            data: { action: 'get_by_code', code: prefillCode },
+            success: function (resp) {
+                if (resp && resp.status === 'success' && resp.item) {
+                    fillItemMasterForm(resp.item);
+                    return;
+                }
+                // Fallback 1: DataTables-style search
+                $.ajax({
+                    url: 'ajax/php/item-master.php',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        action: 'fetch_for_datatable',
+                        draw: 1,
+                        start: 0,
+                        length: 1,
+                        'search[value]': prefillCode
+                    },
+                    success: function (response) {
+                        const dataArr = (response && response.data) ? response.data : [];
+                        if (!Array.isArray(dataArr) || dataArr.length === 0) {
+                            // Fallback 2: legacy filter
+                            $.ajax({
+                                url: 'ajax/php/item-master.php',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: {
+                                    filter: true,
+                                    start: 0,
+                                    length: 1,
+                                    search_term: prefillCode
+                                },
+                                success: function (resp2) {
+                                    const altArr = (resp2 && resp2.data) ? resp2.data : [];
+                                    if (!Array.isArray(altArr) || altArr.length === 0) {
+                                        console.warn('No item found to prefill on Item Master');
+                                        return;
+                                    }
+                                    fillItemMasterForm(altArr.find(it => it.code === prefillCode) || altArr[0]);
+                                },
+                                error: function (xhr) {
+                                    console.error('Prefill fallback failed (Item Master):', xhr.responseText || xhr.statusText);
+                                }
+                            });
+                            return;
+                        }
+                        fillItemMasterForm(dataArr.find(it => it.code === prefillCode) || dataArr[0]);
+                    },
+                    error: function (xhr) {
+                        console.error('Prefill request failed (Item Master - fetch_for_datatable):', xhr.responseText || xhr.statusText);
+                    }
+                });
+            },
+            error: function (xhr) {
+                console.error('Prefill request failed (Item Master - get_by_code):', xhr.responseText || xhr.statusText);
+            }
+        });
+    }
+
+    function fillItemMasterForm(item) {
+        if (!item) return;
+        // Fill form fields similar to selecting from the DataTable row
+        $('#item_id').val(item.id);
+        $('#code').val(item.code);
+        $('#name').val(item.name);
+        $('#brand').val(item.brand_id).trigger('change');
+        $('#size').val(item.size);
+        $('#pattern').val(item.pattern);
+        $('#category').val(item.category_id).trigger('change');
+        $('#list_price').val(item.list_price);
+        $('#group').val(item.group).trigger('change');
+        $('#re_order_level').val(item.re_order_level);
+        $('#re_order_qty').val(item.re_order_qty);
+        $('#stock_type').val(item.stock_type).trigger('change');
+        $('#invoice_price').val(item.invoice_price);
+        $('#discount').val(item.discount);
+        $('#note').val(item.note);
+        $('#is_active').prop('checked', item.status == 1);
+
+        // Switch to update mode
+        $('#create').hide();
+        $('#update').removeAttr('hidden');
+    }
+
     //------------------ MAIN ITEM MASTER ITEM LOARD---------------//
     var table = $('#datatable').DataTable({
 

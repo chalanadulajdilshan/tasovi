@@ -4,6 +4,83 @@ include '../../class/include.php';
 
 header('Content-Type: application/json; charset=UTF8');
 
+// Fetch single item by id (for reliable prefill)
+if (isset($_POST['action']) && $_POST['action'] === 'get_by_id') {
+    $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
+    $response = ['status' => 'error', 'message' => 'Item not found'];
+    try {
+        if ($id <= 0) { throw new Exception('Invalid id'); }
+        $db = new Database();
+        $sql = "SELECT * FROM item_master WHERE id = $id LIMIT 1";
+        $res = $db->readQuery($sql);
+        if ($res && ($row = mysqli_fetch_assoc($res))) {
+            $item = [
+                'id' => (int)$row['id'],
+                'code' => $row['code'],
+                'name' => $row['name'],
+                'brand_id' => (int)$row['brand'],
+                'category_id' => (int)$row['category'],
+                'group' => (int)$row['group'],
+                'size' => $row['size'],
+                'pattern' => $row['pattern'],
+                'list_price' => (float)$row['list_price'],
+                'invoice_price' => (float)$row['invoice_price'],
+                're_order_level' => $row['re_order_level'],
+                're_order_qty' => $row['re_order_qty'],
+                'stock_type' => $row['stock_type'],
+                'discount' => $row['discount'],
+                'note' => $row['note'],
+                'status' => (int)$row['is_active']
+            ];
+            echo json_encode(['status' => 'success', 'item' => $item]);
+            exit;
+        }
+    } catch (Exception $e) {
+        $response = ['status' => 'error', 'message' => $e->getMessage()];
+    }
+    echo json_encode($response);
+    exit;
+}
+
+// Fetch single item by exact code (for reliable prefill)
+if (isset($_POST['action']) && $_POST['action'] === 'get_by_code') {
+    $code = isset($_POST['code']) ? trim($_POST['code']) : '';
+    $response = ['status' => 'error', 'message' => 'Item not found'];
+    try {
+        if ($code === '') { throw new Exception('Invalid code'); }
+        $db = new Database();
+        $escCode = mysqli_real_escape_string($db->DB_CON, $code);
+        $sql = "SELECT * FROM item_master WHERE code = '" . $escCode . "' LIMIT 1";
+        $res = $db->readQuery($sql);
+        if ($res && ($row = mysqli_fetch_assoc($res))) {
+            $item = [
+                'id' => (int)$row['id'],
+                'code' => $row['code'],
+                'name' => $row['name'],
+                'brand_id' => (int)$row['brand'],
+                'category_id' => (int)$row['category'],
+                'group' => (int)$row['group'],
+                'size' => $row['size'],
+                'pattern' => $row['pattern'],
+                'list_price' => (float)$row['list_price'],
+                'invoice_price' => (float)$row['invoice_price'],
+                're_order_level' => $row['re_order_level'],
+                're_order_qty' => $row['re_order_qty'],
+                'stock_type' => $row['stock_type'],
+                'discount' => $row['discount'],
+                'note' => $row['note'],
+                'status' => (int)$row['is_active']
+            ];
+            echo json_encode(['status' => 'success', 'item' => $item]);
+            exit;
+        }
+    } catch (Exception $e) {
+        $response = ['status' => 'error', 'message' => $e->getMessage()];
+    }
+    echo json_encode($response);
+    exit;
+}
+
 // Create a new item
 if (isset($_POST['create'])) {
 

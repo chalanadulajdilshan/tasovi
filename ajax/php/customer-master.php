@@ -158,6 +158,34 @@ if (isset($_POST['filter'])) {
     $category = $_POST['category'];
     $CUSTOMER_MASTER = new CustomerMaster();
     $response = $CUSTOMER_MASTER->fetchForDataTable($_REQUEST, $category);
+
+    // Inject raw is_vat value from customer_master for each row (batched for performance)
+    if (isset($response['data']) && is_array($response['data']) && count($response['data']) > 0) {
+        $ids = array();
+        foreach ($response['data'] as $r) {
+            if (isset($r['id'])) {
+                $ids[] = (int)$r['id'];
+            }
+        }
+        if (!empty($ids)) {
+            $db = new Database();
+            $idList = implode(',', $ids);
+            $sql = "SELECT id, is_vat FROM customer_master WHERE id IN ($idList)";
+            $res = $db->readQuery($sql);
+            $vatMap = array();
+            if ($res) {
+                while ($row = mysqli_fetch_assoc($res)) {
+                    $vatMap[(int)$row['id']] = (int)$row['is_vat'];
+                }
+            }
+            foreach ($response['data'] as &$row) {
+                $id = isset($row['id']) ? (int)$row['id'] : 0;
+                $row['is_vat'] = isset($vatMap[$id]) ? $vatMap[$id] : 0; // raw 0/1 value
+            }
+            unset($row);
+        }
+    }
+
     echo json_encode($response);
     exit;
 }
