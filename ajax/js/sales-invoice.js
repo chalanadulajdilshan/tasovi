@@ -182,12 +182,24 @@ jQuery(document).ready(function () {
                 // Main item row
                 tbody += `<tr class="table-primary">
                     <td>${rowIndex}</td>
-                    <td>${item.code} - ${item.name}</td> 
-                    <td>${item.note}</td>
-                    <td>${item.total_available_qty}</td>
-                    <td>${item.group}</td>
-                    <td>${item.brand}</td>
-                     <td>${item.category}</td>
+                    <td colspan="2">${item.code} - ${item.name}</td>  
+                    <td>
+    <button style="
+        background-color: red; 
+        color: white; 
+        border: none; 
+        border-radius: 8px; 
+        padding: 4px 10px; 
+        font-weight: bold;
+        font-size: 14px;
+        cursor: pointer;
+    ">
+        ${item.total_available_qty}
+    </button>
+</td>
+
+                    <td>${item.group}</td> 
+                     <td colspan="2">${item.category}</td>
                      <td hidden >${item.id}</td>
                 </tr>`;
 
