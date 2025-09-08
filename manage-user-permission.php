@@ -13,6 +13,10 @@ include './auth.php';
     <meta content="<?php echo $COMPANY_PROFILE_DETAILS->name ?>" name="author" />
     <!-- include main CSS -->
     <?php include 'main-css.php' ?>
+    <!-- jQuery UI for drag and drop -->
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <!-- Font Awesome for drag handle icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 
 <body data-layout="horizontal" data-topbar="colored" class="someBlock">
@@ -220,6 +224,8 @@ include './auth.php';
 
     <!-- include main js  -->
     <?php include 'main-js.php' ?>
+    <!-- jQuery UI for drag and drop -->
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
 </body>
 

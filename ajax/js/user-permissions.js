@@ -27,7 +27,7 @@ function fetchPermissions(userId) {
     $.ajax({
         url: 'ajax/php/get-permissions.php',
         method: 'GET',
-        data: { userId: userId }, // Changed from userTypeId to userId
+        data: { userId: userId },
         dataType: 'json',
         success: function (data) {
             $('.someBlock').preloader('remove');
@@ -35,10 +35,33 @@ function fetchPermissions(userId) {
             tableBody.empty();
             $('#permissionsTable').show();
 
+            // Make the table sortable if not already done
+            if (!tableBody.hasClass('ui-sortable')) {
+                tableBody.sortable({
+                    update: function(event, ui) {
+                        updatePageOrder();
+                    },
+                    handle: 'td:first-child', // Only allow dragging by the first column (the number)
+                    cursor: 'move',
+                    placeholder: 'sortable-placeholder',
+                    helper: 'clone',
+                    axis: 'y',
+                    opacity: 0.7
+                });
+                
+                // Add CSS for the sortable placeholder
+                $('<style>' +
+                    '.sortable-placeholder { background: #f8f9fa; height: 40px; border: 2px dashed #dee2e6; }' +
+                    '.ui-sortable-helper { display: table; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }' +
+                    '.ui-sortable-helper td { background: #fff; }' +
+                    'tr { cursor: move; }' +
+                    '</style>').appendTo('head');
+            }
+
             $.each(data.pages, function (index, page) {
                 const row = `
-                    <tr>
-                        <td>${index + 1}</td>
+                    <tr data-page-id="${page.pageId}">
+                        <td><i class="fas fa-arrows-alt-v me-2"></i>${index + 1}</td>
                         <td>${page.pageCategory}</td>
                         <td>${page.pageName}</td>
                         <td><input type="checkbox" name="permissions[${page.pageId}][add]" ${page.add_page == 1 ? 'checked' : ''}></td>
@@ -51,6 +74,9 @@ function fetchPermissions(userId) {
                 `;
                 tableBody.append(row);
             });
+            
+            // Update row numbers after reordering
+            updateRowNumbers();
         },
         error: function (xhr, status, error) {
             $('.someBlock').preloader('remove');
@@ -92,6 +118,42 @@ $('#permissionsTable').on('change', 'tbody input[type="checkbox"]', function() {
     // Update the top checkbox
     $('#selectAllTop').prop('checked', totalCheckboxes === checkedCheckboxes);
 });
+
+// Function to update row numbers after reordering
+function updateRowNumbers() {
+    $('#permissionsTable tbody tr').each(function(index) {
+        $(this).find('td:first').html(`<i class="fas fa-arrows-alt-v me-2"></i>${index + 1}`);
+    });
+}
+
+// Function to update page order in the database
+function updatePageOrder() {
+    const pageOrder = [];
+    $('#permissionsTable tbody tr').each(function() {
+        pageOrder.push($(this).data('page-id'));
+    });
+    
+    // Update row numbers after reordering
+    updateRowNumbers();
+    
+    // Send AJAX request to update the order in the database
+    $.ajax({
+        url: 'ajax/php/update-page-order.php',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ pageOrder: pageOrder }),
+        success: function(response) {
+            if (response.status !== 'success') {
+                console.error('Failed to update page order:', response.message);
+                // You might want to show an error message to the user here
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error updating page order:', error);
+            // You might want to show an error message to the user here
+        }
+    });
+}
 
 $('#create').on('click', function (e) {
     e.preventDefault();
