@@ -63,14 +63,21 @@ $reports = $DAG_REPORT->getFilteredReports($from_date, $to_date, $status, $dag_n
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <div class="mb-3">
-                                                    <label class="form-label">From Date</label>
-                                                    <input type="date" class="form-control" name="from_date" value="<?php echo $from_date ?>">
+                                                    <label for="from_date" class="form-label">From Date</label>
+                                                    <div class="input-group" id="datepicker1">
+                                                        <input type="text" class="form-control date-picker" id="from_date" name="from_date" value="<?php echo $from_date ?>">
+                                                        <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                                    </div>
                                                 </div>
                                             </div>
+
                                             <div class="col-md-3">
                                                 <div class="mb-3">
-                                                    <label class="form-label">To Date</label>
-                                                    <input type="date" class="form-control" name="to_date" value="<?php echo $to_date ?>">
+                                                    <label for="to_date" class="form-label">To Date</label>
+                                                    <div class="input-group" id="datepicker2">
+                                                        <input type="text" class="form-control date-picker" id="to_date" name="to_date" value="<?php echo $to_date ?>">
+                                                        <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
