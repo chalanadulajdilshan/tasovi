@@ -16,8 +16,15 @@ function getPermissionsForUser($userId) // Changed function name
     $pages = [];
     $PAGES = new Pages(null);
 
-    // Get all pages
-    foreach ($PAGES->all() as $page) {
+    // Get all pages ordered by category queue, then by page queue
+    $query = "SELECT p.*, pc.name as category_name, pc.queue as category_queue 
+              FROM `pages` p 
+              LEFT JOIN `page_categories` pc ON p.page_category = pc.id 
+              ORDER BY pc.queue ASC, p.queue ASC, p.id ASC";
+    $db = new Database();
+    $result = $db->readQuery($query);
+    
+    while ($page = mysqli_fetch_assoc($result)) {
         $PAGE_CATEGORY = new PageCategory($page['page_category']);
 
         // Fetch permissions for the user
