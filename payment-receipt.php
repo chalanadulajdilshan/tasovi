@@ -331,6 +331,7 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                                         <th>Overdue</th>
                                                         <th>Chq Pay</th>
                                                         <th>Cash Pay</th>
+                                                        <th>Total Pay</th>
                                                         <th>Inv Balance</th>
                                                         <th>Action </th>
                                                     </tr>
