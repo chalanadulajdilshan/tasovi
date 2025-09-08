@@ -54,7 +54,8 @@ jQuery(document).ready(function ($) {
     state.totalAvailable = 0;
     let totalPaid = 0;
     let totalBalance = 0;
-  
+    let totalChequeAmount = 0;
+    
     // Update cheque usage
     state.chequeInfo.forEach((cheque) => {
       let usedAmount = 0;
@@ -68,11 +69,13 @@ jQuery(document).ready(function ($) {
           usedAmount += parseAmount($row.find(".cheque-pay").val());
         }
       });
+
       cheque.usedAmount = usedAmount;
       cheque.remaining = Math.max(0, cheque.amount - usedAmount);
       cheque.used = cheque.remaining <= CONFIG.MIN_AMOUNT;
       state.totalUsed += usedAmount;
       state.totalAvailable += cheque.remaining;
+      totalChequeAmount += cheque.amount;
     });
   
     // Update cash and totals
@@ -90,7 +93,7 @@ jQuery(document).ready(function ($) {
         const cashPay = parseAmount($(this).find(".cash-pay").val());
         const paidAmount = chequePay + cashPay;
         const balance = overdue - paidAmount;
-  
+        
         state.totalOutstanding += overdue;
         totalPaid += paidAmount;
         totalBalance += balance;
@@ -99,10 +102,12 @@ jQuery(document).ready(function ($) {
     $("#total_outstanding").val(formatAmount(state.totalOutstanding));
     $("#paid_amount").val(formatAmount(totalPaid));
     $("#balance_amount").val(formatAmount(totalBalance));
-    $("#cheque_total").val(formatAmount(state.totalUsed));
     $("#cheque_balance").val(formatAmount(state.totalAvailable));
     $("#cash_balance").val(formatAmount(state.cashBalance));
+   $("#outstanding").val(formatAmount(state.totalOutstanding));
   
+
+   $("#cheque_total").val(formatAmount(totalChequeAmount));
     updateChequeDropdowns();
     updateTotals();
   }
