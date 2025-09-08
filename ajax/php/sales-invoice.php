@@ -72,6 +72,7 @@ if (isset($_POST['create'])) {
 
     // Create invoice
     $SALES_INVOICE = new SalesInvoice(NULL);
+    $CUSTOMER_MASTER = new CustomerMaster(NULL);
 
     $SALES_INVOICE->invoice_no = $invoiceId;
     $SALES_INVOICE->invoice_type = 'INV';
@@ -94,7 +95,7 @@ if (isset($_POST['create'])) {
     $invoiceResult = $SALES_INVOICE->create();
 
     if ($paymentType == 2) {
-        $SALES_INVOICE->updateCustomerOutstanding($_POST['customer_id'], $grandTotal, true);
+        $CUSTOMER_MASTER->updateCustomerOutstanding($_POST['customer_id'], $grandTotal, true);
     }
 
     $DOCUMENT_TRACKING = new DocumentTracking(null);

@@ -13,6 +13,7 @@ jQuery(document).ready(function ($) {
     totalAvailable: 0,
     cashTotal: 0,
     cashBalance: 0,
+    totalOutstanding: 0,
   };
 
   // Utility functions
@@ -51,13 +52,19 @@ jQuery(document).ready(function ($) {
   function updateState($excludeRow = null) {
     state.totalUsed = 0;
     state.totalAvailable = 0;
-
+    let totalPaid = 0;
+    let totalBalance = 0;
+  
+    // Update cheque usage
     state.chequeInfo.forEach((cheque) => {
       let usedAmount = 0;
       $(".cheque-select").each(function () {
         const $select = $(this);
         const $row = $select.closest("tr");
-        if ($select.val() === cheque.id && (!$excludeRow || !$row.is($excludeRow))) {
+        if (
+          $select.val() === cheque.id &&
+          (!$excludeRow || !$row.is($excludeRow))
+        ) {
           usedAmount += parseAmount($row.find(".cheque-pay").val());
         }
       });
@@ -67,14 +74,35 @@ jQuery(document).ready(function ($) {
       state.totalUsed += usedAmount;
       state.totalAvailable += cheque.remaining;
     });
-
+  
+    // Update cash and totals
     state.cashTotal = parseAmount($("#cash_total").val());
-    state.cashBalance = state.cashTotal - calculateTotalCashPay($excludeRow);
-
+    const totalCashPay = calculateTotalCashPay($excludeRow);
+    state.cashBalance = state.cashTotal - totalCashPay;
+  
+    // Calculate total outstanding, paid amount, and balance amount
+    state.totalOutstanding = 0;
+    $("#invoiceBody tr")
+      .not("#noItemRow")
+      .each(function () {
+        const overdue = parseAmount($(this).find(".invoice-overdue").text());
+        const chequePay = parseAmount($(this).find(".cheque-pay").val());
+        const cashPay = parseAmount($(this).find(".cash-pay").val());
+        const paidAmount = chequePay + cashPay;
+        const balance = overdue - paidAmount;
+  
+        state.totalOutstanding += overdue;
+        totalPaid += paidAmount;
+        totalBalance += balance;
+      });
+  
+    $("#total_outstanding").val(formatAmount(state.totalOutstanding));
+    $("#paid_amount").val(formatAmount(totalPaid));
+    $("#balance_amount").val(formatAmount(totalBalance));
     $("#cheque_total").val(formatAmount(state.totalUsed));
     $("#cheque_balance").val(formatAmount(state.totalAvailable));
     $("#cash_balance").val(formatAmount(state.cashBalance));
-
+  
     updateChequeDropdowns();
     updateTotals();
   }
@@ -97,34 +125,49 @@ jQuery(document).ready(function ($) {
       const selectedValue = $select.val();
       const $row = $select.closest("tr");
 
-      $select.find("option").not(":first").each(function () {
-        const chequeId = $(this).val();
-        const cheque = state.chequeInfo.find((c) => c.id === chequeId);
-        if (cheque) {
-          const isSelected = cheque.id === selectedValue;
-          const displayAmount = isSelected
-            ? formatAmount(cheque.amount)
-            : `${formatAmount(cheque.remaining)} of ${formatAmount(cheque.amount)}`;
-          $(this).text(`${cheque.chequeNo} (${displayAmount})`);
-          $(this).prop("disabled", cheque.used && !isSelected);
-        } else {
-          $(this).remove();
-        }
-      });
+      $select
+        .find("option")
+        .not(":first")
+        .each(function () {
+          const chequeId = $(this).val();
+          const cheque = state.chequeInfo.find((c) => c.id === chequeId);
+          if (cheque) {
+            const isSelected = cheque.id === selectedValue;
+            const displayAmount = isSelected
+              ? formatAmount(cheque.amount)
+              : `${formatAmount(cheque.remaining)} of ${formatAmount(
+                  cheque.amount
+                )}`;
+            $(this).text(`${cheque.chequeNo} (${displayAmount})`);
+            $(this).prop("disabled", cheque.used && !isSelected);
+          } else {
+            $(this).remove();
+          }
+        });
 
       state.chequeInfo.forEach((cheque) => {
-        if (!$select.find(`option[value="${cheque.id}"]`).length && cheque.remaining > CONFIG.MIN_AMOUNT) {
+        if (
+          !$select.find(`option[value="${cheque.id}"]`).length &&
+          cheque.remaining > CONFIG.MIN_AMOUNT
+        ) {
           $select.append(
             $("<option>", {
               value: cheque.id,
               "data-amount": cheque.remaining,
               disabled: cheque.used,
-            }).text(`${cheque.chequeNo} (${formatAmount(cheque.remaining)} of ${formatAmount(cheque.amount)})`)
+            }).text(
+              `${cheque.chequeNo} (${formatAmount(
+                cheque.remaining
+              )} of ${formatAmount(cheque.amount)})`
+            )
           );
         }
       });
 
-      if ($select.find(`option[value="${selectedValue}"]`).length && selectedValue) {
+      if (
+        $select.find(`option[value="${selectedValue}"]`).length &&
+        selectedValue
+      ) {
         $select.val(selectedValue);
       } else {
         $select.val("");
@@ -137,19 +180,33 @@ jQuery(document).ready(function ($) {
     const overdue = parseAmount($row.find(".invoice-overdue").text());
     const chequePay = parseAmount($row.find(".cheque-pay").val());
     const cashPay = parseAmount($row.find(".cash-pay").val());
-    const remaining = overdue - (chequePay + cashPay);
+    const paidAmount = chequePay + cashPay;
+    const remaining = overdue - paidAmount;
+    $row.find(".paid-amount").text(formatAmount(paidAmount));
     $row.find(".balance-amount").text(formatAmount(remaining));
   }
 
   function updateTotals() {
-    let grandTotal = 0;
-    $("#invoiceBody tr").not("#noItemRow").each(function () {
-      const overdue = parseAmount($(this).find(".invoice-overdue").text());
-      grandTotal += overdue;
-    });
-    $("#grandTotal").val(formatAmount(grandTotal));
-    $("#finalTotal").val(formatAmount(grandTotal));
-    $("#disTotal").val(formatAmount(0));
+    let totalOutstanding = 0;
+    let totalPaid = 0;
+    let totalBalance = 0;
+
+    $("#invoiceBody tr")
+      .not("#noItemRow")
+      .each(function () {
+        const overdue = parseAmount($(this).find(".invoice-overdue").text());
+        const chequePay = parseAmount($(this).find(".cheque-pay").val());
+        const cashPay = parseAmount($(this).find(".cash-pay").val());
+        const paidAmount = chequePay + cashPay;
+        const balance = overdue - paidAmount;
+
+        totalOutstanding += overdue;
+        totalPaid += paidAmount;
+        totalBalance += balance;
+      });
+
+    $("#total_outstanding").val(formatAmount(totalOutstanding));
+    $("#balance_amount").val(formatAmount(totalBalance));
   }
 
   function validateChequePayment($input, $row) {
@@ -158,12 +215,18 @@ jQuery(document).ready(function ($) {
     const selectedChequeId = $row.find(".cheque-select").val();
     if (!selectedChequeId) {
       $input.val("0.00");
+      updateRowBalance($row); // Update Paid Amount and Balance Amount
+      updateState();
       return 0;
     }
 
-    const selectedCheque = state.chequeInfo.find((c) => c.id === selectedChequeId);
+    const selectedCheque = state.chequeInfo.find(
+      (c) => c.id === selectedChequeId
+    );
     if (!selectedCheque) {
       $input.val("0.00");
+      updateRowBalance($row); // Update Paid Amount and Balance Amount
+      updateState();
       return 0;
     }
 
@@ -184,7 +247,11 @@ jQuery(document).ready(function ($) {
       $input.val(formatAmount(maxAllowed));
       swal({
         title: "Invalid Amount!",
-        text: `You can't enter more than Overdue (Rs. ${formatAmount(overdue)}) or Remaining Cheque Balance (Rs. ${formatAmount(remainingBalance)})`,
+        text: `You can't enter more than Overdue (Rs. ${formatAmount(
+          overdue
+        )}) or Remaining Cheque Balance (Rs. ${formatAmount(
+          remainingBalance
+        )})`,
         type: "error",
         timer: CONFIG.SWAL_TIMEOUT,
         showConfirmButton: false,
@@ -196,6 +263,7 @@ jQuery(document).ready(function ($) {
   function validateCashPayment($input, $row) {
     let inputVal = parseAmount($input.val());
     const overdue = parseAmount($row.find(".invoice-overdue").text());
+
     let usedCash = 0;
     $(".cash-pay").each(function () {
       const $currentRow = $(this).closest("tr");
@@ -203,15 +271,34 @@ jQuery(document).ready(function ($) {
         usedCash += parseAmount($(this).val());
       }
     });
-    const remainingBalance = state.cashTotal - usedCash;
-    const maxAllowed = Math.min(overdue, remainingBalance);
+
+    const remainingCashBalance = state.cashTotal - usedCash;
+    const maxAllowed = Math.min(overdue, remainingCashBalance);
 
     if (inputVal > maxAllowed) {
       inputVal = maxAllowed;
       $input.val(formatAmount(maxAllowed));
+
+      let errorMessage = "";
+      if (inputVal > overdue && inputVal > remainingCashBalance) {
+        errorMessage = `You can't enter more than Overdue (Rs. ${formatAmount(
+          overdue
+        )}) or Cash Available Balance (Rs. ${formatAmount(
+          remainingCashBalance
+        )})`;
+      } else if (inputVal > overdue) {
+        errorMessage = `You can't enter more than Overdue Amount (Rs. ${formatAmount(
+          overdue
+        )})`;
+      } else {
+        errorMessage = `You can't enter more than Cash Available Balance (Rs. ${formatAmount(
+          remainingCashBalance
+        )})`;
+      }
+
       swal({
         title: "Invalid Amount!",
-        text: `You can't enter more than Overdue (Rs. ${formatAmount(overdue)}) or Remaining Cash Balance (Rs. ${formatAmount(remainingBalance)})`,
+        text: errorMessage,
         type: "error",
         timer: CONFIG.SWAL_TIMEOUT,
         showConfirmButton: false,
@@ -225,12 +312,27 @@ jQuery(document).ready(function ($) {
     return totalCashPay <= state.cashTotal;
   }
 
+  function validateOutstandingLimit() {
+    const chequeTotal = parseAmount($("#cheque_total").val());
+    const cashTotal = parseAmount($("#cash_total").val());
+    const totalAmount = chequeTotal + cashTotal;
+    const outstanding = parseAmount($("#total_outstanding").val());
+
+    return totalAmount <= outstanding;
+  }
+
   function toggleCashPay() {
     const cashTotal = parseAmount($("#cash_total").val());
     if (cashTotal > 0) {
       $(".cash-pay").prop("disabled", false);
     } else {
       $(".cash-pay").prop("disabled", true).val("0.00");
+      $("#invoiceBody tr")
+        .not("#noItemRow")
+        .each(function () {
+          updateRowBalance($(this)); // Update Paid Amount and Balance Amount when cash is disabled
+        });
+      updateState();
     }
   }
 
@@ -238,6 +340,21 @@ jQuery(document).ready(function ($) {
   $(document).on("change", ".cheque-select", function () {
     const $select = $(this);
     const $row = $select.closest("tr");
+    
+    // Update hidden input fields with selected cheque details
+    const selectedOption = $select.find('option:selected');
+    if (selectedOption.val()) {
+      const chequeId = selectedOption.val();
+      const cheque = state.chequeInfo.find(c => c.id === chequeId);
+      if (cheque) {
+        $row.find('.cheque-no').val(cheque.chequeNo);
+        $row.find('.cheque-date').val(cheque.chequeDate);
+        $row.find('.bank-branch').val(cheque.bankBranchId);
+      }
+    } else {
+      // Clear the fields if no cheque is selected
+      $row.find('.cheque-no, .cheque-date, .bank-branch').val('');
+    }
     const selectedChequeId = $select.val();
     const $chequeInput = $row.find(".cheque-pay");
     const prevChequeId = $select.data("prev-cheque");
@@ -247,7 +364,9 @@ jQuery(document).ready(function ($) {
     }
 
     if (selectedChequeId) {
-      const selectedCheque = state.chequeInfo.find((c) => c.id === selectedChequeId);
+      const selectedCheque = state.chequeInfo.find(
+        (c) => c.id === selectedChequeId
+      );
       if (selectedCheque) {
         $select.data("prev-cheque", selectedChequeId);
         const maxAmount = parseAmount($row.find(".invoice-overdue").text());
@@ -255,7 +374,10 @@ jQuery(document).ready(function ($) {
         $(".cheque-select").each(function () {
           const $currentSelect = $(this);
           const $currentRow = $currentSelect.closest("tr");
-          if ($currentSelect.val() === selectedChequeId && !$currentRow.is($row)) {
+          if (
+            $currentSelect.val() === selectedChequeId &&
+            !$currentRow.is($row)
+          ) {
             usedAmount += parseAmount($currentRow.find(".cheque-pay").val());
           }
         });
@@ -269,8 +391,8 @@ jQuery(document).ready(function ($) {
       $chequeInput.val("0.00");
     }
 
-    updateState($row);
-    updateRowBalance($row);
+    updateRowBalance($row); // Update Paid Amount and Balance Amount
+    updateState();
   });
 
   $(document).on("focus", ".cheque-pay, .cash-pay", function () {
@@ -281,39 +403,46 @@ jQuery(document).ready(function ($) {
 
   $(document).on(
     "input",
-    ".cheque-pay, .cash-pay",
+    ".cheque-pay",
     debounce(function () {
       const $input = $(this);
       const $row = $input.closest("tr");
       let value = $input.val().replace(/[^0-9.]/g, "");
       if (value === "") {
         $input.val("0.00");
-        updateRowBalance($row);
-        updateState($row);
+        updateRowBalance($row); // Update Paid Amount and Balance Amount
+        updateState();
         return;
       }
-      if ($input.hasClass("cheque-pay")) {
-        validateChequePayment($input, $row);
-      } else if ($input.hasClass("cash-pay")) {
-        validateCashPayment($input, $row);
+      validateChequePayment($input, $row);
+      updateRowBalance($row); // Update Paid Amount and Balance Amount
+      updateState();
+    }, 300)
+  );
+
+  $(document).on(
+    "input",
+    ".cash-pay",
+    debounce(function () {
+      const $input = $(this);
+      const $row = $input.closest("tr");
+      let value = $input.val().replace(/[^0-9.]/g, "");
+      if (value === "") {
+        $input.val("0.00");
+        updateRowBalance($row); // Update Paid Amount and Balance Amount
+        updateState();
+        return;
       }
-      updateRowBalance($row);
-      updateState($row);
+      validateCashPayment($input, $row);
+      updateRowBalance($row); // Update Paid Amount and Balance Amount
+      updateState();
     }, 300)
   );
 
   $(document).on("blur", ".cheque-pay, .cash-pay", function () {
     const $input = $(this);
-    const $row = $input.closest("tr");
     let amount = parseAmount($input.val()) || 0;
-    if ($input.hasClass("cheque-pay")) {
-      amount = validateChequePayment($input, $row);
-    } else if ($input.hasClass("cash-pay")) {
-      amount = validateCashPayment($input, $row);
-    }
     $input.val(amount === 0 ? "0.00" : formatAmount(amount));
-    updateRowBalance($row);
-    updateState($row);
   });
 
   $("#add_cheque").on("click", function () {
@@ -323,22 +452,52 @@ jQuery(document).ready(function ($) {
     const bankBranchId = $("#bank_branch").val().trim();
     const amount = parseAmount($("#amount").val());
     const chequeTotal = parseAmount($("#cheque_total").val());
-    const outstanding = parseAmount($("#outstanding").val());
+    const cashTotal = parseAmount($("#cash_total").val());
+    const outstanding = parseAmount($("#total_outstanding").val());
 
     if (!isValidChequeNo(chequeNo)) {
-      return swal("Invalid Cheque Number", "Cheque number should be 6–12 digits.", "error");
+      return swal(
+        "Invalid Cheque Number",
+        "Cheque number should be 6–12 digits.",
+        "error"
+      );
     }
     if (!isValidDate(chequeDate)) {
-      return swal("Invalid Cheque Date", "Cheque date must be today or a future date.", "error");
+      return swal(
+        "Invalid Cheque Date",
+        "Cheque date must be today or a future date.",
+        "error"
+      );
     }
     if (!bankBranch || !bankBranchId) {
-      return swal("Missing Bank", "Please select a valid Bank & Branch.", "error");
+      return swal(
+        "Missing Bank",
+        "Please select a valid Bank & Branch.",
+        "error"
+      );
     }
     if (amount <= 0) {
-      return swal("Invalid Amount", "Amount should be a number greater than 0.", "error");
+      return swal(
+        "Invalid Amount",
+        "Amount should be a number greater than 0.",
+        "error"
+      );
     }
-    if (chequeTotal + amount > outstanding) {
-      return swal("Exceeded Outstanding", "You added more than the Outstanding Amount.", "error");
+
+    if (chequeTotal + amount + cashTotal > outstanding) {
+      return swal({
+        title: "Exceeded Outstanding Amount!",
+        text: `Total amount (Cheque: Rs. ${formatAmount(
+          chequeTotal + amount
+        )} + Cash: Rs. ${formatAmount(
+          cashTotal
+        )}) cannot exceed Outstanding Amount (Rs. ${formatAmount(
+          outstanding
+        )}).`,
+        type: "error",
+        timer: CONFIG.SWAL_TIMEOUT,
+        showConfirmButton: false,
+      });
     }
 
     $("#noItemRow").remove();
@@ -357,31 +516,40 @@ jQuery(document).ready(function ($) {
 
     const newRow = `
       <tr data-cheque-id="${chequeId}">
-        <td>${chequeNo}<input type="hidden" name="cheque_nos[]" value="${chequeNo}"></td>
+        <td>${chequeNo}<input type="hidden" name="cheque_no[]" value="${chequeNo}"></td>
         <td>${chequeDate}<input type="hidden" name="cheque_dates[]" value="${chequeDate}"></td>
         <td>${bankBranch}<input type="hidden" name="bank_branches[]" value="${bankBranchId}"></td>
-        <td class="cheque-amount" data-amount="${amount}">${formatAmount(amount)}<input type="hidden" name="cheque_amounts[]" value="${amount}"></td>
+        <td class="cheque-amount" data-amount="${amount}">${formatAmount(
+      amount
+    )}<input type="hidden" name="cheque_amounts[]" value="${amount}"></td>
         <td><button type="button" class="btn btn-sm btn-danger remove-row">Remove</button></td>
       </tr>`;
     $("#chequeBody").append(newRow);
     updateState();
 
-    $("#cheque_no, #cheque_date, #bank_branch_name, #bank_branch, #amount").val("");
+    $("#cheque_no, #cheque_date, #bank_branch_name, #bank_branch, #amount").val(
+      ""
+    );
   });
 
-  $("#cheque_no, #cheque_date, #bank_branch_name, #amount").on("keypress", function (e) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      $("#add_cheque").click();
+  $("#cheque_no, #cheque_date, #bank_branch_name, #amount").on(
+    "keypress",
+    function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        $("#add_cheque").click();
+      }
     }
-  });
+  );
 
   $("#chequeBody").on("click", ".remove-row", function () {
     const $row = $(this).closest("tr");
     const chequeId = $row.data("cheque-id");
     $row.remove();
     if (chequeId) {
-      const index = state.chequeInfo.findIndex((cheque) => cheque.id === chequeId);
+      const index = state.chequeInfo.findIndex(
+        (cheque) => cheque.id === chequeId
+      );
       if (index > -1) {
         state.chequeInfo.splice(index, 1);
       }
@@ -442,18 +610,21 @@ jQuery(document).ready(function ($) {
       $("#customerTable").DataTable().ajax.reload();
     }
 
-    $("#customerTable tbody").off("click", "tr").on("click", "tr", function () {
-      const data = $("#customerTable").DataTable().row(this).data();
-      if (data) {
-        $("#customer_id").val(data.id);
-        $("#customer_code").val(data.code);
-        $("#customer_name").val(data.name);
-        $("#customer_address").val(data.address);
-        $("#outstanding").val(data.outstanding);
-        $("#customerModal").modal("hide");
-        loadCustomerCreditInvoices(data.id);
-      }
-    });
+    $("#customerTable tbody")
+      .off("click", "tr")
+      .on("click", "tr", function () {
+        const data = $("#customerTable").DataTable().row(this).data();
+        if (data) {
+          $("#customer_id").val(data.id);
+          $("#customer_code").val(data.code);
+          $("#customer_name").val(data.name);
+          $("#customer_address").val(data.address);
+          $("#total_outstanding").val(formatAmount(data.outstanding));
+          $("#customerModal").modal("hide");
+          loadCustomerCreditInvoices(data.id);
+          updateState();
+        }
+      });
   }
 
   $("#customerModal").on("shown.bs.modal", function () {
@@ -470,20 +641,24 @@ jQuery(document).ready(function ($) {
       success: function (response) {
         $("#invoiceBody").empty();
         if (response.success && response.data.length > 0) {
-          let subTotal = 0;
+          let totalOutstanding = 0;
           response.data.forEach(function (invoice) {
             const invoiceValue = parseFloat(invoice.grand_total || 0);
-            const paidAmount = parseFloat(invoice.paid_amount || 0);
+            const paidAmount = parseFloat(invoice.outstanding_settle_amount || 0);
             const overdue = invoiceValue - paidAmount;
-            subTotal += invoiceValue;
+            totalOutstanding += overdue;
             const row = `
               <tr>
                 <td>${invoice.invoice_date}</td>
-                <td class="hidden"><input type="hidden" name="invoice_id[]" value="${invoice.id}">${invoice.id}</td>
+                <td class="hidden"><input type="hidden" name="invoice_id[]" value="${
+                  invoice.id
+                }">${invoice.id}</td>
                 <td>${invoice.invoice_no}</td>
                 <td>${formatAmount(invoiceValue)}</td>
                 <td>${formatAmount(paidAmount)}</td>
-                <td><span class="text-danger fw-bold invoice-overdue">${formatAmount(overdue)}</span></td>
+                <td><span class="text-danger fw-bold invoice-overdue">${formatAmount(
+                  overdue
+                )}</span></td>
                 <td>
                   <input type="text" name="cheque_pay[]" class="form-control form-control-sm cheque-pay" value="0.00">
                   <select name="cheque_select[]" class="form-select form-select-sm mt-1 cheque-select">
@@ -491,27 +666,34 @@ jQuery(document).ready(function ($) {
                     ${state.chequeInfo
                       .map(
                         (cheque) =>
-                          `<option value="${cheque.id}" data-amount="${cheque.amount}" ${cheque.used ? "disabled" : ""}>
+                          `<option value="${cheque.id}" data-amount="${
+                            cheque.amount
+                          }" ${cheque.used ? "disabled" : ""}>
                             ${cheque.chequeNo} (${formatAmount(cheque.amount)})
                           </option>`
                       )
                       .join("")}
                   </select>
+
+
+                  <input type="hidden" name="cheque_no[]" class="form-control form-control-sm cheque-no" placeholder="Cheque No" value="">
+                  <input type="hidden" name="cheque_date[]" class="form-control form-control-sm cheque-date" placeholder="Cheque Date" value="">
+                  <input type="hidden" name="bank_branch[]" class="form-control form-control-sm bank-branch" placeholder="Bank Branch" value="">
                 </td>
                 <td><input type="text" name="cash_pay[]" disabled class="form-control form-control-sm cash-pay" value="0.00"></td>
+                <td class="paid-amount">${formatAmount(0)}</td>
                 <td class="balance-amount">${formatAmount(overdue)}</td>
                 <td><button type="button" class="btn btn-sm btn-danger remove-row"><i class="uil uil-trash"></i></button></td>
               </tr>`;
             $("#invoiceBody").append(row);
           });
-          $("#finalTotal").val(formatAmount(subTotal));
-          $("#grandTotal").val(formatAmount(subTotal));
-          $("#disTotal").val(formatAmount(0));
+          $("#total_outstanding").val(formatAmount(totalOutstanding));
+          $("#balance_amount").val(formatAmount(totalOutstanding));
         } else {
           $("#invoiceBody").html(
             `<tr><td colspan="11" class="text-center text-muted">No items found</td></tr>`
           );
-          $("#finalTotal, #grandTotal, #disTotal").val("0.00");
+          $("#total_outstanding, #balance_amount").val("0.00");
           swal("No Data", "No invoices found for this customer.", "info");
         }
         updateState();
@@ -525,102 +707,33 @@ jQuery(document).ready(function ($) {
   }
 
   $("#cash_total").on("input", function () {
+    const cashTotal = parseAmount($(this).val());
+    const chequeTotal = parseAmount($("#cheque_total").val());
+    const outstanding = parseAmount($("#total_outstanding").val());
+
+    if (cashTotal + chequeTotal > outstanding) {
+      swal({
+        title: "Exceeded Outstanding Amount!",
+        text: `Total amount (Cash: Rs. ${formatAmount(
+          cashTotal
+        )} + Cheque: Rs. ${formatAmount(
+          chequeTotal
+        )}) cannot exceed Outstanding Amount (Rs. ${formatAmount(
+          outstanding
+        )}).`,
+        type: "error",
+        timer: CONFIG.SWAL_TIMEOUT,
+        showConfirmButton: false,
+      });
+
+      const maxCashAmount = Math.max(0, outstanding - chequeTotal);
+      $(this).val(formatAmount(maxCashAmount));
+    }
+
     toggleCashPay();
     updateState();
   });
 
-  $("#invoiceBody").on(
-    "input",
-    ".cash-pay",
-    debounce(function () {
-      const $input = $(this);
-      const $row = $input.closest("tr");
-      validateCashPayment($input, $row);
-      updateRowBalance($row);
-      updateState($row);
-    }, 300)
-  );
-
-  $("#utilize").on("click", function (e) {
-    e.preventDefault();
-    const chequeBalance = parseAmount($("#cheque_balance").val());
-    const cashBalance = parseAmount($("#cash_balance").val());
-    if (chequeBalance <= 0 && cashBalance <= 0) {
-      swal({
-        title: "No Balance Available!",
-        html: "Please add cheque or cash amount before making payments.",
-        type: "error",
-        timer: CONFIG.SWAL_TIMEOUT,
-        showConfirmButton: false,
-        allowOutsideClick: false,
-        showCloseButton: true,
-        timerProgressBar: true,
-      });
-      return;
-    }
-    if (chequeBalance > 0 || cashBalance > 0) {
-      swal("Unused Balance Detected", "Please utilize the remaining cheque or cash balance.", "info");
-    }
-
-    const $invoiceBody = $("#invoiceBody");
-    const $invoiceRows = $invoiceBody.find("tr").not("#noItemRow");
-    const $utilizationBody = $("#utilizationBody");
-    $utilizationBody.empty();
-
-    if ($invoiceRows.length === 0) {
-      $utilizationBody.html(
-        `<tr class="no-data"><td colspan="6" class="text-center text-muted">No payment data available</td></tr>`
-      );
-      swal("No Payments", "There is no payment data to show in the summary.", "warning");
-      return;
-    }
-
-    const today = new Date().toISOString().split("T")[0];
-    let rowsAppended = 0;
-
-    $invoiceRows.each(function () {
-      const $row = $(this);
-      const invNo = $row.find("td").eq(1).text().trim();
-      const invDate = $row.find("td").eq(0).text().trim();
-      const chequePay = parseAmount($row.find(".cheque-pay").val());
-      const cashPay = parseAmount($row.find(".cash-pay").val());
-      const totalAmount = chequePay + cashPay;
-
-      if (totalAmount <= 0) return true;
-
-      const payType = chequePay > 0 && cashPay > 0 ? "Cheque + Cash" : chequePay > 0 ? "Cheque" : "Cash";
-      const invDateObj = new Date(invDate);
-      const todayDateObj = new Date(today);
-      const diffDays = Math.abs(Math.floor((invDateObj - todayDateObj) / (1000 * 60 * 60 * 24)));
-
-      const rowHtml = `
-        <tr>
-          <td>${invNo}</td>
-          <td>${invDate}</td>
-          <td>${payType}</td>
-          <td>${today}</td>
-          <td>${formatAmount(totalAmount)}</td>
-          <td>${diffDays}</td>
-        </tr>`;
-      $utilizationBody.append(rowHtml);
-      rowsAppended++;
-    });
-
-    if (rowsAppended === 0) {
-      $utilizationBody.html(
-        `<tr class="no-data"><td colspan="6" class="text-center text-muted">No payment data available</td></tr>`
-      );
-      swal("No Payments", "There is no payment data to show in the summary.", "warning");
-      return;
-    }
-
-    $("#utilization_summary").slideDown();
-    $("#cash_total, #cheque_no, #cheque_date, #bank_branch_name, #amount").prop("disabled", true);
-    $("#bank_branch_name").siblings("button").prop("disabled", true);
-    $(".cheque-pay, .cash-pay").prop("disabled", true);
-    $('button[data-bs-target="#customerModal"]').prop("disabled", true);
-    $("#add_cheque").prop("disabled", true);
-  });
 
   $("#new").click(function (e) {
     e.preventDefault();
@@ -629,35 +742,43 @@ jQuery(document).ready(function ($) {
 
   $("#create").click(function (event) {
     event.preventDefault();
+
     if (!$("#code").val()) {
-      swal({
+      return swal({
         title: "Error!",
         text: "Please enter receipt number",
         type: "error",
         timer: CONFIG.SWAL_TIMEOUT,
         showConfirmButton: false,
       });
-      return;
     }
     if (!$("#customer_code").val()) {
-      swal({
+      return swal({
         title: "Error!",
         text: "Please select a customer",
         type: "error",
         timer: CONFIG.SWAL_TIMEOUT,
         showConfirmButton: false,
       });
-      return;
     }
     if (!$("#entry_date").val()) {
-      swal({
+      return swal({
         title: "Error!",
         text: "Please select an entry date",
         type: "error",
         timer: CONFIG.SWAL_TIMEOUT,
         showConfirmButton: false,
       });
-      return;
+    }
+
+    if (!validateOutstandingLimit()) {
+      return swal({
+        title: "Error!",
+        text: "Total cheque and cash amount cannot exceed the outstanding amount",
+        type: "error",
+        timer: CONFIG.SWAL_TIMEOUT,
+        showConfirmButton: false,
+      });
     }
 
     $(".someBlock").preloader();
@@ -665,10 +786,16 @@ jQuery(document).ready(function ($) {
     const formDataCheque = new FormData($("#form-data-cheque")[0]);
     const formDataInvoice = new FormData($("#form-data-invoice")[0]);
 
-    formData.append("grandTotal", parseAmount($("#grandTotal").val()));
+    formData.append(
+      "total_outstanding",
+      parseAmount($("#total_outstanding").val())
+    );
     formData.append("customer_id", $("#customer_id").val());
+    formData.append("paid_amount", parseAmount($("#paid_amount").val()));
+
     formDataCheque.forEach((value, key) => formData.append(key, value));
     formDataInvoice.forEach((value, key) => formData.append(key, value));
+    
     formData.append("create", true);
     formData.append("action", "create");
 
@@ -703,7 +830,11 @@ jQuery(document).ready(function ($) {
       },
       error: function (xhr) {
         $(".someBlock").preloader("remove");
-        swal("Error", "Failed to create payment receipt. Please try again.", "error");
+        swal(
+          "Error",
+          "Failed to create payment receipt. Please try again.",
+          "error"
+        );
       },
     });
   });

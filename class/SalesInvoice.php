@@ -133,22 +133,7 @@ class SalesInvoice
         }
     }
 
-    // Update customer outstanding balance
-    public function updateCustomerOutstanding($customerId, $amount, $isCredit = false)
-    {
-        $db = new Database();
-
-        // Determine whether to add or subtract the amount based on credit/debit
-        $operator = $isCredit ? '+' : '-';
-
-        $query = "UPDATE `customer_master` 
-                 SET `outstanding` = GREATEST(0, `outstanding` $operator $amount)
-                 WHERE `id` = '{$customerId}'";
-
-        $result = $db->readQuery($query);
-
-        return $result ? true : false;
-    }
+    
 
     // Delete a sales invoice record by ID
     public function delete()
@@ -406,7 +391,12 @@ class SalesInvoice
 
     public function getCreditInvoicesByCustomerAndStatus($status, $customer_id)
     {
-        $query = "SELECT * FROM `sales_invoice` where `sale_type` = 2 and `status`= $status and `customer_id` = $customer_id ORDER BY `invoice_date` DESC";
+        $query = "SELECT * FROM `sales_invoice` 
+                 WHERE `sale_type` = 2 
+                 AND `status` = $status 
+                 AND `customer_id` = $customer_id 
+                 AND `grand_total` > `outstanding_settle_amount`
+                 ORDER BY `invoice_date` DESC";
         $db = new Database();
         $result = $db->readQuery($query);
         $array_res = array();
@@ -463,4 +453,14 @@ class SalesInvoice
 
         return $array_res;
     }
+
+    public function updateInvoiceOutstanding($invoice_id, $amount)
+    {
+        $query = "UPDATE `sales_invoice` SET `outstanding_settle_amount` = `outstanding_settle_amount` + $amount WHERE `id` = $invoice_id";
+       
+        $db = new Database();
+        $result = $db->readQuery($query);
+        return ($result) ? true : false;
+    }
+
 }
