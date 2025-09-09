@@ -22,6 +22,7 @@ class SalesInvoice
     public $discount;
     public $tax;
     public $grand_total;
+    public $outstanding_settle_amount;
     public $remark;
     public $status;
 
@@ -54,6 +55,7 @@ class SalesInvoice
                 $this->discount = $result['discount'];
                 $this->tax = $result['tax'];
                 $this->grand_total = $result['grand_total'];
+                $this->outstanding_settle_amount = $result['outstanding_settle_amount'];
                 $this->remark = $result['remark'];
                 $this->status = $result['status'];
             }

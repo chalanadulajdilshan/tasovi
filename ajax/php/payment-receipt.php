@@ -34,47 +34,44 @@ if (isset($_POST['create'])) {
             $chequePay = isset($_POST['cheque_pay'][$index]) ? floatval(str_replace(',', '', $_POST['cheque_pay'][$index])) : 0.0;
             $cashPay = isset($_POST['cash_pay'][$index]) ? floatval(str_replace(',', '', $_POST['cash_pay'][$index])) : 0.0;
 
+            $PAYMENT_RECEIPT_METHOD = new PaymentReceiptMethod(null);
+            $SALES_INVOICE = new SalesInvoice(null);
 
             // Only process if at least one payment method has an amount > 0
             if ($chequePay > 0 || $cashPay > 0) {
-                $INVOICE = new PaymentReceiptMethod(null);
-                $INVOICE->receipt_id = $res;
-                $INVOICE->invoice_id = $invoice_id;
-
-                // Create separate rows for each payment method
                 if ($cashPay > 0) {
-                    // Create cash payment row
-                    $cashInvoice = new PaymentReceiptMethod(null);
-                    $cashInvoice->receipt_id = $res;
-                    $cashInvoice->invoice_id = $invoice_id;
-                    $cashInvoice->payment_type_id = 1; // 1 for 'cash'
-                    $cashInvoice->amount = $cashPay;
-
-                    $cashInvoice->create();
+                    $PAYMENT_RECEIPT_METHOD->receipt_id = $res;
+                    $PAYMENT_RECEIPT_METHOD->invoice_id = $invoice_id;
+                    $PAYMENT_RECEIPT_METHOD->payment_type_id = 1; // 1 for 'cash'
+                    $PAYMENT_RECEIPT_METHOD->amount = $cashPay;
                 }
-
                 if ($chequePay > 0) {
-                    // Create cheque payment row
-                    $chequeInvoice = new PaymentReceiptMethod(null);
-                    $chequeInvoice->receipt_id = $res;
-                    $chequeInvoice->invoice_id = $invoice_id;
-                    $chequeInvoice->payment_type_id = 2; // 2 for 'cheque'
-                    $chequeInvoice->amount = $chequePay;
-                    $chequeInvoice->cheq_no = $_POST['cheque_no'][$index] ?? '';
-                    $chequeInvoice->branch_id = $_POST['bank_branch'][$index] ?? null;
-                    $chequeInvoice->cheq_date = $_POST['cheque_date'][$index] ?? null;
-                    $chequeInvoice->create();
+                    $PAYMENT_RECEIPT_METHOD->receipt_id = $res;
+                    $PAYMENT_RECEIPT_METHOD->invoice_id = $invoice_id;
+                    $PAYMENT_RECEIPT_METHOD->payment_type_id = 2; // 2 for 'cheque'
+                    $PAYMENT_RECEIPT_METHOD->amount = $chequePay;
+                    $PAYMENT_RECEIPT_METHOD->cheq_no = $_POST['cheque_no'][$index] ?? '';
+                    $PAYMENT_RECEIPT_METHOD->branch_id = $_POST['bank_branch'][$index] ?? null;
+                    $PAYMENT_RECEIPT_METHOD->cheq_date = $_POST['cheque_date'][$index] ?? null;
                 }
+                $res1 = $PAYMENT_RECEIPT_METHOD->create();
             }
-            $SALES_INVOICE = new SalesInvoice(NULL);
-            $SALES_INVOICE->updateInvoiceOutstanding($invoice_id, $chequePay+$cashPay);
+            $SALES_INVOICE->updateInvoiceOutstanding($invoice_id, $chequePay + $cashPay);
+
+            // Reload the invoice to get updated outstanding amount
+            $SALES_INVOICE_ = new SalesInvoice($invoice_id);
+
+
+            if ($SALES_INVOICE_->outstanding_settle_amount >= $SALES_INVOICE_->grand_total) {
+                $PAYMENT_RECEIPT_METHOD->updateIsSettle($res1);
+            }
         }
+
         $CUSTOMER_MASTER = new CustomerMaster(NULL);
         $CUSTOMER_MASTER->updateCustomerOutstanding($_POST['customer_id'], $_POST['paid_amount'], false);
 
         $DOCUMENT_TRACKING = new DocumentTracking(null);
         $DOCUMENT_TRACKING->incrementDocumentId('payment_receipt');
-        
     }
 
     if ($res) {
