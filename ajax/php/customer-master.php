@@ -205,6 +205,97 @@ if (isset($_POST['query'])) {
     exit;
 }
 
+// Fetch customers for DataTable
+if (isset($_POST['action']) && $_POST['action'] === 'fetch_customers') {
+    $db = new Database();
+    
+    // Get request parameters
+    $draw = isset($_POST['draw']) ? intval($_POST['draw']) : 1;
+    $start = isset($_POST['start']) ? intval($_POST['start']) : 0;
+    $length = isset($_POST['length']) ? intval($_POST['length']) : 10;
+    $searchValue = isset($_POST['search']['value']) ? $db->escapeString($_POST['search']['value']) : '';
+    $orderColumn = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 2; // Default sort by name
+    $orderDir = isset($_POST['order'][0]['dir']) ? $db->escapeString($_POST['order'][0]['dir']) : 'asc';
+    
+    // Column mapping
+    $columns = [
+        0 => 'id',
+        1 => 'code',
+        2 => 'name',
+        3 => 'mobile_number',
+        4 => 'email',
+        5 => 'category_name',
+        6 => 'credit_limit',
+        7 => 'outstanding',
+        8 => 'is_vat',
+        9 => 'status_label'
+    ];
+    
+    $orderBy = isset($columns[$orderColumn]) ? $columns[$orderColumn] : 'name';
+    
+    try {
+        // Base query - Only fetch customers with category = 1
+        $query = "SELECT SQL_CALC_FOUND_ROWS cm.id, cm.code, cm.name, cm.mobile_number, cm.email, 
+                  cm.credit_limit, cm.outstanding, cm.is_vat, cc.name as category_name, cm.province,
+                  CASE WHEN cm.is_active = 1 THEN 'Active' ELSE 'Inactive' END as status_label 
+                  FROM customer_master cm
+                  LEFT JOIN customer_category cc ON cm.category = cc.id
+                  WHERE cm.category = 1";
+        
+        // Add search condition
+        if (!empty($searchValue)) {
+            $query .= " AND (cm.name LIKE '%$searchValue%' OR cm.code LIKE '%$searchValue%' OR cm.mobile_number LIKE '%$searchValue%' OR cm.email LIKE '%$searchValue%')";
+        }
+        
+        // Add status filter if provided
+        if (isset($_POST['status']) && $_POST['status'] === 'active') {
+            $query .= " AND cm.is_active = 1";
+        }
+        
+        // Add ordering
+        $query .= " ORDER BY $orderBy $orderDir";
+        
+        // Add pagination
+        $query .= " LIMIT $start, $length";
+        
+        // Execute query
+        $result = $db->readQuery($query);
+        $data = [];
+        
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $data[] = $row;
+            }
+            
+            // Get total records
+            $totalResult = $db->readQuery("SELECT FOUND_ROWS() as total");
+            $totalRow = mysqli_fetch_assoc($totalResult);
+            $totalRecords = $totalRow['total'];
+            
+            // Prepare response
+            $response = [
+                'draw' => $draw,
+                'recordsTotal' => $totalRecords,
+                'recordsFiltered' => $totalRecords,
+                'data' => $data
+            ];
+            
+            header('Content-Type: application/json');
+            echo json_encode($response);
+            exit();
+        } else {
+            throw new Exception('Database query failed: ' . mysqli_error($db->DB_CON));
+        }
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode([
+            'error' => true,
+            'message' => $e->getMessage()
+        ]);
+        exit();
+    }
+}
+
 // Make sure to use isset() before accessing $_POST['action']
 if (isset($_POST['action']) && $_POST['action'] == 'get_first_customer') {
     $CUSTOMER = new CustomerMaster(1); // Fetch customer with ID 1

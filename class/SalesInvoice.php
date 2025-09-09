@@ -454,6 +454,116 @@ class SalesInvoice
         return $array_res;
     }
 
+    #feature-sales-summary-reports
+    /**
+     * Get sales summary report data for DataTables
+     * 
+     * @param array $filters Array of filter criteria
+     * @return array Processed data for DataTables
+     */
+    public function getSalesSummaryReport($filters = []) {
+        $db = new Database();
+        
+        // Base query
+        $query = "SELECT 
+                    si.id,
+                    si.invoice_no as invoice_id,
+                    si.invoice_date as date,
+                    si.customer_name as customer,
+                    dm.name as department,
+                    si.grand_total as amount,
+                    CASE 
+                        WHEN si.sale_type = 1 THEN 'Cash Sale'
+                        WHEN si.sale_type = 2 THEN 'Credit Sale'
+                        ELSE 'Other'
+                    END as sales_type
+                  FROM `sales_invoice` si
+                  LEFT JOIN `department_master` dm ON si.department_id = dm.id
+                  WHERE 1=1";
+        
+        // Apply filters
+        $params = [];
+        
+        // Customer filter
+        if (!empty($filters['customer_id'])) {
+            $customerId = $db->escapeString($filters['customer_id']);
+            $query .= " AND si.customer_id = '$customerId'";
+        }
+        
+        // Date range filter
+        if (!empty($filters['from_date']) && !empty($filters['to_date'])) {
+            $fromDate = $db->escapeString($filters['from_date']);
+            $toDate = $db->escapeString($filters['to_date']);
+            $query .= " AND DATE(si.invoice_date) BETWEEN '$fromDate' AND '$toDate'";
+        } elseif (!empty($filters['from_date'])) {
+            $fromDate = $db->escapeString($filters['from_date']);
+            $query .= " AND DATE(si.invoice_date) >= '$fromDate'";
+        } elseif (!empty($filters['to_date'])) {
+            $toDate = $db->escapeString($filters['to_date']);
+            $query .= " AND DATE(si.invoice_date) <= '$toDate'";
+        }
+        
+        // Get total records count for pagination
+        $countQuery = "SELECT COUNT(*) as total FROM ($query) as total_count";
+        $countResult = $db->readQuery($countQuery);
+        $totalRecords = mysqli_fetch_assoc($countResult)['total'];
+        
+        // Add sorting
+        $orderColumn = $_POST['order'][0]['column'] ?? 2; // Default sort by date (column index 2)
+        $orderDir = $_POST['order'][0]['dir'] ?? 'DESC';
+        $orderColumnName = '';
+        
+        // Map column index to database column name
+        $columnMap = [
+            0 => 'si.id',
+            1 => 'invoice_id',
+            2 => 'si.invoice_date',
+            3 => 'customer',
+            4 => 'dm.name',
+            5 => 'sales_type',
+            6 => 'si.grand_total'
+        ];
+        
+        if (isset($columnMap[$orderColumn])) {
+            $orderColumnName = $columnMap[$orderColumn];
+            $query .= " ORDER BY $orderColumnName $orderDir";
+        } else {
+            $query .= " ORDER BY si.invoice_date DESC";
+        }
+        
+        // Add pagination
+        $start = $_POST['start'] ?? 0;
+        $length = $_POST['length'] ?? 25;
+        $query .= " LIMIT $start, $length";
+        
+        // Execute query
+        $result = $db->readQuery($query);
+        $data = [];
+        $totalAmount = 0;
+        
+        while ($row = mysqli_fetch_assoc($result)) {
+            $amount = (float)$row['amount'];
+            $totalAmount += $amount;
+            $data[] = [
+                'id' => $row['id'],
+                'invoice_id' => $row['invoice_id'],
+                'date' => date('Y-m-d', strtotime($row['date'])),
+                'customer_name' => $row['customer'],
+                'department' => $row['department'],
+                'amount' => $amount, // Keep as number for DataTables
+                'formatted_amount' => number_format($amount, 2), // Add formatted version for display
+                'sales_type' => $row['sales_type'],
+                'action' => '<a href="sales-invoice-view.php?inv=' . $row['invoice_id'] . '" class="btn btn-sm btn-info" target="_blank"><i class="uil uil-eye"></i> View</a>'
+            ];
+        }
+        
+        return [
+            'data' => $data,
+            'total_records' => $totalRecords,
+            'total_amount' => number_format($totalAmount, 2)
+        ];
+    }
+  
     public function updateInvoiceOutstanding($invoice_id, $amount)
     {
         $query = "UPDATE `sales_invoice` SET `outstanding_settle_amount` = `outstanding_settle_amount` + $amount WHERE `id` = $invoice_id";

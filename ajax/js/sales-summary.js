@@ -1,12 +1,104 @@
 $(document).ready(function () {
+    // Initialize customer DataTable if it doesn't exist
+    if (!$.fn.DataTable.isDataTable('#customerTable')) {
+        var customerTable = $('#customerTable').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: 'ajax/php/customer-master.php',
+                type: 'POST',
+                data: function (d) {
+                    d.action = 'fetch_customers';
+                    d.status = 'active'; // Only show active customers
+                },
+                dataSrc: function (json) {
+                    console.log('Customer data response:', json);
+                    if (json) {
+                        if (json.error) {
+                            console.error('Server error:', json.message);
+                            return [];
+                        }
+                        return json.data || [];
+                    }
+                    console.error('Invalid response format:', json);
+                    return [];
+                },
+                error: function (xhr, error, thrown) {
+                    console.error('AJAX Error:', {
+                        status: xhr.status,
+                        statusText: xhr.statusText,
+                        response: xhr.responseText,
+                        error: error,
+                        thrown: thrown
+                    });
+                    // Show user-friendly message
+                    alert('Error loading customer data. Please check console for details.');
+                    // Return empty data to clear processing message
+                    return [];
+                }
+            },
+            // Update the columns configuration to handle is_vat properly
+columns: [
+    { data: 'id' },
+    { data: 'code' },
+    { data: 'name' },
+    { data: 'mobile_number' },
+    { data: 'email' },
+    { data: 'category_name' },
+    { data: 'credit_limit' },  // Credit Limit
+    { data: 'outstanding' },   // Outstanding amount
+    { 
+        data: 'is_vat',
+        render: function(data) {
+            return (data === 1 || data === '1') ? 'Yes' : 'No';
+        }
+    },
+    { 
+        data: 'status_label',
+        orderable: false
+    }
+],
+            order: [[2, 'asc']], // Sort by name by default
+            pageLength: 10,
+            responsive: true,
+            dom: "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                 "<'row'<'col-sm-12'tr>>" +
+                 "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>"
+        });
+
+        // Handle customer selection
+        $('#customerTable tbody').on('click', 'tr', function () {
+            const data = customerTable.row(this).data();
+            if (data) {
+                $('#customer_id').val(data.id);
+                $('#customer_code').val(data.code);
+                $('#customer_name').val(data.name);
+                $('#customerModal').modal('hide');
+                
+                // Trigger change event to refresh any dependent fields
+                $('#customer_id').trigger('change');
+                
+                // Reload sales data if table exists
+                if (typeof salesTable !== 'undefined' && $.isFunction(salesTable.ajax.reload)) {
+                    salesTable.ajax.reload();
+                }
+            }
+        });
+    }
 
     // Disable customer inputs if "Check All Customers" is checked
     $('#checkAllCustomers').on('change', function () {
         const checked = $(this).is(':checked');
         if (checked) {
             $('#customer_code, #customer_name, #customer_address').val('').prop('readonly', true);
+            $('#customer_id').val('');
         } else {
             $('#customer_code, #customer_name, #customer_address').prop('readonly', false);
+        }
+        
+        // Trigger change to reload data
+        if (typeof salesTable !== 'undefined' && $.isFunction(salesTable.ajax.reload)) {
+            salesTable.ajax.reload();
         }
     });
 
