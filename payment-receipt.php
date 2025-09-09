@@ -152,16 +152,6 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                                     </div>
                                                 </div>
 
-                                                <div class="col-md-2">
-                                                    <label for="name" class="form-label">Cash Amount</label>
-                                                    <div class="input-group" id="datepicker2">
-                                                        <input type="number" class="form-control" id="cash_total"
-                                                            placeholder="Enter Cash Amount" name="cash_total" min="0"
-                                                            step="0.01">
-                                                    </div>
-                                                </div>
-
-
                                                 <div class="col-md-3">
                                                     <label for="entry_date" class="form-label">Entry Date</label>
                                                     <div class="input-group" id="datepicker2">
@@ -172,25 +162,27 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                                     </div>
                                                 </div>
 
-                                                <div class="col-md-7">
+                                                <div class="col-md-6">
                                                     <label for="remark" class="form-label"># Enter Remark</label>
                                                     <div class="input-group mb-3">
                                                         <input id="remark" name="remark" type="text"
                                                             class="form-control" placeholder="">
                                                     </div>
                                                 </div>
-
+                                                <div class="col-md-3">
+                                                    <label for="cash_total" class="form-label text-danger fw-bold">Cash Amount</label>
+                                                    <div class="input-group">
+                                                        <input type="number" class="form-control border-danger text-danger" id="cash_total"
+                                                            placeholder="Enter Cash Amount" name="cash_total" min="0"
+                                                            step="0.01">
+                                                    </div>
+                                                </div>
                                             </div>
                                         </form>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </section>
-
-                    <section>
-                        <div class="row d-flex align-items-stretch">
-                            <div class="col-md-7 d-flex">
+                            <div class="col-md-12 d-flex">
                                 <div class="card w-100 h-100">
                                     <div class="p-4">
                                         <form id="form-data-cheque" autocomplete="off">
@@ -285,44 +277,8 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Right Column (Form 2) -->
-                            <div class="col-md-5 d-flex">
-                                <div class="card w-100 h-100">
-                                    <div class="p-4">
-                                        <h5 class="mb-3">Payment Utilization Summary</h5>
-                                        <hr>
-
-                                        <div class="table-responsive mt-4"
-                                            style="max-height: 250px; overflow-y: auto; ">
-
-                                            <table class="table table-bordered">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th>Inv No</th>
-                                                        <th>Inv Date</th>
-                                                        <th>Pay Type</th>
-                                                        <th>Pay Date</th>
-                                                        <th>Amount</th>
-                                                        <th>Days</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="utilizationBody">
-                                                    <tr class="no-data">
-                                                        <td colspan="6" class="text-center text-muted">No payment data
-                                                            available</td>
-                                                    </tr>
-                                                </tbody>
-
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
                     </section>
-
 
 
                     <section>
@@ -360,11 +316,6 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                                         placeholder="Cash Balance " class="form-control" readonly>
                                                 </div>
                                             </div>
-                                            <div class="col-md-1 text-end">
-                                                <button type="button" class="btn btn-warning" id="utilize">
-                                                    <i class="uil uil-sync me-1"></i> Utilize
-                                                </button>
-                                            </div>
 
                                         </div>
                                         <!-- Table -->
@@ -380,6 +331,7 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                                         <th>Overdue</th>
                                                         <th>Chq Pay</th>
                                                         <th>Cash Pay</th>
+                                                        <th>Total Pay</th>
                                                         <th>Inv Balance</th>
                                                         <th>Action </th>
                                                     </tr>
@@ -401,11 +353,11 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                                     <div class="  p-2 border rounded bg-light" style="max-width: 600px;">
                                                         <div class="row mb-2">
                                                             <div class="col-7">
-                                                                <input type="text" class="form-control  " value="Sub Total"
+                                                                <input type="text" class="form-control  " value="Total Outstanding"
                                                                     disabled>
                                                             </div>
                                                             <div class="col-5">
-                                                                <input type="text" class="form-control" id="finalTotal"
+                                                                <input type="text" class="form-control" id="total_outstanding"
                                                                     value="0.00" disabled>
                                                             </div>
                                                         </div>
@@ -413,10 +365,10 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                                         <div class="row mb-2">
                                                             <div class="col-7">
                                                                 <input type="text" class="form-control  "
-                                                                    value="Discount Total:" disabled>
+                                                                    value="Paid Amount:" disabled>
                                                             </div>
                                                             <div class="col-5">
-                                                                <input type="text" class="form-control" id="disTotal"
+                                                                <input type="text" class="form-control" id="paid_amount"
                                                                     value="0.00" disabled>
                                                             </div>
                                                         </div>
@@ -425,11 +377,11 @@ $payment_receipt_id = $COMPANY_PROFILE_DETAILS->company_code . '/PR/00/0' . ($la
                                                         <div class="row mb-2">
                                                             <div class="col-7">
                                                                 <input type="text" class="form-control   fw-bold"
-                                                                    value="Grand Total:" disabled>
+                                                                    value="Balance Amount:" disabled>
                                                             </div>
                                                             <div class="col-5">
                                                                 <input type="text" class="form-control  fw-bold"
-                                                                    id="grandTotal" value="0.00" disabled>
+                                                                    id="balance_amount" value="0.00" disabled>
                                                             </div>
                                                         </div>
                                                     </div>

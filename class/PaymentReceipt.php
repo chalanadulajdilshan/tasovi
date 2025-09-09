@@ -104,4 +104,5 @@ class PaymentReceipt
 
         return $array;
     }
+    
 }
