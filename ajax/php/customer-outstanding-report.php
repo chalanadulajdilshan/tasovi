@@ -20,16 +20,13 @@ try {
     $action = $_POST['action'] ?? '';
 
     if ($action === 'get_outstanding_report') {
-        $filterType = $_POST['filter_type'] ?? '';
         $customerId = $_POST['customer_id'] ?? '';
         $fromDate = $_POST['from_date'] ?? '';
         $toDate = $_POST['to_date'] ?? '';
 
-        // Validate required fields based on filter type
-        if (($filterType === 'customer' && empty($customerId)) ||
-            ($filterType === 'date' && (empty($fromDate) || empty($toDate)))
-        ) {
-            throw new Exception('Missing required parameters');
+        // Validate that if dates are provided, both from and to dates must be present
+        if ((!empty($fromDate) && empty($toDate)) || (empty($fromDate) && !empty($toDate))) {
+            throw new Exception('Both from date and to date are required when filtering by date');
         }
 
         $db = new Database();
@@ -49,11 +46,13 @@ try {
                     si.grand_total > 0 AND
                     si.payment_type = 2";  // Only show credit invoices (payment_type = 2)
 
-        // Add conditions based on filter type
-        if ($filterType === 'customer') {
+        // Add conditions based on provided filters
+        if (!empty($customerId)) {
             $query .= " AND si.customer_id = " . (int)$customerId;
-        } else if ($filterType === 'date') {
-            // Ensure the date format is correct and use the same column name as in SELECT
+        }
+        
+        // Add date range filter if both dates are provided
+        if (!empty($fromDate) && !empty($toDate)) {
             $query .= " AND si.invoice_date BETWEEN '" . $db->escapeString($fromDate) . " 00:00:00' AND '" . $db->escapeString($toDate) . " 23:59:59'";
         }
 

@@ -138,29 +138,24 @@ columns: [
 
     // Load report data via AJAX
     function loadReportData() {
-        const filterType = $('input[name="filterType"]:checked').val();
         const customerId = $('#customer_id').val();
         const fromDate = $('#fromDate').val();
         const toDate = $('#toDate').val();
 
-        console.log('Filter Type:', filterType);
         console.log('Customer ID:', customerId);
         console.log('From Date:', fromDate);
         console.log('To Date:', toDate);
 
-        if ((filterType === 'customer' && !customerId) ||
-            (filterType === 'date' && (!fromDate || !toDate))) {
-            console.error('Validation failed: Missing required fields');
-            alert('Please fill all required fields');
-            return;
+        // If no filters are provided, show all records
+        if (!customerId && (!fromDate || !toDate)) {
+            console.log('No filters applied, showing all records');
         }
 
         const requestData = {
             action: 'get_outstanding_report',
-            filter_type: filterType,
-            customer_id: customerId,
-            from_date: fromDate,
-            to_date: toDate
+            customer_id: customerId || '',
+            from_date: fromDate || '',
+            to_date: toDate || ''
         };
 
         console.log('Sending request with data:', requestData);
