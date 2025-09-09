@@ -11,6 +11,7 @@ class PaymentReceiptMethod
     public $bank_id;
     public $branch_id;
     public $cheq_date;
+    public $is_settle;
 
     public function __construct($id = null)
     {
@@ -33,6 +34,7 @@ class PaymentReceiptMethod
                 $this->bank_id = $result['bank_id'];
                 $this->branch_id = $result['branch_id'];
                 $this->cheq_date = $result['cheq_date'];
+                $this->is_settle = $result['is_settle'];
             }
         }
     }
@@ -40,7 +42,7 @@ class PaymentReceiptMethod
     public function create()
     {
         $query = "INSERT INTO `payment_receipt_method` 
-                    (`receipt_id`, `invoice_id`, `payment_type_id`, `amount`, `cheq_no`, `bank_id`, `branch_id`, `cheq_date`) 
+                    (`receipt_id`, `invoice_id`, `payment_type_id`, `amount`, `cheq_no`, `bank_id`, `branch_id`, `cheq_date`, `is_settle`) 
                   VALUES (
                     '{$this->receipt_id}',
                     '{$this->invoice_id}',
@@ -49,7 +51,8 @@ class PaymentReceiptMethod
                     '{$this->cheq_no}',
                     '{$this->bank_id}',
                     '{$this->branch_id}',
-                    '{$this->cheq_date}'
+                    '{$this->cheq_date}',
+                    '{$this->is_settle}'
                   )";
 
         $db = new Database();
@@ -67,7 +70,8 @@ class PaymentReceiptMethod
                     `cheq_no` = '{$this->cheq_no}',
                     `bank_id` = '{$this->bank_id}',
                     `branch_id` = '{$this->branch_id}',
-                    `cheq_date` = '{$this->cheq_date}'
+                    `cheq_date` = '{$this->cheq_date}',
+                    `is_settle` = '{$this->is_settle}'
                   WHERE `id` = '{$this->id}'";
 
         $db = new Database();
@@ -84,7 +88,7 @@ class PaymentReceiptMethod
     public function all()
     {
         $query = "SELECT `id`, `receipt_id`, `invoice_id`, `payment_type_id`, `amount`, 
-                         `cheq_no`, `bank_id`, `branch_id`, `cheq_date`
+                         `cheq_no`, `bank_id`, `branch_id`, `cheq_date`, `is_settle`
                   FROM `payment_receipt_method`
                   ORDER BY `id` DESC";
 
@@ -102,7 +106,7 @@ class PaymentReceiptMethod
     public function getByReceipt($receiptId)
     {
         $query = "SELECT `id`, `receipt_id`, `invoice_id`, `payment_type_id`, `amount`, 
-                         `cheq_no`, `bank_id`, `branch_id`, `cheq_date`
+                         `cheq_no`, `bank_id`, `branch_id`, `cheq_date`, `is_settle`
                   FROM `payment_receipt_method`
                   WHERE `receipt_id` = '" . (int)$receiptId . "'
                   ORDER BY `id` ASC";
@@ -116,5 +120,15 @@ class PaymentReceiptMethod
         }
 
         return $array;
+    }
+
+    public function updateIsSettle($id)
+    {
+        $query = "UPDATE `payment_receipt_method`
+                  SET 
+                    `is_settle` = 1
+                  WHERE `id` = '{$id}'";
+        $db = new Database();
+        return $db->readQuery($query);
     }
 }
