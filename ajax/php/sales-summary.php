@@ -1,14 +1,43 @@
 <?php
 include '../../class/include.php';
+header('Content-Type: application/json');
 
-// Get filters from POST, with default fallback
+// Check the action
+$action = $_POST['action'] ?? '';
+
+if ($action === 'fetch_sales_summary') {
+    // Get filters for sales summary report
+    $filters = [
+        'customer_id' => $_POST['customer_id'] ?? null,
+        'from_date' => $_POST['from_date'] ?? '',
+        'to_date' => $_POST['to_date'] ?? ''
+    ];
+
+    // Call the static method to get sales summary data
+    $SALES_INVOICE = new SalesInvoice();
+    $result = $SALES_INVOICE->getSalesSummaryReport($filters);
+    
+    // Format the response for DataTables
+    $response = [
+        'draw' => isset($_POST['draw']) ? intval($_POST['draw']) : 1,
+        'recordsTotal' => count($result['data']),
+        'recordsFiltered' => $result['total_records'] ?? count($result['data']),
+        'data' => $result['data'],
+        'total_amount' => $result['total_amount'] ?? 0
+    ];
+    
+    echo json_encode($response);
+    exit();
+}
+
+// Original functionality for backward compatibility
 $filters = [
     'all_customers' => $_POST['all_customers'] ?? 0,
     'customer_code' => $_POST['customer_code'] ?? '',
     'from_date' => $_POST['from_date'] ?? '',
     'to_date' => $_POST['to_date'] ?? '',
     'date_range' => $_POST['date_range'] ?? '',
-    'status' => $_POST['status'] ?? ''  // status filter
+    'status' => $_POST['status'] ?? ''
 ];
 
 // Call the static filter method from SalesInvoice class
@@ -36,7 +65,7 @@ $html = '<table class="table table-bordered table-sm">
             <tbody>';
 
 foreach ($invoices as $inv) {
-    // Accumulate totals (assuming these keys exist in $inv)
+    // Accumulate totals
     $totalGrossAmount += (float) $inv['gross_amount'];
     $totalVat += (float) $inv['vat'];
     $totalNetAmount += (float) $inv['net_amount'];
@@ -44,8 +73,8 @@ foreach ($invoices as $inv) {
     $html .= '<tr>
                 <td>' . htmlspecialchars($inv['invoice_date']) . '</td>
                 <td>' . htmlspecialchars($inv['invoice_no']) . '</td>
-                <td>' . htmlspecialchars($inv['customer_id']) . '</td> <!-- You might want to get the customer name instead -->
-                <td>' . htmlspecialchars($inv['credit_days'] ?? '') . '</td> <!-- Assuming credit days field -->
+                <td>' . htmlspecialchars($inv['customer_id']) . '</td>
+                <td>' . htmlspecialchars($inv['credit_days'] ?? '') . '</td>
                 <td class="text-right">' . number_format($inv['gross_amount'], 2) . '</td>
                 <td class="text-right">' . number_format($inv['vat'], 2) . '</td>
                 <td class="text-right">' . number_format($inv['net_amount'], 2) . '</td>
