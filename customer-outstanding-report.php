@@ -55,54 +55,35 @@ include 'auth.php';
                             <div class="card">
                                 <div class="card-body">
                                     <form id="reportForm">
-                                        <div class="row mb-3">
-                                            <div class="col-md-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="filterType" id="customerView" value="customer" checked>
-                                                    <label class="form-check-label" for="customerView">
-                                                        Customer View
-                                                    </label>
+                                        <div class="row">
+                                            <!-- Customer Filter -->
+                                            <div class="col-md-4">
+                                                <label for="customerCode" class="form-label">Customer</label>
+                                                <div class="input-group mb-3">
+                                                    <input id="customer_code" name="customer_code" type="text"
+                                                        placeholder="Select Customer" class="form-control" readonly>
+                                                    <input type="hidden" id="customer_id" name="customer_id">
+                                                    <button class="btn btn-info" type="button" data-bs-toggle="modal"
+                                                        data-bs-target="#customerModal">
+                                                        <i class="uil uil-search me-1"></i>
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="filterType" id="dateView" value="date">
-                                                    <label class="form-check-label" for="dateView">
-                                                        Date View
-                                                    </label>
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        <!-- Customer Filter -->
-                                        <div class="col-md-2">
-                                            <label for="customerCode" class="form-label">Customer Code</label>
-                                            <div class="input-group mb-3">
-                                                <input id="customer_code" name="customer_code" type="text"
-                                                    placeholder="Select Customer" class="form-control" readonly>
-                                                <input type="hidden" id="customer_id" name="customer_id">
-                                                <button class="btn btn-info" type="button" data-bs-toggle="modal"
-                                                    data-bs-target="#customerModal">
-                                                    <i class="uil uil-search me-1"></i>
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <!-- Date Filter -->
-                                        <div class="row mt-3" id="dateFilter" style="display: none;">
-                                            <div class="col-md-8">
+                                            <!-- Date Filter -->
+                                            <div class="col-md-6">
                                                 <div class="row">
-                                                    <div class="col-md-3">
-                                                        <label for="fromDate" class="form-label">From Date <span class="text-danger">*</span></label>
+                                                    <div class="col-md-4">
+                                                        <label for="fromDate" class="form-label">From Date</label>
                                                         <div class="input-group" id="datepicker1">
-                                                            <input type="text" class="form-control date-picker" id="fromDate" name="fromDate" required>
+                                                            <input type="text" class="form-control date-picker" id="fromDate" name="fromDate">
                                                             <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
                                                         </div>
                                                     </div>
-                                                    <div class="col-md-3">
-                                                        <label for="toDate" class="form-label">To Date <span class="text-danger">*</span></label>
+                                                    <div class="col-md-4">
+                                                        <label for="toDate" class="form-label">To Date</label>
                                                         <div class="input-group" id="datepicker2">
-                                                            <input type="text" class="form-control date-picker" id="toDate" name="toDate" required>
+                                                            <input type="text" class="form-control date-picker" id="toDate" name="toDate">
                                                             <span class="input-group-text"><i class="mdi mdi-calendar"></i></span>
                                                         </div>
                                                     </div>
@@ -110,18 +91,18 @@ include 'auth.php';
                                                         <button type="button" class="btn btn-sm btn-outline-primary" id="setToday">Today</button>
                                                     </div>
                                                 </div>
-                                                <small class="text-muted">Select a date range and optionally filter by customer</small>
+                                                <small class="text-muted">Leave dates empty to show all records</small>
                                             </div>
-                                        </div>
 
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <button type="button" class="btn btn-primary" id="searchBtn">
-                                                    <i class="mdi mdi-magnify me-1"></i> Search
-                                                </button>
-                                                <button type="button" class="btn btn-secondary" id="resetBtn">
-                                                    <i class="mdi mdi-refresh me-1"></i> Reset
-                                                </button>
+                                            <div class="row mt-3">
+                                                <div class="col-md-12">
+                                                    <button type="button" class="btn btn-primary me-1" id="searchBtn">
+                                                        <i class="mdi mdi-magnify me-1"></i> Search
+                                                    </button>
+                                                    <button type="button" class="btn btn-secondary" id="resetBtn">
+                                                        <i class="mdi mdi-refresh me-1"></i> Reset
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </form>
@@ -180,26 +161,35 @@ include 'auth.php';
     <script src="assets/libs/datatables.net-bs4/js/dataTables.bootstrap4.min.js"></script>
     <script src="assets/libs/moment/min/moment.min.js"></script>
     <script src="assets/libs/daterangepicker/daterangepicker.min.js"></script>
+    <!-- jQuery UI Datepicker -->
+    <link href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css" rel="stylesheet">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 
     <!-- Custom JS for Customer Outstanding Report -->
     <script src="ajax/js/customer-outstanding-report.js"></script>
 
     <script>
         $(document).ready(function() {
-            // Initialize the datepicker
+            // Initialize the datepicker with proper configuration
             $(".date-picker").datepicker({
                 dateFormat: 'yy-mm-dd',
                 changeMonth: true,
                 changeYear: true,
                 yearRange: '1900:2099',
-                showButtonPanel: true
+                showButtonPanel: true,
+                showOn: 'focus',
+                showAnim: 'fadeIn',
+                buttonImageOnly: false
             });
 
-            // Set today's date when clicking the Today button
-            $('#setToday').click(function() {
+            // Set to today's date and first day of month when clicking the Today button
+            $('#setToday').click(function(e) {
+                e.preventDefault();
                 const today = new Date();
-                const todayFormatted = $.datepicker.formatDate('yy-mm-dd', today);
-                $('.date-picker').val(todayFormatted);
+                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+                
+                $('#toDate').datepicker('setDate', today);
+                $('#fromDate').datepicker('setDate', firstDay);
             });
 
             // Handle customer selection from modal
@@ -207,62 +197,39 @@ include 'auth.php';
                 e.preventDefault();
                 const customerId = $(this).data('id');
                 const customerCode = $(this).data('code');
-                const customerType = $('.modal.show').find('[data-customer-type]').data('customer-type');
-
-                if (customerType === 'date') {
-                    $('#date_customer_id').val(customerId);
-                    $('#date_customer_code').val(customerCode);
-                } else {
-                    $('#customer_id').val(customerId);
-                    $('#customer_code').val(customerCode);
-                }
+                
+                $('#customer_id').val(customerId);
+                $('#customer_code').val(customerCode);
                 $('#customerModal').modal('hide');
             });
 
-            // Toggle between customer and date views
-            $('input[name="filterType"]').change(function() {
-                const selectedValue = $(this).val();
-                if (selectedValue === 'date') {
-                    $('#customer_code').closest('.col-md-2').hide();
-                    $('#dateFilter').show();
-                    // Set default dates
-                    const today = new Date();
-                    $('#toDate').datepicker('setDate', today);
-                    // Set from date to first day of current month
-                    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-                    $('#fromDate').datepicker('setDate', firstDay);
-                    // Clear any previous customer selection
-                    $('#date_customer_id').val('');
-                    $('#date_customer_code').val('');
-                } else {
-                    $('#customer_code').closest('.col-md-2').show();
-                    $('#dateFilter').hide();
-                    // Clear date filter values
-                    $('#fromDate').val('');
-                    $('#toDate').val('');
-                }
-            });
-
-            // Set to today's date
-            $('#setToday').click(function(e) {
-                e.preventDefault();
-                const today = new Date();
-                $('#toDate').datepicker('setDate', today);
-                // Set from date to first day of current month
-                const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
-                $('#fromDate').datepicker('setDate', firstDay);
+            // Reset form
+            $('#resetBtn').click(function() {
+                $('#customer_id').val('');
+                $('#customer_code').val('');
+                $('#fromDate').val('');
+                $('#toDate').val('');
+                // Clear the table if needed
+                $('#reportTableBody').empty();
+                $('.text-danger').text('0.00');
             });
 
             // Validate date range
-            $('#fromDate, #toDate').change(function() {
-                const fromDate = new Date($('#fromDate').datepicker('getDate'));
-                const toDate = new Date($('#toDate').datepicker('getDate'));
-
-                if (fromDate > toDate) {
+            $('.date-picker').change(function() {
+                const fromDate = $('#fromDate').datepicker('getDate');
+                const toDate = $('#toDate').datepicker('getDate');
+                
+                if (fromDate && toDate && fromDate > toDate) {
                     alert('From date cannot be after To date');
-                    $(this).datepicker('setDate', null);
+                    $(this).val('');
                 }
             });
+
+            // Initialize with current month as default
+            const today = new Date();
+            const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+            $('#fromDate').datepicker('setDate', firstDay);
+            $('#toDate').datepicker('setDate', today);
         });
     </script>
 
