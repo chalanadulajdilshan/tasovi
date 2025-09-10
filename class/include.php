@@ -71,6 +71,8 @@ include_once(dirname(__FILE__) . '/InvoicePayments.php');
 include_once(dirname(__FILE__) . '/SpecialPermission.php');
 include_once(dirname(__FILE__) . '/PaymentReceipt.php');
 include_once(dirname(__FILE__) . '/PaymentReceiptMethod.php');
+include_once(dirname(__FILE__) . '/ServiceItem.php');
+include_once(dirname(__FILE__) . '/Service.php');
 
 session_start();
 function dd($data)

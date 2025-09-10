@@ -344,6 +344,40 @@ include './auth.php';
                                                         id="addItemBtn">Add</button>
                                                 </div>
                                             </div>
+                                            <div class="row align-items-end" id="serviceItemTable"  style="width: 100%;display: none;">
+                                                <div class="col-md-2">
+                                                    <br>
+                                                    <select id="service_items" class="form-control select2">
+                                                        <option value="0">-- Select a Service --</option>
+                                                        <?php
+                                                        $SERVICE_MASTER = new ServiceItem(NULL);
+                                                        foreach ($SERVICE_MASTER->all() as $service) {
+                                                        ?>
+                                                            <option value="<?php echo $service['id'] ?>">
+                                                                <?php echo $service['item_name'] ?>
+                                                            </option>
+                                                        <?php } ?>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-1">
+                                                    <input type="number" id="itemQty" class="form-control"
+                                                        placeholder="Qty_service" oninput="calculatePayment()">
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <br>
+                                                    <select id="service" class="form-control select2">
+                                                        <option value="0">-- Select a Service --</option>
+                                                        <?php
+                                                        $SERVICE = new Service(NULL);
+                                                        foreach ($SERVICE->all() as $service) {
+                                                        ?>
+                                                            <option value="<?php echo $service['id'] ?>">
+                                                                <?php echo $service['service_name'] ?>
+                                                            </option>
+                                                        <?php } ?>
+                                                    </select>
+                                                </div>
+                                            </div>
 
 
 
