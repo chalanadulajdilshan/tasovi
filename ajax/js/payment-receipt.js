@@ -776,6 +776,17 @@ jQuery(document).ready(function ($) {
       });
     }
 
+    // Validate total paid amount > 0
+    if (parseAmount($("#paid_amount").val()) <= 0) {
+      return swal({
+        title: "Error!",
+        text: "Paid amount must be greater than 0",
+        type: "error",
+        timer: CONFIG.SWAL_TIMEOUT,
+        showConfirmButton: false,
+      });
+    }
+
     if (!validateOutstandingLimit()) {
       return swal({
         title: "Error!",

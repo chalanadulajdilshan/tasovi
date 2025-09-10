@@ -74,7 +74,7 @@ class BrandCategory
     // Get all categories
     public function all()
     {
-        $query = "SELECT * FROM `brand_category` ORDER BY `queue` ASC";
+        $query = "SELECT * FROM `brand_category` ORDER BY `id` ASC";
         $db = new Database();
         $result = $db->readQuery($query);
 
