@@ -78,7 +78,7 @@ class StockMaster
         $db = new Database();
 
         $query = "UPDATE `stock_master` 
-              SET `quantity` = '" . (float) $new_quantity . "'
+              SET `quantity` = '" . (float) $new_quantity . "', `is_active` = 1
               WHERE `item_id` = '" . (int) $item_id . "' 
               AND `department_id` = '" . (int) $department_id . "'";
 
@@ -130,10 +130,9 @@ class StockMaster
     // Get available quantity for item + department
     public static function getAvailableQuantity($department_id, $item_id)
     {
-        $query = "SELECT `quantity` FROM `stock_master` 
+        $query = "SELECT IFNULL(SUM(`quantity`),0) AS quantity FROM `stock_master` 
                   WHERE `department_id` = " . (int) $department_id . " 
-                  AND `item_id` = " . (int) $item_id . " 
-                LIMIT 1";
+                  AND `item_id` = " . (int) $item_id;
 
 
         $db = new Database();
@@ -179,30 +178,39 @@ class StockMaster
 
         $db = new Database();
 
-        // 1. Check available quantity in from_department
-        $queryFrom = "SELECT * FROM `stock_master` 
-                  WHERE `item_id` = '" . (int) $item_id . "' 
-                    AND `department_id` = '" . (int) $from_department_id . "' 
-                    AND `is_active` = 1
-                  LIMIT 1";
+        // 1. Check available quantity in from_department across all rows
+        $sumQuery = "SELECT IFNULL(SUM(quantity),0) AS total_qty FROM `stock_master`
+                  WHERE `item_id` = '" . (int)$item_id . "'
+                    AND `department_id` = '" . (int)$from_department_id . "'";
+        $sumRes = mysqli_fetch_assoc($db->readQuery($sumQuery));
+        $totalAvailable = (float)$sumRes['total_qty'];
 
-
-        $resultFrom = mysqli_fetch_assoc($db->readQuery($queryFrom));
-
-        if (!$resultFrom) {
+        if ($totalAvailable <= 0) {
             return ['status' => 'error', 'message' => 'No stock found in source department.'];
         }
 
-        if ($resultFrom['quantity'] < $transfer_qty) {
+        if ($totalAvailable < $transfer_qty) {
             return ['status' => 'error', 'message' => 'Insufficient quantity in source department.'];
         }
 
-        // 2. Deduct quantity from source department
-        $newQtyFrom = $resultFrom['quantity'] - $transfer_qty;
+        // 2. Deduct quantity from source department across rows (FIFO by created_at, id)
+        $remainingToDeduct = (float)$transfer_qty;
+        $rowsQuery = "SELECT id, quantity FROM `stock_master`
+                      WHERE `item_id` = '" . (int)$item_id . "' AND `department_id` = '" . (int)$from_department_id . "'
+                      ORDER BY `created_at` ASC, `id` ASC";
+        $rowsRes = $db->readQuery($rowsQuery);
+        while ($remainingToDeduct > 0 && ($row = mysqli_fetch_assoc($rowsRes))) {
+            $rowQty = (float)$row['quantity'];
+            if ($rowQty <= 0) {
+                continue;
+            }
+            $deduct = min($remainingToDeduct, $rowQty);
+            $newRowQty = $rowQty - $deduct;
+            $db->readQuery("UPDATE `stock_master` SET `quantity` = '" . (int)$newRowQty . "', `is_active` = 1, `remark` = '" . $remark . "' WHERE `id` = '" . (int)$row['id'] . "'");
+            $remainingToDeduct -= $deduct;
+        }
 
-        $updateFrom = "UPDATE `stock_master` SET `quantity` = '" . (int) $newQtyFrom . "', `remark` = '" . $remark . "' WHERE `id` = '" . (int) $resultFrom['id'] . "'";
-
-
+        // 2b. Record out transaction for total transfer qty
         $STOCK_TRANSACTION_OUT = new StockTransaction(NULL);
         $STOCK_TRANSACTION_OUT->item_id = $item_id;
         $STOCK_TRANSACTION_OUT->type = 9; // deduction
@@ -212,20 +220,17 @@ class StockMaster
         $STOCK_TRANSACTION_OUT->remark = 'Quantity deducted to ' . $FROM_DEPARTMENT->name . ' to ' . $TO_DEPARTMENT->name;
         $STOCK_TRANSACTION_OUT->create();
 
-        $db->readQuery($updateFrom);
-
         // 3. Check if item exists in target department
         $queryTo = "SELECT * FROM `stock_master` 
                 WHERE `item_id` = '" . (int) $item_id . "' 
                   AND `department_id` = '" . (int) $to_department_id . "' 
-                  AND `is_active` = 1
                 LIMIT 1";
         $resultTo = mysqli_fetch_assoc($db->readQuery($queryTo));
 
         if ($resultTo) {
             // Exists: Update quantity
             $newQtyTo = $resultTo['quantity'] + $transfer_qty;
-            $updateTo = "UPDATE `stock_master` SET `quantity` = '" . (int) $newQtyTo . "', `remark` = '" . $remark . "' WHERE `id` = '" . (int) $resultTo['id'] . "'";
+            $updateTo = "UPDATE `stock_master` SET `quantity` = '" . (int) $newQtyTo . "', `is_active` = 1, `remark` = '" . $remark . "' WHERE `id` = '" . (int) $resultTo['id'] . "'";
             $db->readQuery($updateTo);
 
             // Create transaction for addition
@@ -251,6 +256,14 @@ class StockMaster
             $STOCK_TRANSACTION_IN->qty_out = 0;
             $STOCK_TRANSACTION_IN->remark = 'New Quantity added to ' . $TO_DEPARTMENT->name . ' From ' . $FROM_DEPARTMENT->name;
             $STOCK_TRANSACTION_IN->create();
+        }
+
+        // Keep stock_item_tmp aligned using FIFO lots across ARNs
+        try {
+            $STOCK_ITEM_TMP = new StockItemTmp(NULL);
+            $STOCK_ITEM_TMP->transferBetweenDepartments($item_id, $from_department_id, $to_department_id, $transfer_qty);
+        } catch (Exception $e) {
+            // fail silently to avoid blocking transfer if tmp sync fails
         }
 
         return ['status' => 'success', 'message' => 'Stock transferred successfully.'];

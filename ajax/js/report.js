@@ -162,6 +162,11 @@ jQuery(document).ready(function () {
         loadPriceControlItems();
     });
 
+    // Initial load on page ready for Price Control page
+    if ($('#priceControl').length) {
+        loadPriceControlItems();
+    }
+
     function loadPriceControlItems() {
         let brand_id = $('#brand_id').val();
         let category_id = $('#category_id').val();
@@ -180,6 +185,19 @@ jQuery(document).ready(function () {
                 group_id: group_id,
                 department_id: department_id,
                 item_code: item_code
+            },
+            beforeSend: function () {
+                try {
+                    var $target = $(".someBlock");
+                    if ($target.length && typeof $target.preloader === 'function') {
+                        $target.preloader();
+                    } else {
+                        var $wrap = $('#priceControl').closest('.table-responsive');
+                        if ($wrap.length && typeof $wrap.preloader === 'function') {
+                            $wrap.preloader();
+                        }
+                    }
+                } catch (e) { /* noop */ }
             },
             success: function (data) {
                 let tbody = '';
@@ -253,6 +271,18 @@ jQuery(document).ready(function () {
             error: function (xhr, status, error) {
                 console.error('Error loading items:', error);
                 $('#priceControl tbody').html(`<tr><td colspan="9" class="text-danger text-center">Error loading data</td></tr>`);
+            },
+            complete: function () {
+                try {
+                    var $target = $(".someBlock");
+                    if ($target.length && typeof $target.preloader === 'function') {
+                        $target.preloader('remove');
+                    }
+                    var $wrap = $('#priceControl').closest('.table-responsive');
+                    if ($wrap.length && typeof $wrap.preloader === 'function') {
+                        $wrap.preloader('remove');
+                    }
+                } catch (e) { /* noop */ }
             }
         });
     }

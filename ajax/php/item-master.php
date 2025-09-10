@@ -9,7 +9,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'get_by_id') {
     $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
     $response = ['status' => 'error', 'message' => 'Item not found'];
     try {
-        if ($id <= 0) { throw new Exception('Invalid id'); }
+        if ($id <= 0) {
+            throw new Exception('Invalid id');
+        }
         $db = new Database();
         $sql = "SELECT * FROM item_master WHERE id = $id LIMIT 1";
         $res = $db->readQuery($sql);
@@ -47,7 +49,9 @@ if (isset($_POST['action']) && $_POST['action'] === 'get_by_code') {
     $code = isset($_POST['code']) ? trim($_POST['code']) : '';
     $response = ['status' => 'error', 'message' => 'Item not found'];
     try {
-        if ($code === '') { throw new Exception('Invalid code'); }
+        if ($code === '') {
+            throw new Exception('Invalid code');
+        }
         $db = new Database();
         $escCode = mysqli_real_escape_string($db->DB_CON, $code);
         $sql = "SELECT * FROM item_master WHERE code = '" . $escCode . "' LIMIT 1";
@@ -330,5 +334,54 @@ if (isset($_POST['action']) && $_POST['action'] === 'fetch_for_stock_adjustment'
     // Ensure we're sending valid JSON
     header('Content-Type: application/json');
     echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    exit();
+}
+
+// Fetch ARN-wise stock lots for a given item id (for Live Stock row details)
+if (isset($_POST['action']) && $_POST['action'] === 'get_stock_tmp_by_item') {
+    try {
+        $itemId = isset($_POST['item_id']) ? (int)$_POST['item_id'] : 0;
+        $departmentFilterId = isset($_POST['department_id']) ? (int)$_POST['department_id'] : 0;
+        if ($itemId <= 0) {
+            throw new Exception('Invalid item_id');
+        }
+
+        $STOCK_TMP = new StockItemTmp(NULL);
+        $lots = $STOCK_TMP->getByItemId($itemId);
+
+        // If a department is specified, filter to that department only
+        if ($departmentFilterId > 0) {
+            $lots = array_values(array_filter($lots, function ($l) use ($departmentFilterId) {
+                return isset($l['department_id']) && (int)$l['department_id'] === $departmentFilterId;
+            }));
+        }
+
+        // Decorate with ARN number and department name
+        $decorated = [];
+        foreach ($lots as $lot) {
+            $arnNo = null;
+            if (!empty($lot['arn_id'])) {
+                $ARN = new ArnMaster((int)$lot['arn_id']);
+                if ($ARN && isset($ARN->arn_no)) {
+                    $arnNo = $ARN->arn_no;
+                }
+            }
+            $deptName = null;
+            if (!empty($lot['department_id'])) {
+                $DEPT = new DepartmentMaster((int)$lot['department_id']);
+                if ($DEPT && isset($DEPT->name)) {
+                    $deptName = $DEPT->name;
+                }
+            }
+            $lot['arn_no'] = $arnNo;
+            $lot['department'] = $deptName;
+            $decorated[] = $lot;
+        }
+
+        echo json_encode(['status' => 'success', 'data' => $decorated]);
+    } catch (Exception $e) {
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+    }
     exit();
 }

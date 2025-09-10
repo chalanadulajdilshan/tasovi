@@ -10,7 +10,6 @@ if (isset($data['create'])) {
     $ARN = new ArnMaster(NULL);
     $ARN->arn_no = $data['arn_no'];
     $ARN->supplier_id = $data['supplier'];
-    $ARN->arn_date = $data['arn_date'];
     $ARN->lc_tt_no = $data['lc_no'];
     $ARN->ci_no = $data['ci_no'];
     $ARN->bl_no = $data['bl_no'];
@@ -27,7 +26,6 @@ if (isset($data['create'])) {
     $ARN->entry_date = $data['entry_date'];
     $ARN->total_arn_value = $data['total_arn'];
     $ARN->total_discount = $data['total_discount'];
-    $ARN->total_vat = $data['total_vat'];
     $ARN->total_received_qty = $data['total_received_qty'];
     $ARN->total_order_qty = $data['total_order_qty'];
     $ARN->department = $data['department_id'];
@@ -67,8 +65,6 @@ if (isset($data['create'])) {
             $ARN_ITEM->discount_1 = $item['dis1'];
             $ARN_ITEM->discount_2 = $item['dis2'];
             $ARN_ITEM->discount_3 = $item['dis3'];
-            $ARN_ITEM->discount_4 = $item['dis4'];
-            $ARN_ITEM->discount_5 = $item['dis5'];
             $ARN_ITEM->final_cost = $item['actual_cost'];
             $ARN_ITEM->unit_total = $item['unit_total'];
             $ARN_ITEM->cost = $item['cost'];
@@ -100,7 +96,7 @@ if (isset($data['create'])) {
                 $stockMaster->department_id = $ARN->department;
                 $stockMaster->quantity = $item['rec_qty'];
                 $stockMaster->created_at = date("Y-m-d H:i:s");
-                $stockMaster->invoice_price = $item['invoice_price'];
+                $stockMaster->is_active = 1;
                 $stockMaster->create();
             }
 

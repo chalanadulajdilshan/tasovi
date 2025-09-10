@@ -448,6 +448,7 @@ class ItemMaster
 
         $data = [];
         $key = 1;
+        $STOCK_TMP_HELPER = new StockItemTmp(NULL);
         while ($row = mysqli_fetch_assoc($dataQuery)) {
             $CATEGORY = new CategoryMaster($row['category']);
             $BRAND = new Brand($row['brand']);
@@ -461,6 +462,17 @@ class ItemMaster
                     'department_id' => (int)$stockRow['department_id'],
                     'quantity' => (float)$stockRow['quantity']
                 ];
+            }
+
+            // Build ARN-wise stock lots from stock_item_tmp
+            $stockTmpLots = $STOCK_TMP_HELPER->getByItemId($row['id']);
+            foreach ($stockTmpLots as $idx => $lot) {
+                // Attach ARN number
+                $arnObj = new ArnMaster($lot['arn_id']);
+                $stockTmpLots[$idx]['arn_no'] = $arnObj ? $arnObj->arn_no : null;
+                // Attach department name
+                $depObj = new DepartmentMaster($lot['department_id']);
+                $stockTmpLots[$idx]['department'] = $depObj ? $depObj->name : null;
             }
 
             $nestedData = [
@@ -486,6 +498,8 @@ class ItemMaster
                 "qty" => $row['total_qty'],
                 "available_qty" => $departmentId > 0 ? $row['available_qty'] : $row['total_qty'],
                 "department_stock" => $departmentStocks,
+                // Provide ARN-wise lots for frontend expandable details
+                "stock_tmp" => $stockTmpLots,
                 "status_label" => $row['is_active'] == 1
                     ? '<span class="badge bg-soft-success font-size-12">Active</span>'
                     : '<span class="badge bg-soft-danger font-size-12">Inactive</span>'

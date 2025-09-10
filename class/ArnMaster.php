@@ -46,23 +46,24 @@ class ArnMaster
         }
     }
 
- 
-    public function getArnIdByArnNo($arn_no) {
+
+    public function getArnIdByArnNo($arn_no)
+    {
         if (empty($arn_no)) {
             return false;
         }
-        
+
         $db = new Database();
         $arn_no = $db->escapeString($arn_no);
-        
+
         $query = "SELECT `id` FROM `arn_master` WHERE `arn_no` = '{$arn_no}' LIMIT 1";
         $result = $db->readQuery($query);
-        
+
         if ($result && mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
             return (int)$row['id'];
         }
-        
+
         return false;
     }
 
@@ -188,18 +189,22 @@ class ArnMaster
         // Mark as cancelled in related tables
         $db->readQuery("UPDATE arn_master SET is_cancelled = 1 WHERE id = '{$arn_id}'");
         $db->readQuery("UPDATE arn_items SET is_cancelled = 1 WHERE arn_id = '{$arn_id}'");
-        $db->readQuery("UPDATE stock_item_tmp SET is_cancelled = 1 WHERE arn_id = '{$arn_id}'");
 
-
-        // Adjust stock by deducting received quantities
-        $items = $this->getByArnId($arn_id); // assumes getByArnId returns items with item_code and received_qty
-
-        foreach ($items as $item) {
-            $STOCK_MASTER = new StockMaster();
-
-
-            $STOCK_MASTER->adjustQuantity($item['item_id'], $department_id, $item['received_qty'], 'deductions', 'ARN cancellation adjustment');
+        // For every department, deduct quantities from stock_master that are tied to this ARN via stock_item_tmp, then zero those tmp rows
+        $tmpQuery = "SELECT department_id, item_id, SUM(qty) AS qty_sum FROM stock_item_tmp WHERE arn_id = '" . (int)$arn_id . "' GROUP BY department_id, item_id";
+        $tmpRes = $db->readQuery($tmpQuery);
+        while ($row = mysqli_fetch_assoc($tmpRes)) {
+            $deptId = (int)$row['department_id'];
+            $itemId = (int)$row['item_id'];
+            $qtySum = (float)$row['qty_sum'];
+            if ($qtySum > 0) {
+                $STOCK_MASTER = new StockMaster();
+                $STOCK_MASTER->adjustQuantity($itemId, $deptId, $qtySum, 'deductions', 'ARN cancellation adjustment');
+            }
         }
+
+        // Zero out the tmp quantities for this ARN so they won’t appear in listings
+        $db->readQuery("UPDATE stock_item_tmp SET qty = 0 WHERE arn_id = '" . (int)$arn_id . "'");
 
         return true;
     }
@@ -225,7 +230,4 @@ class ArnMaster
 
         return true;
     }
-
-
-
 }
