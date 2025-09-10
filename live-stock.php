@@ -81,12 +81,12 @@ try {
                                             style="border-collapse: collapse; border-spacing: 0; width: 100%;">
                                             <thead class="table-light">
                                                 <tr>
+                                                    <th style="width:30px;"></th>
                                                     <th>Item Code</th>
                                                     <th>Item Description</th>
                                                     <th>Department</th>
                                                     <th>Pattern</th>
                                                     <th>Category</th>
-                                                    <th>Cost</th>
                                                     <th>Selling</th>
                                                     <th>Dealer Price</th>
                                                     <th>Quantity</th>

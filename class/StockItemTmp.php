@@ -105,7 +105,12 @@ class StockItemTmp
     }
     public function getByItemId($id)
     {
-        $query = "SELECT * FROM `stock_item_tmp` WHERE `item_id` = '" . (int) $id . "'";
+        $query = "SELECT sit.* 
+                 FROM `stock_item_tmp` sit
+                 INNER JOIN `arn_master` am ON sit.arn_id = am.id
+                 WHERE sit.`item_id` = '" . (int) $id . "' 
+                 AND (am.is_cancelled IS NULL OR am.is_cancelled = 0)";
+
         $db = new Database();
         $result = $db->readQuery($query);
 
@@ -132,6 +137,63 @@ class StockItemTmp
     }
 
 
+
+    /**
+     * Move quantity between departments using FIFO across non-cancelled ARN lots.
+     * Keeps stock_item_tmp aligned with inter-department transfers.
+     */
+    public function transferBetweenDepartments($item_id, $from_department_id, $to_department_id, $transfer_qty)
+    {
+        $db = new Database();
+
+        $item_id = (int)$item_id;
+        $from_department_id = (int)$from_department_id;
+        $to_department_id = (int)$to_department_id;
+        $remaining = (float)$transfer_qty;
+
+        if ($remaining <= 0) {
+            return true;
+        }
+
+        // Fetch FIFO lots from source department, excluding cancelled ARNs
+        $query = "
+            SELECT sit.*
+            FROM stock_item_tmp sit
+            INNER JOIN arn_master am ON am.id = sit.arn_id
+            WHERE sit.item_id = {$item_id}
+              AND sit.department_id = {$from_department_id}
+              AND (am.is_cancelled IS NULL OR am.is_cancelled = 0)
+              AND sit.qty > 0
+            ORDER BY sit.created_at ASC, sit.id ASC
+        ";
+        $result = $db->readQuery($query);
+
+        while ($remaining > 0 && ($lot = mysqli_fetch_assoc($result))) {
+            $movable = min($remaining, (float)$lot['qty']);
+
+            // 1) Deduct from source lot
+            $newQty = (float)$lot['qty'] - $movable;
+            $updateSrc = "UPDATE stock_item_tmp SET qty = '" . $newQty . "' WHERE id = " . (int)$lot['id'];
+            $db->readQuery($updateSrc);
+
+            // 2) Add to destination department lot with same ARN and pricing (upsert by arn_id+item+department)
+            $destFind = "SELECT id, qty FROM stock_item_tmp WHERE arn_id = " . (int)$lot['arn_id'] . " AND item_id = {$item_id} AND department_id = {$to_department_id} LIMIT 1";
+            $destRes = $db->readQuery($destFind);
+            if ($destRow = mysqli_fetch_assoc($destRes)) {
+                $destNewQty = (float)$destRow['qty'] + $movable;
+                $updateDest = "UPDATE stock_item_tmp SET qty = '" . $destNewQty . "' WHERE id = " . (int)$destRow['id'];
+                $db->readQuery($updateDest);
+            } else {
+                $insertDest = "INSERT INTO stock_item_tmp (arn_id, item_id, qty, cost, list_price, invoice_price, department_id, created_at) VALUES ('" . (int)$lot['arn_id'] . "', '{$item_id}', '" . $movable . "', '" . (float)$lot['cost'] . "', '" . (float)$lot['list_price'] . "', '" . (float)$lot['invoice_price'] . "', '{$to_department_id}', NOW())";
+                $db->readQuery($insertDest);
+            }
+
+            $remaining -= $movable;
+        }
+
+        // If we couldn't move full quantity due to lack of FIFO lots, return false
+        return $remaining <= 0;
+    }
 
     public function updateStockItemTmpPrice($id, $field, $value)
     {
@@ -177,7 +239,7 @@ class StockItemTmp
                       AND `department_id` = '{$department_id}' 
                     LIMIT 1";
 
-  
+
         $result = $db->readQuery($selectQuery);
 
         if ($row = mysqli_fetch_assoc($result)) {

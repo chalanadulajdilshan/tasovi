@@ -37,14 +37,47 @@ jQuery(document).ready(function () {
                 d.department_id = depVal; // Get selected department ("all" becomes 0 on server)
                 d.expand_departments = (depVal === 'all'); // Expand into per-department rows when All is selected
             },
+            beforeSend: function () {
+                try {
+                    var $target = $(".someBlock");
+                    if ($target.length && typeof $target.preloader === 'function') {
+                        $target.preloader();
+                    } else {
+                        var $wrap = $('#stockTable').closest('.dataTables_wrapper');
+                        if ($wrap.length && typeof $wrap.preloader === 'function') {
+                            $wrap.preloader();
+                        }
+                    }
+                } catch (e) { /* noop */ }
+            },
             dataSrc: function (json) {
                 return json.data;
             },
             error: function (xhr) {
                 console.error("Server Error Response:", xhr.responseText);
+            },
+            complete: function () {
+                try {
+                    var $target = $(".someBlock");
+                    if ($target.length && typeof $target.preloader === 'function') {
+                        $target.preloader('remove');
+                    }
+                    var $wrap = $('#stockTable').closest('.dataTables_wrapper');
+                    if ($wrap.length && typeof $wrap.preloader === 'function') {
+                        $wrap.preloader('remove');
+                    }
+                } catch (e) { /* noop */ }
             }
         },
         columns: [
+            { 
+                data: null,
+                title: "",
+                className: 'details-control',
+                orderable: false,
+                defaultContent: '<span class="mdi mdi-plus-circle-outline" style="font-size:18px; cursor:pointer;"></span>',
+                width: '30px'
+            },
             { data: "code", title: "Item Code" },
             { data: "name", title: "Item Description" },
             { 
@@ -67,13 +100,7 @@ jQuery(document).ready(function () {
             },
             { data: "pattern", title: "Pattern" },
             { data: "category", title: "Category" },
-            {
-                data: "invoice_price",
-                title: "Cost",
-                render: function (data, type, row) {
-                    return parseFloat(data).toFixed(2);
-                }
-            },
+            
             {
                 data: "list_price",
                 title: "Selling",
@@ -148,7 +175,7 @@ jQuery(document).ready(function () {
                 orderable: false
             }
         ],
-        order: [[1, 'asc']], // Default sort by item name
+        order: [[2, 'asc']], // Default sort by item name (shifted due to details column)
         lengthMenu: [10, 25, 50, 100],
         pageLength: 25,
         responsive: true,
@@ -186,6 +213,80 @@ jQuery(document).ready(function () {
 
     // Make rows appear clickable
     $('#stockTable tbody').css('cursor', 'pointer');
+
+    // Format function for row details (ARN-wise Last Price and Invoice Price)
+    function renderArnWiseTable(lots) {
+        if (!Array.isArray(lots) || lots.length === 0) {
+            return '<div class="p-2 text-muted">No ARN lots available</div>';
+        }
+        let html = '<div class="table-responsive"><table class="table table-sm table-bordered mb-0">';
+        html += '<thead class="table-light"><tr>'+
+                '<th>ARN No</th>'+
+                '<th class="text-end">Last Price</th>'+
+                '<th class="text-end">Invoice Price</th>'+
+            '</tr></thead><tbody>';
+        lots.forEach(function(l){
+            html += '<tr>'+
+                '<td>'+(l.arn_no || '-')+'</td>'+
+                '<td class="text-end">'+Number(l.list_price || 0).toFixed(2)+'</td>'+
+                '<td class="text-end">'+Number(l.invoice_price || 0).toFixed(2)+'</td>'+
+            '</tr>';
+        });
+        html += '</tbody></table></div>';
+        return html;
+    }
+
+    // Toggle details on click of first column
+    $('#stockTable tbody').on('click', 'td.details-control', function (e) {
+        e.stopPropagation();
+        var tr = $(this).closest('tr');
+        var row = table.row(tr);
+        var icon = $(this).find('span.mdi');
+
+        if (row.child.isShown()) {
+            // Close
+            row.child.hide();
+            tr.removeClass('shown');
+            icon.removeClass('mdi-minus-circle-outline').addClass('mdi-plus-circle-outline');
+        } else {
+            // Open
+            const data = row.data();
+            // Show temporary loading content
+            const loading = '<div class="p-2 text-muted">Loading ARN lots...</div>';
+            row.child(loading).show();
+            tr.addClass('shown');
+            icon.removeClass('mdi-plus-circle-outline').addClass('mdi-minus-circle-outline');
+
+            // Resolve department id context for this row
+            let depId = null;
+            const filterVal = $('#filter_department_id').val();
+            if (filterVal && filterVal !== 'all') {
+                depId = parseInt(filterVal);
+            } else if (data.row_department_id) {
+                depId = parseInt(data.row_department_id);
+            } else if (Array.isArray(data.department_stock) && data.department_stock.length > 0) {
+                depId = parseInt(data.department_stock[0].department_id);
+            }
+
+            // Fetch fresh lots by item_id (and department if available)
+            $.ajax({
+                url: 'ajax/php/item-master.php',
+                type: 'POST',
+                dataType: 'json',
+                data: { action: 'get_stock_tmp_by_item', item_id: data.id, department_id: depId || 0 },
+                success: function(resp) {
+                    if (resp && resp.status === 'success') {
+                        row.child(renderArnWiseTable(resp.data)).show();
+                    } else {
+                        row.child('<div class="p-2 text-muted">No ARN lots available</div>').show();
+                    }
+                },
+                error: function() {
+                    row.child('<div class="p-2 text-danger">Failed to load ARN lots</div>').show();
+                }
+            });
+        }
+    });
 
     // Department filter change handler
     $('#filter_department_id').on('change', function () {
