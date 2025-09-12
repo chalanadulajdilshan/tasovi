@@ -172,6 +172,15 @@ include './auth.php';
                                                     </select>
                                                 </div>
                                             </div>
+                                            <div class="col-md-2">
+                                                <label for="department" class="form-label">Invoice Date</label>
+                                                <div class="input-group mb-3">
+                                                    <input type="text" id="invoice_date" name="invoice_date" class="form-control date-picker"
+                                                        value="<?php echo date('Y-m-d'); ?>"
+                                                        <?php echo ($US->type == 1) ? '' : 'readonly'; ?>>
+                                                </div>
+                                            </div>
+
 
                                             <div class="col-md-2">
                                                 <label for="customerCode" class="form-label">Customer Code</label>
@@ -344,7 +353,7 @@ include './auth.php';
                                                         id="addItemBtn">Add</button>
                                                 </div>
                                             </div>
-                                            <div class="row align-items-end" id="serviceItemTable"  style="width: 100%;display: none;">
+                                            <div class="row align-items-end" id="serviceItemTable" style="width: 100%;display: none;">
                                                 <div class="col-md-2">
                                                     <br>
                                                     <select id="service_items" class="form-control select2">

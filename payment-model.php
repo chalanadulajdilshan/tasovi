@@ -87,7 +87,7 @@
                     <div class="row g-3 align-items-end">
                         <div class="col-md-4">
                             <label class="fw-semibold">Payment Type</label>
-                            <select name="paymentType[]" class="form-select paymentType" required>
+                            <select name="paymentType[]" id="paymentType" class="form-select paymentType" required>
                                 <option value="">-- Select --</option>
                                 <?php
                                 $PAYMENT_TYPE = new PaymentType(NULL);

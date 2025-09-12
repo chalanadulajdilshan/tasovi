@@ -160,12 +160,15 @@ if (isset($_POST['arn_id_cancel'])) {
     exit;
 }
 
-
-
-if (isset($_POST['brand_id'])) {
-    $brandId = $_POST['brand_id'];
-    $BRAND = new Brand($brandId);
-
-    echo json_encode(['discount' => $BRAND->discount]);
+if (isset($_POST['brand_id'], $_POST['category_id'])) {
+    $brandId = (int)$_POST['brand_id'];
+    $categoryId = (int)$_POST['category_id'];
+    
+    $brandWiseDis = new BrandWiseDis();
+    $discounts = $brandWiseDis->getByBrand($brandId, $categoryId);
+    
+    $discount = !empty($discounts) ? (float)$discounts[0]['discount_percent'] : 0;
+    
+    echo json_encode(['discount' => $discount]);
     exit();
 }

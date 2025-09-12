@@ -348,19 +348,34 @@ jQuery(document).ready(function () {
   });
 
   $(document).on("change", "#service", function () {
-    const selectedId = $(this).val();
-    if (selectedId) {
-      // Get the selected option's text (item name)
-      const selectedText = $(this).find("option:selected").text().trim();
+    // Get selected service name
+    const selectedText = $(this).find("option:selected").text().trim();
 
-      // Update the item code and name fields
-      $("#itemName").val(selectedText);
+    // Update service name field
+    $("#itemName").val(selectedText);
 
-      // Focus on quantity field for better UX
-      $("#serviceQty").focus();
-    }
+    // Fetch service price by selected service id
+    $.ajax({
+      url: "ajax/php/service.php",
+      method: "POST",
+      data: { action: "get_service_price", service_text: selectedText  },
+      dataType: "json",
+      success: function (data) {
+        if (!data.error) {
+          $("#itemPrice").val(data.service_price);
+          $("#itemSalePrice").val(data.service_price);
+        } else {
+          console.warn("No price found for this service");
+        }
+      },
+      error: function () {
+        console.error("Failed to load service price.");
+      },
+    });
+
+    // Focus on quantity field for better UX
+    $("#serviceQty").focus();
   });
-
 
   //GET DATA ARN VISE
   $(document).on("click", ".arn-row", function () {
@@ -659,6 +674,8 @@ jQuery(document).ready(function () {
     $("#modal_invoice_id").val(invoiceId);
     $("#modalFinalTotal").val(total.toFixed(2));
     $("#amountPaid").val("");
+    $("#paymentType").val("1"); // Set default payment type to Cash (ID: 1)
+
     $("#balanceAmount").val("0.00").removeClass("text-danger");
     $("#paymentModal").modal("show");
   });
@@ -806,8 +823,10 @@ jQuery(document).ready(function () {
       const totalItem = parseFloat($(this).find("td:eq(6)").text()) || 0;
       const item_id = $(this).find('input[name="item_id[]"]').val();
       const arn_no = $(this).find('input[name="arn_ids[]"]').val();
-      const arn_cost = parseFloat($(this).find('input[name="arn_costs[]"]').val()) || price;
-      const service_qty = parseFloat($(this).find('input[name="service_qty[]"]').val()) || 0;
+      const arn_cost =
+        parseFloat($(this).find('input[name="arn_costs[]"]').val()) || price;
+      const service_qty =
+        parseFloat($(this).find('input[name="service_qty[]"]').val()) || 0;
 
       if (code && !isNaN(totalItem) && item_id) {
         items.push({
@@ -961,6 +980,7 @@ jQuery(document).ready(function () {
     formData.append("customer_mobile", $("#customer_mobile").val());
     formData.append("customer_address", $("#customer_address").val());
     formData.append("invoice_no", $("#invoice_no").val());
+    formData.append("invoice_date", $("#invoice_date").val());
     formData.append("items", JSON.stringify(items));
     formData.append(
       "sales_type",
@@ -1136,7 +1156,7 @@ jQuery(document).ready(function () {
     let availableQty = parseFloat($("#available_qty").val()) || 0;
     let serviceQty = parseFloat($("#serviceQty").val()) || 0;
 
-    if ((!code || !name || price <= 0 || qty <= 0)) {
+    if (!code || !name || price <= 0 || qty <= 0) {
       swal({
         title: "Error!",
         text: "Please enter valid item details including quantity and price.",

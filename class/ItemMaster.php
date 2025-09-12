@@ -234,12 +234,15 @@ class ItemMaster
 
     public function fetchForDataTable($request)
     {
+
         $db = new Database();
 
         $start = isset($request['start']) ? (int) $request['start'] : 0;
         $length = isset($request['length']) ? (int) $request['length'] : 100;
         $search = $request['search']['value'] ?? '';
         $searchTerm = $request['search_term'] ?? '';
+        $brandId = $request['brand_id'] ?? null;
+        $categoryId = $request['category_id'] ?? null;
 
         $status = $request['status'] ?? null;
         $stockOnly = isset($request['stock_only']) ? filter_var($request['stock_only'], FILTER_VALIDATE_BOOLEAN) : false;
@@ -260,12 +263,18 @@ class ItemMaster
             $where .= " AND (im.name LIKE '%$searchTerm%' OR im.code LIKE '%$searchTerm%')";
         }
 
-        $brandId = $request['brand'] ?? null;
 
+        //brand filter
         if (!empty($brandId)) {
             $brandId = (int) $brandId;
             $where .= " AND im.brand = {$brandId}";
         }
+        //category filter
+        if (!empty($categoryId)) {
+            $categoryId = (int) $categoryId;
+            $where .= " AND im.category = {$categoryId}";
+        }
+
 
         // Status filter
         if (!empty($status)) {
@@ -439,8 +448,11 @@ class ItemMaster
         GROUP BY im.id 
         $having";
 
+
+
         $filteredQuery = $db->readQuery($filteredSql);
         $filteredData = mysqli_num_rows($filteredQuery);
+
 
         // Paginated query
         $sql = "$filteredSql LIMIT $start, $length";

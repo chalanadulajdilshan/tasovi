@@ -208,21 +208,6 @@ $arn_id = $COMPANY_PROFILE_DETAILS->company_code . '/ARN/00/' . ($lastId + 1);
                                             </div>
 
                                             <div class="col-md-2">
-                                                <label for="Category" class="form-label">Category</label>
-                                                <div class="input-group mb-3">
-                                                    <select id="category" name="category" class="form-select">
-                                                        <option value="">-- All Category --</option>
-                                                        <?php
-                                                        $CATEGORY = new CategoryMaster(NULL);
-                                                        foreach ($CATEGORY->getActiveCategory() as $category) {
-                                                            echo "<option value='{$category['id']}'>{$category['name']}</option>";
-                                                        }
-                                                        ?>
-                                                    </select>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-2">
                                                 <label for="Brand" class="form-label">Brand</label>
                                                 <div class="input-group mb-3">
                                                     <select id="brand" name="brand" class="form-select">
@@ -237,6 +222,21 @@ $arn_id = $COMPANY_PROFILE_DETAILS->company_code . '/ARN/00/' . ($lastId + 1);
                                                 </div>
                                             </div>
 
+
+                                            <div class="col-md-2">
+                                                <label for="Category" class="form-label">Category</label>
+                                                <div class="input-group mb-3">
+                                                    <select id="category" name="category" class="form-select">
+                                                        <option value="">-- All Category --</option>
+                                                        <?php
+                                                        $CATEGORY = new CategoryMaster(NULL);
+                                                        foreach ($CATEGORY->getActiveCategory() as $category) {
+                                                            echo "<option value='{$category['id']}'>{$category['name']}</option>";
+                                                        }
+                                                        ?>
+                                                    </select>
+                                                </div>
+                                            </div>
                                             <div class="col-md-2">
                                                 <label for="arn_status" class="form-label">ARN Status</label>
                                                 <div class="input-group mb-3">
@@ -376,8 +376,8 @@ $arn_id = $COMPANY_PROFILE_DETAILS->company_code . '/ARN/00/' . ($lastId + 1);
                                                     <div class="input-group input-group-sm">
                                                         <input id="itemCode" name="itemCode" type="text"
                                                             class="form-control" readonly>
-                                                        <button class="btn btn-info" type="button"
-                                                            data-bs-toggle="modal" data-bs-target="#main_item_master">
+                                                        <button id="item_search" class="btn btn-info" type="button"
+                                                            data-bs-toggle="modal" data-bs-target="#main_item_master" disabled>
                                                             <i class="uil uil-search me-1"></i>
                                                         </button>
                                                     </div>
@@ -654,8 +654,8 @@ $arn_id = $COMPANY_PROFILE_DETAILS->company_code . '/ARN/00/' . ($lastId + 1);
                                         <th>ARN No</th>
                                         <th>Order Date</th>
                                         <th>Supplier Code and Name</th>
-                                        <th>PI No</th>
-                                        <th>LC/TT No</th>
+                                        <th>Invoice No</th>
+                                        <th>Invoice Date</th> 
                                         <th>Department</th>
                                         <th>Grand Total</th>
                                     </tr>
@@ -707,8 +707,8 @@ $arn_id = $COMPANY_PROFILE_DETAILS->company_code . '/ARN/00/' . ($lastId + 1);
                                             <td><?= htmlspecialchars($arn_master['po_date']); ?></td>
                                             <td><?= htmlspecialchars($CUSTOMER_MASTER->code . ' - ' . $CUSTOMER_MASTER->name); ?>
                                             </td>
-                                            <td><?= htmlspecialchars($arn_master['pi_no']); ?></td>
-                                            <td><?= htmlspecialchars($arn_master['lc_tt_no']); ?></td>
+                                            <td><?= htmlspecialchars($arn_master['bl_no']); ?></td>
+                                            <td><?= htmlspecialchars($arn_master['invoice_date']); ?></td>
                                             <td><?= htmlspecialchars($DEPARTMENT_MASTER->name); ?></td>
                                             <td><?= htmlspecialchars($arn_master['total_arn_value']); ?></td>
                                         </tr>

@@ -56,5 +56,28 @@ if (isset($_POST['delete']) && isset($_POST['service_id'])) {
         echo json_encode(['status' => 'error']);
     }
 }
+if (isset($_POST['action']) && $_POST['action'] === 'get_service_price') {
+    $service_id = $_POST['service_text'];
+
+    $SERVICE = new Service();
+    $services = $SERVICE->getByName($service_id);
+
+    if (!empty($services)) {
+        // Get the first matching service
+        $service = $services[0];
+        
+        echo json_encode([
+            'status' => 'success',
+            'service_price' => $service['service_price']
+        ]);
+    } else {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Service not found'
+        ]);
+    }
+    exit();
+}
+
 
 ?>
