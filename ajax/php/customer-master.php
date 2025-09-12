@@ -1,315 +1,330 @@
+<!doctype html>
+
 <?php
+include 'class/include.php';
+include 'auth.php';
 
-include '../../class/include.php';
-header('Content-Type: application/json; charset=UTF8');
+$CUSTOMER_MASTER = new CustomerMaster(NULL);
 
-// Create a new customer
-if (isset($_POST['create'])) {
+// Get the last inserted package id
+$lastId = $CUSTOMER_MASTER->getLastID();
+$customer_id = 'CM/' . $_SESSION['id'] . '/0' . ($lastId + 1);
+?>
 
-    $CUSTOMER = new CustomerMaster(NULL); // New customer object
+<head>
 
-    $CUSTOMER->code = $_POST['code'];
-    $CUSTOMER->name = ucwords(strtolower($_POST['name']));
-    $CUSTOMER->mobile_number = $_POST['mobile_number'];
-    $CUSTOMER->mobile_number_2 = $_POST['mobile_number_2'];
-    $CUSTOMER->email = $_POST['email'];
-    $CUSTOMER->contact_person = ucwords(strtolower($_POST['contact_person']));
-    $CUSTOMER->contact_person_number = $_POST['contact_person_number'];
-    $CUSTOMER->credit_limit = $_POST['credit_limit'];
-    $CUSTOMER->outstanding = $_POST['outstanding'];
-    $CUSTOMER->overdue = $_POST['overdue'];
-    $CUSTOMER->vat_no = $_POST['vat_no'];
-    $CUSTOMER->svat_no = $_POST['svat_no'];
-    $CUSTOMER->address = ucwords(strtolower($_POST['address']));
-    $CUSTOMER->remark = $_POST['remark'];
-    $CUSTOMER->category = $_POST['category'];
-    $CUSTOMER->district = $_POST['district'];
-    $CUSTOMER->province = $_POST['province'];
-    $CUSTOMER->vat_group = $_POST['vat_group'];
-    $CUSTOMER->is_vat = isset($_POST['is_vat']) ? 1 : 0;
-    $CUSTOMER->is_active = isset($_POST['is_active']) ? 1 : 0;
-
-    $res = $CUSTOMER->create();
-
-    //audit log
-    $AUDIT_LOG = new AuditLog(NUll);
-    $AUDIT_LOG->ref_id = $_POST['code'];
-    $AUDIT_LOG->ref_code = $_POST['code'];
-    $AUDIT_LOG->action = 'CREATE';
-    $AUDIT_LOG->description = 'CREATE CUSTOMER NO #' . $_POST['code'];
-    $AUDIT_LOG->user_id = $_SESSION['id'];
-    $AUDIT_LOG->created_at = date("Y-m-d H:i:s");
-    $AUDIT_LOG->create();
+    <meta charset="utf-8" />
+    <title>Customer Master | <?php echo $COMPANY_PROFILE_DETAILS->name ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="#" name="description" />
+    <meta content="<?php echo $COMPANY_PROFILE_DETAILS->name ?>" name="author" />
+    <!-- include main CSS -->
+    <?php include 'main-css.php' ?>
 
 
-    if ($res) {
-        echo json_encode(["status" => "success"]);
-        exit();
-    } else {
-        echo json_encode(["status" => "error"]);
-        exit();
-    }
-}
-
-if (isset($_POST['create-invoice-customer'])) {
-
-    $CUSTOMER = new CustomerMaster(NULL); // New customer object
-
-    $CUSTOMER->code = $_POST['code'];
-    $CUSTOMER->name = ucwords(strtolower($_POST['name']));
-    $CUSTOMER->mobile_number = $_POST['mobile_number'];
-    $CUSTOMER->address = ucwords(strtolower($_POST['address']));
-    $res = $CUSTOMER->createInvoiceCustomer();
-
-    //audit log
-    $AUDIT_LOG = new AuditLog(NUll);
-    $AUDIT_LOG->ref_id = $res;
-    $AUDIT_LOG->ref_code = $_POST['code'];
-    $AUDIT_LOG->action = 'CREATE';
-    $AUDIT_LOG->description = 'CREATE CUSTOMER NO #' . $_POST['code'];
-    $AUDIT_LOG->user_id = $_SESSION['id'];
-    $AUDIT_LOG->created_at = date("Y-m-d H:i:s");
-    $AUDIT_LOG->create();
 
 
-    if ($res) {
+</head>
 
-        $CUSTOMER = new CustomerMaster($res);
-        echo json_encode(["status" => "success", "customer_id" => $CUSTOMER->code, "customer_name" => $CUSTOMER->name, "customer_address" => $CUSTOMER->address, "customer_mobile_number" => $CUSTOMER->mobile_number]);
-        exit();
-    } else {
-        echo json_encode(["status" => "error"]);
-        exit();
-    }
-}
+<body data-layout="horizontal" data-topbar="colored" class="someBlock">
 
-// Update customer
-if (isset($_POST['update'])) {
+    <!-- Begin page -->
+    <div id="layout-wrapper">
 
-    $CUSTOMER = new CustomerMaster($_POST['customer_id']); // Load customer by ID
+        <?php include 'navigation.php' ?>
 
-    $CUSTOMER->code = $_POST['code'];
-    $CUSTOMER->name = ucwords(strtolower($_POST['name']));
-    $CUSTOMER->mobile_number = $_POST['mobile_number'];
-    $CUSTOMER->mobile_number_2 = $_POST['mobile_number_2'];
-    $CUSTOMER->email = $_POST['email'];
-    $CUSTOMER->contact_person = ucwords(strtolower($_POST['contact_person']));
-    $CUSTOMER->contact_person_number = $_POST['contact_person_number'];
-    $CUSTOMER->credit_limit = $_POST['credit_limit'];
-    $CUSTOMER->outstanding = $_POST['outstanding'];
-    $CUSTOMER->overdue = $_POST['overdue'];
-    $CUSTOMER->vat_no = $_POST['vat_no'];
-    $CUSTOMER->svat_no = $_POST['svat_no'];
-    $CUSTOMER->address = ucwords(strtolower($_POST['address']));
-    $CUSTOMER->remark = $_POST['remark'];
-    $CUSTOMER->category = $_POST['category'];
-    $CUSTOMER->district = $_POST['district'];
-    $CUSTOMER->province = $_POST['province'];
-    $CUSTOMER->vat_group = isset($_POST['vat_group']) ? $_POST['vat_group'] : '';
-    $CUSTOMER->is_vat = isset($_POST['is_vat']) ? 1 : 0;
-    $CUSTOMER->is_active = isset($_POST['is_active']) ? 1 : 0;
+        <!-- ============================================================== -->
+        <!-- Start right Content here -->
+        <!-- ============================================================== -->
+        <div class="main-content">
+            <div class="page-content">
+                <div class="container-fluid">
+                    <div class="row mb-4">
+                        <div class="col-md-8 d-flex align-items-center flex-wrap gap-2">
+                            <a href="#" class="btn btn-success" id="new">
+                                <i class="uil uil-plus me-1"></i> New
+                            </a>
 
-    $res = $CUSTOMER->update();
+                            <?php if ($PERMISSIONS['add_page']): ?>
+                                <a href="#" class="btn btn-primary" id="create">
+                                    <i class="uil uil-save me-1"></i> Save
+                                </a>
+                            <?php endif; ?>
 
-    //audit log
-    $AUDIT_LOG = new AuditLog(NUll);
-    $AUDIT_LOG->ref_id = $_POST['customer_id'];
-    $AUDIT_LOG->ref_code = $_POST['code'];
-    $AUDIT_LOG->action = 'UPDATE';
-    $AUDIT_LOG->description = 'UPDATE CUSTOMER NO #' . $_POST['code'];
-    $AUDIT_LOG->user_id = $_SESSION['id'];
-    $AUDIT_LOG->created_at = date("Y-m-d H:i:s");
-    $AUDIT_LOG->create();
+                            <?php if ($PERMISSIONS['edit_page']): ?>
+                                <a href="#" class="btn btn-warning" id="update">
+                                    <i class="uil uil-edit me-1"></i> Update
+                                </a>
+                            <?php endif; ?>
+
+                            <?php if ($PERMISSIONS['delete_page']): ?>
+                                <a href="#" class="btn btn-danger delete-customer">
+                                    <i class="uil uil-trash-alt me-1"></i> Delete
+                                </a>
+                            <?php endif; ?>
+
+                        </div>
+
+                        <div class="col-md-4 text-md-end text-start mt-3 mt-md-0">
+                            <ol class="breadcrumb m-0 justify-content-md-end">
+                                <li class="breadcrumb-item"><a href="javascript: void(0);">Dashboard</a></li>
+                                <li class="breadcrumb-item active">Customer Master</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- end page title -->
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div id="addproduct-accordion" class="custom-accordion">
+                                <div class="card">
+                                    <a href="#" class="text-dark" data-bs-toggle="collapse" aria-expanded="true"
+                                        aria-controls="addproduct-billinginfo-collapse">
+                                        <div class="p-4">
+
+                                            <div class="d-flex align-items-center">
+                                                <div class="flex-shrink-0 me-3">
+                                                    <div class="avatar-xs">
+                                                        <div
+                                                            class="avatar-title rounded-circle bg-soft-primary text-primary">
+                                                            01
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1 overflow-hidden">
+                                                    <h5 class="font-size-16 mb-1">Customer Master</h5>
+                                                    <p class="text-muted text-truncate mb-0">Fill all information below
+                                                        to add items
+                                                    </p>
+                                                </div>
+                                                <div class="flex-shrink-0">
+                                                    <i class="mdi mdi-chevron-up accor-down-icon font-size-24"></i>
+                                                </div>
+
+                                            </div>
+
+                                        </div>
+                                    </a>
+
+                                    <div class="p-4">
+                                        <form id="form-data" autocomplete="off">
+                                            <div class="row">
+                                                <!-- Customer Code -->
+                                                <div class="col-md-2">
+                                                    <label for="customerCode" class="form-label">Customer Code</label>
+                                                    <div class="input-group mb-3">
+                                                        <input id="code" name="code" type="text" class="form-control"
+                                                            value="<?php echo $customer_id ?>" readonly>
+                                                        <button class="btn btn-info" type="button"
+                                                            data-bs-toggle="modal" data-bs-target="#AllCustomerModal"><i
+                                                                class="uil uil-search me-1"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Full Name -->
+                                                <div class="col-md-4">
+                                                    <label for="fullName" class="form-label">Full Name <span
+                                                            class="text-danger">*</span></label>
+                                                    <input id="name" name="name"  onkeyup="toUpperCaseInput(this)"  type="text" class="form-control"
+                                                        placeholder="Enter full name">
+                                                </div>
+
+                                                <!-- Address -->
+                                                <div class="col-md-3">
+                                                    <label for="address" class="form-label">Address <span
+                                                            class="text-danger">*</span></label>
+                                                    <input id="address" onkeyup="toUpperCaseInput(this)" name="address" type="text" class="form-control"
+                                                        placeholder="Enter address">
+                                                </div>
+
+                                                <!-- Mobile 1 -->
+                                                <div class="col-md-3">
+                                                    <label for="mobile1" class="form-label">Mobile Number 01 <span
+                                                            class="text-danger">*</span></label>
+                                                    <input id="mobile_number" name="mobile_number" type="text"
+                                                        class="form-control" placeholder="Enter primary mobile number">
+                                                </div>
+
+                                                <!-- Mobile 2 -->
+                                                <div class="col-md-2">
+                                                    <label for="mobile_number_2" class="form-label">Mobile Number
+                                                        02</label>
+                                                    <input id="mobile_number_2" name="mobile_number_2" type="text"
+                                                        class="form-control"
+                                                        placeholder="Enter secondary mobile number">
+                                                </div>
+
+                                                <!-- Email -->
+                                                <div class="col-md-3">
+                                                    <label for="email" class="form-label">Email <span
+                                                            class="text-danger">*</span></label>
+                                                    <input id="email" name="email" type="email" class="form-control"
+                                                        placeholder="Enter email">
+                                                </div>
+
+                                                <!-- Contact Person -->
+                                                <div class="col-md-3 ">
+                                                    <label for="contactPerson" class="form-label">Contact Person <span
+                                                            class="text-danger">*</span></label>
+                                                    <input id="contact_person" name="contact_person" type="text"
+                                                        class="form-control" placeholder="Enter contact person name">
+                                                </div>
+
+                                                <!-- Contact Person No -->
+                                                <div class="col-md-3  ">
+                                                    <label for="contact_person_number" class="form-label">Contact Person
+                                                        No
+                                                        <span class="text-danger">*</span></label>
+                                                    <input id="contact_person_number" name="contact_person_number"
+                                                        type="text" class="form-control"
+                                                        placeholder="Enter contact person number">
+                                                </div>
+                                                <div
+                                                    class="col-md-1 d-flex justify-content-center align-items-center mt-3 ">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="checkbox" id="is_active"
+                                                            name="is_active">
+                                                        <label class="form-check-label" for="is_active">
+                                                            Active
+                                                        </label>
+                                                    </div>
+                                                </div>
+
+                                                <hr class="mt-3">
+                                                <!-- Credit Info -->
+                                                <div class="col-md-4 mt-3">
+                                                    <label for="credit_limit" class="form-label">Credit Limit <span
+                                                            class="text-danger">*</span></label>
+                                                    <input id="credit_limit" name="credit_limit" type="text"
+                                                        class="form-control" placeholder="Enter credit limit">
+                                                </div>
+                                                <div class="col-md-4 mt-3">
+                                                    <label for="outstanding" class="form-label">Outstanding Balance
+                                                        <span class="text-danger">*</span></label>
+                                                    <input id="outstanding" name="outstanding" type="text"
+                                                        class="form-control" placeholder="Enter outstanding balance">
+                                                </div>
+                                                <div class="col-md-4 mt-3">
+                                                    <label for="overdue" class="form-label">Overdue <span
+                                                            class="text-danger">*</span></label>
+                                                    <input id="overdue" name="overdue" type="text" class="form-control"
+                                                        placeholder="Enter overdue amount">
+                                                </div>
+
+                                                <!-- VAT Details -->
+                                                <div class="col-md-4 mt-3">
+                                                    <label for="vat_no" class="form-label">VAT No <span
+                                                            class="text-danger">*</span></label>
+                                                    <input id="vat_no" name="vat_no" type="text" class="form-control"
+                                                        placeholder="Enter VAT number">
+                                                </div>
+                                                <div class="col-md-4 mt-3">
+                                                    <label for="svat_no" class="form-label">SVAT No <span
+                                                            class="text-danger">*</span></label>
+                                                    <input id="svat_no" name="svat_no" type="text" class="form-control"
+                                                        placeholder="Enter SVAT number">
+                                                </div>
+
+                                                <!-- Hidden Customer Category with default value 'customer' -->
+                                              <!-- Category -->
+                                                <div class="col-md-4 mt-3">
+                                                    <label for="category" class="form-label">Customer Category
+                                                        <span class="text-danger">*</span></label>
+                                                    <select id="category" name="category" class="form-select select2">
+                                                        
+                                                        <?php
+                                                        $CUSTOMER_CATEGORY = new CustomerCategory(NULL);
+                                                        foreach ($CUSTOMER_CATEGORY->activeCategory() as $customer_category) {
+                                                            ?>
+                                                            <option value="<?php echo $customer_category['id'] ?>">
+                                                                <?php echo $customer_category['name'] ?>
+                                                            </option>
+                                                        <?php } ?>
+                                                    </select>
+                                                </div>
+
+                                                <div class="col-md-4 mt-3">
+                                                    <label for="province" class="form-label">Province <span
+                                                            class="text-danger">*</span></label>
+                                                    <select id="province" name="province" class="form-select select2">
+                                                        <option value="" selected> -- Select province -- </option>
+                                                        <?php
+                                                        $PROVINCE = new Province(null);
+                                                        foreach ($PROVINCE->all() as $province) {
+                                                        ?>
+                                                            <option value="<?php echo $province['id'] ?>">
+                                                                <?php echo $province['name'] ?>
+                                                            </option>
+                                                        <?php } ?>
+                                                    </select>
+                                                </div>
+
+                                                <!-- Region Info -->
+                                                <div class="col-md-4 mt-3">
+                                                    <label for="district" class="form-label">District <span
+                                                            class="text-danger">*</span></label>
+                                                    <select id="district" name="district" class="form-select select2 ">
+                                                        <option value="" selected>-- Select province first -- </option>
+                                                        <?php
+                                                        $DISTRICT = new District(null);
+                                                        foreach ($DISTRICT->all() as $district) {
+                                                        ?>
+                                                            <option value="<?php echo $district['id'] ?>">
+                                                                <?php echo $district['name'] ?>
+                                                            </option>
+                                                        <?php } ?>
+                                                    </select>
+                                                </div>
+
+                                                <div class="col-md-4 mt-3">
+                                                    <label for="vat_group" class="form-label">Customer VAT Group <span
+                                                            class="text-danger">*</span></label>
+                                                    <select id="vat_group" name="vat_group" class="form-select">
+                                                        <option value="" selected> -- Select VAT group -- </option>
+                                                        <option value="Private VAT">Private VAT</option>
+                                                        <option value="GOV VAT">GOV VAT</option>
+                                                        <option value="GOV NON VAT">GOV NON VAT</option>
+                                                    </select>
+                                                </div>
+
+                                                <!-- Remark Note -->
+                                                <div class="col-12 mt-3">
+                                                    <label for="remark" class="form-label">Remark Note</label>
+                                                    <textarea id="remark" name="remark" class="form-control" rows="4"
+                                                        placeholder="Enter any remarks or notes about the customer..."></textarea>
+                                                </div>
+                                                <input type="hidden" id="customer_id" name="customer_id" />
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- container-fluid -->
+            </div>
 
 
-    if ($res) {
-        echo json_encode(["status" => "success"]);
-        exit();
-    } else {
-        echo json_encode(["status" => "error"]);
-        exit();
-    }
-}
+            <?php include 'footer.php' ?>
 
-// Delete customer
-if (isset($_POST['delete']) && isset($_POST['id'])) {
-    $CUSTOMER = new CustomerMaster($_POST['id']);
-    $res = $CUSTOMER->delete();
+        </div>
+    </div>
 
-    //audit log
-    $AUDIT_LOG = new AuditLog(NUll);
-    $AUDIT_LOG->ref_id = $_POST['id'];
-    $AUDIT_LOG->ref_code = $CUSTOMER->code;
-    $AUDIT_LOG->action = 'DELETE';
-    $AUDIT_LOG->description = 'DELETE CUSTOMER NO #' . $CUSTOMER->code;
-    $AUDIT_LOG->user_id = $_SESSION['id'];
-    $AUDIT_LOG->created_at = date("Y-m-d H:i:s");
-    $AUDIT_LOG->create();
+    <!-- Right bar overlay-->
+    <div class="rightbar-overlay"></div>
 
-    if ($res) {
-        echo json_encode(['status' => 'success']);
-    } else {
-        echo json_encode(['status' => 'error']);
-    }
-    exit; // Add exit here to prevent further execution
-}
+    <!-- JAVASCRIPT -->
+    <script src="assets/libs/jquery/jquery.min.js"></script>
+    <!-- /////////////////////////// -->
+    <script src="ajax/js/customer-master.js"></script>
+    <script src="ajax/js/common.js"></script>
 
-if (isset($_POST['filter'])) {
-    $category = $_POST['category'];
-    $CUSTOMER_MASTER = new CustomerMaster();
-    $response = $CUSTOMER_MASTER->fetchForDataTable($_REQUEST, $category);
+    <!-- include main js  -->
+    <?php include 'main-js.php' ?>
 
-    // Inject raw is_vat value from customer_master for each row (batched for performance)
-    if (isset($response['data']) && is_array($response['data']) && count($response['data']) > 0) {
-        $ids = array();
-        foreach ($response['data'] as $r) {
-            if (isset($r['id'])) {
-                $ids[] = (int)$r['id'];
-            }
-        }
-        if (!empty($ids)) {
-            $db = new Database();
-            $idList = implode(',', $ids);
-            $sql = "SELECT id, is_vat FROM customer_master WHERE id IN ($idList)";
-            $res = $db->readQuery($sql);
-            $vatMap = array();
-            if ($res) {
-                while ($row = mysqli_fetch_assoc($res)) {
-                    $vatMap[(int)$row['id']] = (int)$row['is_vat'];
-                }
-            }
-            foreach ($response['data'] as &$row) {
-                $id = isset($row['id']) ? (int)$row['id'] : 0;
-                $row['is_vat'] = isset($vatMap[$id]) ? $vatMap[$id] : 0; // raw 0/1 value
-            }
-            unset($row);
-        }
-    }
+</body>
 
-    echo json_encode($response);
-    exit;
-}
-
-// search by customer
-if (isset($_POST['query'])) {
-    $search = $_POST['query'];
-
-    $CUSTOMER_MASTER = new CustomerMaster();
-    $customers = $CUSTOMER_MASTER->searchCustomers($search);
-
-    if ($customers) {
-        echo json_encode($customers);  // Return the customers as a JSON string
-    } else {
-        echo json_encode([]);  // Return an empty array if no customers are found
-    }
-    exit;
-}
-
-// Fetch customers for DataTable
-if (isset($_POST['action']) && $_POST['action'] === 'fetch_customers') {
-    $db = new Database();
-    
-    // Get request parameters
-    $draw = isset($_POST['draw']) ? intval($_POST['draw']) : 1;
-    $start = isset($_POST['start']) ? intval($_POST['start']) : 0;
-    $length = isset($_POST['length']) ? intval($_POST['length']) : 10;
-    $searchValue = isset($_POST['search']['value']) ? $db->escapeString($_POST['search']['value']) : '';
-    $orderColumn = isset($_POST['order'][0]['column']) ? intval($_POST['order'][0]['column']) : 2; // Default sort by name
-    $orderDir = isset($_POST['order'][0]['dir']) ? $db->escapeString($_POST['order'][0]['dir']) : 'asc';
-    
-    // Column mapping
-    $columns = [
-        0 => 'id',
-        1 => 'code',
-        2 => 'name',
-        3 => 'mobile_number',
-        4 => 'email',
-        5 => 'category_name',
-        6 => 'credit_limit',
-        7 => 'outstanding',
-        8 => 'is_vat',
-        9 => 'status_label'
-    ];
-    
-    $orderBy = isset($columns[$orderColumn]) ? $columns[$orderColumn] : 'name';
-    
-    try {
-        // Base query - Only fetch customers with category = 1
-        $query = "SELECT SQL_CALC_FOUND_ROWS cm.id, cm.code, cm.name, cm.mobile_number, cm.email, 
-                  cm.credit_limit, cm.outstanding, cm.is_vat, cc.name as category_name, cm.province,
-                  CASE WHEN cm.is_active = 1 THEN 'Active' ELSE 'Inactive' END as status_label 
-                  FROM customer_master cm
-                  LEFT JOIN customer_category cc ON cm.category = cc.id
-                  WHERE cm.category = 1";
-        
-        // Add search condition
-        if (!empty($searchValue)) {
-            $query .= " AND (cm.name LIKE '%$searchValue%' OR cm.code LIKE '%$searchValue%' OR cm.mobile_number LIKE '%$searchValue%' OR cm.email LIKE '%$searchValue%')";
-        }
-        
-        // Add status filter if provided
-        if (isset($_POST['status']) && $_POST['status'] === 'active') {
-            $query .= " AND cm.is_active = 1";
-        }
-        
-        // Add ordering
-        $query .= " ORDER BY $orderBy $orderDir";
-        
-        // Add pagination
-        $query .= " LIMIT $start, $length";
-        
-        // Execute query
-        $result = $db->readQuery($query);
-        $data = [];
-        
-        if ($result) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                $data[] = $row;
-            }
-            
-            // Get total records
-            $totalResult = $db->readQuery("SELECT FOUND_ROWS() as total");
-            $totalRow = mysqli_fetch_assoc($totalResult);
-            $totalRecords = $totalRow['total'];
-            
-            // Prepare response
-            $response = [
-                'draw' => $draw,
-                'recordsTotal' => $totalRecords,
-                'recordsFiltered' => $totalRecords,
-                'data' => $data
-            ];
-            
-            header('Content-Type: application/json');
-            echo json_encode($response);
-            exit();
-        } else {
-            throw new Exception('Database query failed: ' . mysqli_error($db->DB_CON));
-        }
-    } catch (Exception $e) {
-        http_response_code(500);
-        echo json_encode([
-            'error' => true,
-            'message' => $e->getMessage()
-        ]);
-        exit();
-    }
-}
-
-// Make sure to use isset() before accessing $_POST['action']
-if (isset($_POST['action']) && $_POST['action'] == 'get_first_customer') {
-    $CUSTOMER = new CustomerMaster(1); // Fetch customer with ID 1
-
-    $response = [
-        "status" => "success",
-        "customer_id" => $CUSTOMER->id,
-        "customer_name" => $CUSTOMER->name,
-        "customer_code" => $CUSTOMER->code ?? '',
-        "mobile_number" => $CUSTOMER->mobile_number,
-        "customer_address" => $CUSTOMER->address,
-        "email" => $CUSTOMER->email ?? ''
-    ];
-
-    echo json_encode($response);
-    exit;
-}
+</html>
