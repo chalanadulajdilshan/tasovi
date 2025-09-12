@@ -74,7 +74,7 @@ class SalesInvoice
             '{$this->sale_type}', '{$this->discount_type}', '{$this->final_cost}','{$this->payment_type}', '{$this->sub_total}', '{$this->discount}', 
             '{$this->tax}', '{$this->grand_total}', '{$this->remark}'
         )";
-
+        
         $db = new Database();
         $result = $db->readQuery($query);
 

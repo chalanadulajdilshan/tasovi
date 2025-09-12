@@ -360,8 +360,8 @@ include './auth.php';
                                                     </select>
                                                 </div>
                                                 <div class="col-md-1">
-                                                    <input type="number" id="itemQty" class="form-control"
-                                                        placeholder="Qty_service" oninput="calculatePayment()">
+                                                    <input type="number" id="serviceQty" class="form-control" value="1"
+                                                        placeholder="Qty Service" oninput="calculatePayment()">
                                                 </div>
                                                 <div class="col-md-2">
                                                     <br>
