@@ -341,12 +341,26 @@ jQuery(document).ready(function () {
       // Update the item code and name fields
       $("#itemCode").val("SI/" + selectedId.padStart(4, "0"));
       $("#item_id").val(selectedId);
-      $("#itemName").val(selectedText);
 
       // Focus on quantity field for better UX
       $("#itemQty").focus();
     }
   });
+
+  $(document).on("change", "#service", function () {
+    const selectedId = $(this).val();
+    if (selectedId) {
+      // Get the selected option's text (item name)
+      const selectedText = $(this).find("option:selected").text().trim();
+
+      // Update the item code and name fields
+      $("#itemName").val(selectedText);
+
+      // Focus on quantity field for better UX
+      $("#serviceQty").focus();
+    }
+  });
+
 
   //GET DATA ARN VISE
   $(document).on("click", ".arn-row", function () {
@@ -792,8 +806,8 @@ jQuery(document).ready(function () {
       const totalItem = parseFloat($(this).find("td:eq(6)").text()) || 0;
       const item_id = $(this).find('input[name="item_id[]"]').val();
       const arn_no = $(this).find('input[name="arn_ids[]"]').val();
-      const arn_cost =
-        parseFloat($(this).find('input[name="arn_costs[]"]').val()) || price;
+      const arn_cost = parseFloat($(this).find('input[name="arn_costs[]"]').val()) || price;
+      const service_qty = parseFloat($(this).find('input[name="service_qty[]"]').val()) || 0;
 
       if (code && !isNaN(totalItem) && item_id) {
         items.push({
@@ -806,6 +820,7 @@ jQuery(document).ready(function () {
           total: totalItem,
           cost: arn_cost, // Using ARN cost instead of price
           arn_no,
+          service_qty,
         });
       }
     });
@@ -966,23 +981,6 @@ jQuery(document).ready(function () {
       dataType: "json",
       success: function (res) {
         const invoiceId = res.invoice_id;
-
-        // Save regular items
-        $.ajax({
-          url: "ajax/php/sales-invoice-item.php",
-          type: "POST",
-          data: {
-            invoice_id: invoiceId,
-            items: JSON.stringify(items),
-          },
-          success: function () {
-            console.log("Item invoice saved");
-          },
-          error: function () {
-            console.error("Item invoice save failed");
-          },
-        });
-
         // Save DAG items
         $.ajax({
           url: "ajax/php/sales-invoice-dag.php",
@@ -1136,8 +1134,9 @@ jQuery(document).ready(function () {
     const sale_price = parseFloat($("#itemSalePrice").val()) || 0;
 
     let availableQty = parseFloat($("#available_qty").val()) || 0;
+    let serviceQty = parseFloat($("#serviceQty").val()) || 0;
 
-    if (code !== "TI/SERVICE" && (!code || !name || price <= 0 || qty <= 0)) {
+    if ((!code || !name || price <= 0 || qty <= 0)) {
       swal({
         title: "Error!",
         text: "Please enter valid item details including quantity and price.",
@@ -1146,7 +1145,7 @@ jQuery(document).ready(function () {
         showConfirmButton: false,
       });
       return;
-    } else if (code !== "TI/SERVICE" && qty > availableQty) {
+    } else if (!code.startsWith("SI") && qty > availableQty) {
       swal({
         title: "Error!",
         text: "Transfer quantity cannot exceed available quantity!",
@@ -1214,6 +1213,7 @@ jQuery(document).ready(function () {
                     <input type="hidden" name="item_id[]" value="${item_id}">
                     <input type="hidden" name="item_codes[]" value="${code}">
                     <input type="hidden" name="arn_ids[]" value="${arnId}">
+                    <input type="hidden" name="service_qty[]" value="${serviceQty}">
                 </td>
                 <td>${name}</td>
                 <td class="item-price">${price.toFixed(2)}</td>
