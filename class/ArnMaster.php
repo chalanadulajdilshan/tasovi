@@ -150,7 +150,7 @@ class ArnMaster
     public function getByArnId($arn_id)
     {
         $query = "
-        SELECT ai.*, im.code AS item_code, im.name AS item_name, im.id AS item_id
+        SELECT ai.*,im.*, im.code AS item_code, im.name AS item_name, im.id AS item_id
         FROM arn_items ai
         LEFT JOIN item_master im ON ai.item_code = im.id
         WHERE ai.arn_id = '{$arn_id}'

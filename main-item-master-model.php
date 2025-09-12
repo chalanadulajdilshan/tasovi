@@ -21,9 +21,7 @@
                                     <th>Category</th>
                                     <th>List Price</th>
                                     <th>Invoice Price</th>
-                                    <th>Quantity</th>
-                                    <th>Discount</th>
-                                    <th>Status</th>
+                                    <th>Quantity</th> 
                                 </tr>
 
                             </thead>

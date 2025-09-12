@@ -80,7 +80,7 @@ if (isset($_POST['create'])) {
 
     $SALES_INVOICE->invoice_no = $invoiceId;
     $SALES_INVOICE->invoice_type = 'INV';
-    $SALES_INVOICE->invoice_date = date("Y-m-d H:i:s");
+    $SALES_INVOICE->invoice_date = $_POST['invoice_date'];
     $SALES_INVOICE->company_id = $_POST['company_id'];
     $SALES_INVOICE->customer_id = $_POST['customer_id'];
     $SALES_INVOICE->customer_name = ucwords(strtolower(trim($_POST['customer_name'])));
@@ -221,7 +221,7 @@ if (isset($_POST['update'])) {
     $SALES_INVOICE = new SalesInvoice($invoiceId);
 
     // Update invoice details
-    $SALES_INVOICE->invoice_date = date("Y-m-d H:i:s"); // You can update the date or other details here
+    $SALES_INVOICE->invoice_date =$_POST['invoice_date']; // You can update the date or other details here
     $SALES_INVOICE->company_id = $_POST['company_id'];
     $SALES_INVOICE->customer_id = $_POST['customer_id'];
     $SALES_INVOICE->department_id = $_POST['department_id'];

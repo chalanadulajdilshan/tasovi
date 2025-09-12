@@ -75,6 +75,9 @@ class SalesInvoice
             '{$this->tax}', '{$this->grand_total}', '{$this->remark}'
         )";
         
+
+        
+
         $db = new Database();
         $result = $db->readQuery($query);
 

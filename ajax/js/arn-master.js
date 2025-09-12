@@ -1,6 +1,17 @@
 jQuery(document).ready(function () {
 
     // Item Table check
+
+    $('#brand, #category').change(function () {
+        table.ajax.reload();
+        // Enable/disable item_search button based on brand selection
+        if ($('#brand').val() !== '') {
+            $('#item_search').prop('disabled', false);
+        } else {
+            $('#item_search').prop('disabled', true);
+        }
+    });
+
     var table = $('#datatable').DataTable({
 
         processing: true,
@@ -10,7 +21,13 @@ jQuery(document).ready(function () {
             url: "ajax/php/item-master.php",
             type: "POST",
             data: function (d) {
+
+                var brandId = $('#brand').val();
+                var categoryId = $('#category').val();
+               
                 d.filter = true;
+                d.brand_id = brandId;
+                d.category_id = categoryId;
                 d.status = 0;
                 d.stock_only = 0;
             },
@@ -27,19 +44,17 @@ jQuery(document).ready(function () {
             { data: "key", title: "#ID" },
             { data: "code", title: "Code" },
             { data: "name", title: "Name" },
-            { data: "brand", title: "Brand" },
-            { data: "category", title: "Category" },
+            { data: "brand", title: "Brand" }, 
             { data: "list_price", title: "List Price" },
             { data: "invoice_price", title: "Invoice Price" },
-            { data: "qty", title: "Quantity" },
-            { data: "discount", title: "Discount %" },
+            { data: "qty", title: "Quantity" }, 
             { data: "status_label", title: "Status" }
         ],
         order: [[0, 'desc']],
         pageLength: 100
     });
 
-
+  
     $('#datatable tbody').on('click', 'tr', function () {
         const data = table.row(this).data();
         if (!data) return;
@@ -65,31 +80,38 @@ jQuery(document).ready(function () {
 
         // Get the selected brand ID after setting it
         const brandId = $('#brand').val();
+        const categoryId = $('#category').val();    
 
         if (brandId) {
+            console.log('Fetching discount for brand:', brandId, 'category:', categoryId);
             $.ajax({
                 url: 'ajax/php/arn-master.php',
                 type: 'POST',
-                data: { action: 'get_brand_discount', brand_id: brandId },
+                data: {brand_id: brandId, category_id: categoryId },
                 dataType: 'json',
                 success: function (res) {
-                    const discount = res.discount || 0;
+                    console.log('Discount response:', res);
+                    const discount = res && typeof res.discount !== 'undefined' ? res.discount : 0;
                     $('#dis_1').val(discount);
                     calculatePayment();
                 },
-                error: function () {
-                    console.error('Failed to load brand discount');
+                error: function (xhr, status, error) {
+                    console.error('Failed to load brand discount. Status:', status, 'Error:', error);
+                    console.error('Response:', xhr.responseText);
+                    console.error('Brand ID:', brandId, 'Category ID:', categoryId);
                     $('#dis_1').val(0);
                     calculatePayment();
                 }
             });
         } else {
             $('#dis_1').val(0);
+
             calculatePayment();
         }
 
         setTimeout(() => $('#itemQty').focus(), 200);
         $('#main_item_master').modal('hide');
+        $('#create_arn').hide();
     });
 
     $('#brand').on('change', function () {
@@ -763,13 +785,15 @@ jQuery(document).ready(function () {
                 items.forEach(item => {
                     const row = `
                         <tr data-itemid="${item.item_code}">
-                           <td>${item.item_code}  </td>
+                           <td>${item.item_code + ' - ' + item.item_name}  </td>
                             <td><input type="number" name="items[][order_qty]" class="form-control form-control-sm" value="${item.order_qty}" readonly></td>
                             <td><input type="number" name="items[][rec_qty]" class="form-control form-control-sm" value="${item.received_qty}" readonly></td>
-                            <td><input type="number" name="items[][dis2]" class="form-control form-control-sm" value="${item.discount_2}" readonly></td>
-                            <td><input type="number" name="items[][dis3]" class="form-control form-control-sm" value="${item.discount_3}" readonly></td>
-                            <td><input type="number" name="items[][dis4]" class="form-control form-control-sm" value="${item.discount_4 || 0}" readonly></td>
-                            <td><input type="number" name="items[][dis5]" class="form-control form-control-sm" value="${item.discount_5 || 0}" readonly></td>
+                            <td><input type="number" name="items[][dis2]" class="form-control form-control-sm" value="${item.list_price}" readonly></td>
+                            <td><input type="number" name="items[][dis3]" class="form-control form-control-sm" value="${item.discount_1}" readonly></td>
+                            <td><input type="number" name="items[][dis4]" class="form-control form-control-sm" value="${item.discount_2 || 0}" readonly></td>
+                            <td><input type="number" name="items[][dis5]" class="form-control form-control-sm" value="${item.discount_3 || 0}" readonly></td>
+                            <td><input type="number" name="items[][dis6]" class="form-control form-control-sm" value="${item.discount_4 || 0}" readonly></td>
+                            <td><input type="number" name="items[][dis7]" class="form-control form-control-sm" value="${item.discount_5 || 0}" readonly></td>
                             <td><input type="number" name="items[][actual_cost]" class="form-control form-control-sm" value="${item.final_cost}" readonly></td>
                             <td><input type="number" name="items[][unit_total]" class="form-control form-control-sm" value="${item.unit_total}" readonly></td>
                             <td><input type="number" name="items[][list_price]" class="form-control form-control-sm" value="${item.list_price}" readonly></td>

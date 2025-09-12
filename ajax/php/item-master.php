@@ -234,6 +234,8 @@ if (isset($_POST['filter_by_invoice'])) {
 }
 
 if (isset($_POST['filter'])) {
+    
+    
     $ITEM_MASTER = new ItemMaster();
     $response = $ITEM_MASTER->fetchForDataTable($_REQUEST);
 

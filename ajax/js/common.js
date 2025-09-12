@@ -187,7 +187,7 @@ jQuery(document).ready(function () {
                 type: "POST",
                 data: function (d) {
                     d.filter = true;
-                    d.category = 2;
+                    d.category = [2, 3]; // send as array
                 },
                 dataSrc: function (json) {
                     return json.data;
