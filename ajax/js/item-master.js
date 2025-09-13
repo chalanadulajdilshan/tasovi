@@ -140,8 +140,7 @@ jQuery(document).ready(function () {
     var table = $('#datatable').DataTable({
 
         processing: true,
-        serverSide: true,
-
+        serverSide: true, 
         ajax: {
             url: "ajax/php/item-master.php",
             type: "POST",
@@ -164,12 +163,10 @@ jQuery(document).ready(function () {
             { data: "key", title: "#ID" },
             { data: "code", title: "Code" },
             { data: "name", title: "Name" },
-            { data: "brand", title: "Brand" },
-            { data: "category", title: "Category" },
+            { data: "brand", title: "Brand" }, 
             { data: "list_price", title: "List Price" },
             { data: "invoice_price", title: "Invoice Price" },
-            { data: "qty", title: "Quantity" },
-            { data: "discount", title: "Discount %" },
+            { data: "qty", title: "Quantity" }, 
             { data: "status_label", title: "Status" }
         ],
         order: [[0, 'desc']],
