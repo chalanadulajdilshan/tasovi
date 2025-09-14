@@ -67,7 +67,7 @@ if (isset($data['create'])) {
             $ARN_ITEM->discount_3 = $item['dis3'];
             $ARN_ITEM->final_cost = $item['actual_cost'];
             $ARN_ITEM->unit_total = $item['unit_total'];
-            $ARN_ITEM->cost = $item['cost'];
+            $ARN_ITEM->list_price = $item['list_price'];
             $ARN_ITEM->invoice_price = $item['invoice_price'];
 
             $ARN_ITEM->created_at = date("Y-m-d H:i:s");
@@ -78,8 +78,8 @@ if (isset($data['create'])) {
             $STOCK_ITEM_TMP->arn_id = $arn_id;
             $STOCK_ITEM_TMP->item_id = $item['item_id'];
             $STOCK_ITEM_TMP->qty = $item['rec_qty'];
-            $STOCK_ITEM_TMP->cost = $item['actual_cost'];
-            $STOCK_ITEM_TMP->cost = $item['cost'];
+            $STOCK_ITEM_TMP->cost = $item['actual_cost']; 
+            $STOCK_ITEM_TMP->list_price = $item['list_price'];
             $STOCK_ITEM_TMP->invoice_price = $item['invoice_price'];
             $STOCK_ITEM_TMP->department_id = $data['department_id'];
             $STOCK_ITEM_TMP->status = 1;
@@ -99,6 +99,12 @@ if (isset($data['create'])) {
                 $stockMaster->is_active = 1;
                 $stockMaster->create();
             }
+
+            // Item Master update
+            $ITEM_master = new ItemMaster($item['item_id']);
+            $ITEM_master->list_price = $item['list_price'];
+            $ITEM_master->invoice_price = $item['invoice_price'];
+            $ITEM_master->update();
 
             // Stock Transaction log
             $stockTransaction = new StockTransaction(NULL);
@@ -163,12 +169,12 @@ if (isset($_POST['arn_id_cancel'])) {
 if (isset($_POST['brand_id'], $_POST['category_id'])) {
     $brandId = (int)$_POST['brand_id'];
     $categoryId = (int)$_POST['category_id'];
-    
+
     $brandWiseDis = new BrandWiseDis();
     $discounts = $brandWiseDis->getByBrand($brandId, $categoryId);
-    
+
     $discount = !empty($discounts) ? (float)$discounts[0]['discount_percent'] : 0;
-    
+
     echo json_encode(['discount' => $discount]);
     exit();
 }

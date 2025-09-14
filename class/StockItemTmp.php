@@ -31,10 +31,10 @@ class StockItemTmp
     public function create()
     {
         $query = "INSERT INTO `stock_item_tmp` (
-            `arn_id`, `item_id`, `qty`, `cost`, `list_price`,`invoice_price`, `department_id`, `created_at`
+            `arn_id`, `item_id`, `qty`, `cost`, `list_price`,`invoice_price`, `department_id`, `status`, `created_at`
         ) VALUES (
             '{$this->arn_id}', '{$this->item_id}', '{$this->qty}', '{$this->cost}',
-            '{$this->list_price}','{$this->invoice_price}', '{$this->department_id}', NOW()
+            '{$this->list_price}','{$this->invoice_price}', '{$this->department_id}', '{$this->status}', NOW()
         )";
 
         $db = new Database();

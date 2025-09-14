@@ -65,7 +65,7 @@ jQuery(document).ready(function () {
           $('#itemName').val(data.name);
         $('#itemQty').val(1);
         $('#available_qty').val(data.qty);
-        $('#cost').val(data.list_price);
+        $('#list_price').val(data.list_price);
         $('#invoice_price').val(data.invoice_price);
 
         $('#dis_2').val(data.discount);
@@ -109,7 +109,7 @@ jQuery(document).ready(function () {
 
         setTimeout(() => $('#itemQty').focus(), 200);
         $('#main_item_master').modal('hide');
-        $('#create_arn').hide();
+        
     });
 
     $('#brand').on('change', function () {
@@ -135,7 +135,7 @@ jQuery(document).ready(function () {
 
 
     // Bind Enter key to add item
-    $('#rec_quantity,   #credit_price, #actual_cost,#cost,#dis_1,#dis_2,#dis_3,#dis_4,#dis_5').on('keydown', function (e) {
+    $('#rec_quantity, #invoice_price,  #credit_price, #actual_cost,#list_price,#dis_1,#dis_2,#dis_3,#dis_4,#dis_5').on('keydown', function (e) {
         if (e.key === "Enter") {
             e.preventDefault();
             $('#addItemBtn').trigger('click');
@@ -166,7 +166,7 @@ jQuery(document).ready(function () {
     function calculatePayment() {
 
         const recQty = parseFloat($('#rec_quantity').val()) || 0;
-        const comCost = parseFloat($('#cost').val()) || 0;
+        const list_price = parseFloat($('#list_price').val()) || 0;
 
         const dis1 = parseFloat($('#dis_1').val()) || 0;
         const dis2 = parseFloat($('#dis_2').val()) || 0;
@@ -175,12 +175,12 @@ jQuery(document).ready(function () {
         const dis5 = parseFloat($('#dis_5').val()) || 0;
 
         // Calculate discounts
-        let disAmount1 = comCost * (dis1 / 100);
-        let disAmount2 = (comCost - disAmount1) * (dis2 / 100);
-        let disAmount3 = (comCost - disAmount1 - disAmount2) * (dis3 / 100);
-        let disAmount4 = (comCost - disAmount1 - disAmount2 - disAmount3) * (dis4 / 100);
-        let disAmount5 = (comCost - disAmount1 - disAmount2 - disAmount3 - disAmount4) * (dis5 / 100);
-        let finalCost = comCost - disAmount1 - disAmount2 - disAmount3 - disAmount4 - disAmount5;
+        let disAmount1 = list_price * (dis1 / 100);
+        let disAmount2 = (list_price - disAmount1) * (dis2 / 100);
+        let disAmount3 = (list_price - disAmount1 - disAmount2) * (dis3 / 100);
+        let disAmount4 = (list_price - disAmount1 - disAmount2 - disAmount3) * (dis4 / 100);
+        let disAmount5 = (list_price - disAmount1 - disAmount2 - disAmount3 - disAmount4) * (dis5 / 100);
+        let finalCost = list_price - disAmount1 - disAmount2 - disAmount3 - disAmount4 - disAmount5;
 
         let unitTotal = finalCost * recQty;
 
@@ -191,7 +191,7 @@ jQuery(document).ready(function () {
     }
 
     // Bind function to relevant input fields
-    $('#arn-item-table').on('input', '#cost,#rec_quantity, #actual_cost,#dis_3,#dis_4,#dis_5', calculatePayment);
+    $('#arn-item-table').on('input', '#list_price,#rec_quantity, #actual_cost,#dis_3,#dis_4,#dis_5', calculatePayment);
 
 
     $('#addItemBtn').on('click', function () {
@@ -199,7 +199,7 @@ jQuery(document).ready(function () {
         const code = $('#itemCode').val();
         const recQty = parseFloat($('#rec_quantity').val()) || 0;
         const brand = parseFloat($('#brand').val()) || 0;
-        const cost = parseFloat($('#cost').val()) || 0;
+        const list_price = parseFloat($('#list_price').val()) || 0;
         const dis1 = parseFloat($('#dis_1').val()) || 0; // Brand Discount
         const dis2 = parseFloat($('#dis_2').val()) || 0; // Item Discount
         const dis3 = parseFloat($('#dis_3').val()) || 0; // Dis 3
@@ -227,8 +227,8 @@ jQuery(document).ready(function () {
             return;
         }
 
-        if (!cost || cost <= 0) {
-            swal({ title: "Error!", text: "Please enter Commercial Cost", type: "error", timer: 2000, showConfirmButton: false });
+        if (!listPrice || listPrice <= 0) {
+            swal({ title: "Error!", text: "Please enter List Price", type: "error", timer: 2000, showConfirmButton: false });
             return;
         }
 
@@ -241,7 +241,7 @@ jQuery(document).ready(function () {
             return;
         }
 
-        if (actualCost > cost) {
+        if (actualCost > listPrice) {
             swal({ title: "Error!", text: "Actual Cost cannot exceed List Price", type: "error", timer: 2000, showConfirmButton: false });
             return;
         }
@@ -255,7 +255,7 @@ jQuery(document).ready(function () {
             <td>${code}</td>
             <td><input type="number" name="items[][order_qty]" class="form-control form-control-sm" readonly></td>
             <td><input type="number" name="items[][rec_qty]" class="form-control form-control-sm" value="${recQty}" readonly></td>
-            <td><input type="number" name="items[][com_cost]" class="form-control form-control-sm" value="${cost.toFixed(2)}" readonly></td>
+            <td><input type="number" name="items[][list_price]" class="form-control form-control-sm" value="${listPrice.toFixed(2)}" readonly></td>
             <td><input type="number" name="items[][dis1]" class="form-control form-control-sm" value="${dis1}" readonly></td>
             <td><input type="number" name="items[][dis2]" class="form-control form-control-sm" value="${dis2}" readonly></td>
             <td><input type="number" name="items[][dis3]" class="form-control form-control-sm" value="${dis3}" readonly></td>
@@ -263,7 +263,7 @@ jQuery(document).ready(function () {
             <td><input type="number" name="items[][dis5]" class="form-control form-control-sm" value="${dis5}" readonly></td>
             <td><input type="number" name="items[][actual_cost]" class="form-control form-control-sm" value="${actualCost.toFixed(2)}" readonly></td>
             <td><input type="number" name="items[][unit_total]" class="form-control form-control-sm" value="${unitTotal.toFixed(2)}" readonly></td>
-            <td><input type="number" name="items[][list_price]" class="form-control form-control-sm" value="${listPrice.toFixed(2)}" readonly></td>
+            <td><input type="number" name="items[][invoice_price]" class="form-control form-control-sm" value="${InvoicePrice.toFixed(2)}" readonly></td>
             <td>
                 <div class="btn btn-danger btn-sm deleteRowBtn">
                     <i class="uil uil-trash-alt me-1"></i>
@@ -281,7 +281,7 @@ jQuery(document).ready(function () {
         $('#total_arn').val((currentARN + unitTotal).toFixed(2));
 
         const currentDiscount = parseFloat($('#total_discount').val()) || 0;
-        const discountValue = (cost - actualCost) * recQty;
+        const discountValue = (listPrice - actualCost) * recQty;
         $('#total_discount').val((currentDiscount + discountValue).toFixed(2));
 
         const currentReceivedQty = parseFloat($('#total_received_qty').val()) || 0;
@@ -291,11 +291,10 @@ jQuery(document).ready(function () {
         // Clear input fields
         $('#itemCode').val('');
         $('#rec_quantity').val('');
-        $('#cost').val('');
+        $('#list_price').val('');
         $('#dis_1, #dis_2, #dis_3, #dis_4, #dis_5').val('');
         $('#actual_cost').val('');
         $('#unit_total').val('');
-        $('#list_price').val('');
         $('#invoice_price').val('');
         updateSummaryValues();
     });
@@ -588,7 +587,7 @@ jQuery(document).ready(function () {
 
 
             const actualCost = parseFloat($(cols[7]).find('input').val()) || 0;
-            const listPrice = parseFloat($(cols[9]).find('input').val()) || 0;
+            const listPrice = parseFloat($(cols[3]).find('input').val()) || 0;
 
 
             // Validation: actualCost should not exceed listPrice
@@ -608,16 +607,15 @@ jQuery(document).ready(function () {
                 code: $(cols[0]).text().trim(),
                 order_qty: parseFloat($(cols[1]).find("input").val()) || 0,
                 rec_qty: parseFloat($(cols[2]).find("input").val()) || 0,
-                cost: parseFloat($(cols[3]).find("input").val()) || 0,
+                list_price: parseFloat($(cols[3]).find("input").val()) || 0,
                 dis1: parseFloat($(cols[4]).find("input").val()) || 0,
                 dis2: parseFloat($(cols[5]).find("input").val()) || 0,
                 dis3: parseFloat($(cols[6]).find("input").val()) || 0,
                 dis4: parseFloat($(cols[7]).find("input").val()) || 0,
                 dis5: parseFloat($(cols[8]).find("input").val()) || 0,
                 actual_cost: parseFloat($(cols[9]).find("input").val()) || 0,
-                unit_total: parseFloat($(cols[10]).find("input").val()) || 0,
-                list_price: parseFloat($(cols[11]).find("input").val()) || 0,
-                invoice_price: parseFloat($(cols[12]).find("input").val()) || 0,
+                unit_total: parseFloat($(cols[10]).find("input").val()) || 0, 
+                invoice_price: parseFloat($(cols[11]).find("input").val()) || 0,
             });
         });
 

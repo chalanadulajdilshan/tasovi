@@ -12,7 +12,7 @@ class ArnItem
     public $discount_3;
     public $final_cost;
     public $unit_total;
-    public $cost;
+    public $list_price;
     public $invoice_price;
     public $margin_percent;
     public $created_at;
@@ -35,7 +35,7 @@ class ArnItem
                 $this->discount_3 = $row['discount_3'];
                 $this->final_cost = $row['final_cost'];
                 $this->unit_total = $row['unit_total'];
-                $this->cost = $row['cost'];
+                $this->list_price = $row['list_price'];
                 $this->invoice_price = $row['invoice_price'];
                 $this->created_at = $row['created_at'];
                 $this->updated_at = $row['updated_at'];
@@ -50,11 +50,11 @@ class ArnItem
         $query = "INSERT INTO `arn_items` (
             `arn_id`, `item_code`, `order_qty`, `received_qty`,
             `discount_1`, `discount_2`, `discount_3`, `final_cost`, `unit_total`,
-            `cost`,`invoice_price`,   `created_at`
+            `list_price`,`invoice_price`,   `created_at`
         ) VALUES (
             '{$this->arn_id}', '{$this->item_code}', '{$this->order_qty}', '{$this->received_qty}',
             '{$this->discount_1}', '{$this->discount_2}', '{$this->discount_3}', '{$this->final_cost}', '{$this->unit_total}',
-            '{$this->cost}', '{$this->invoice_price}',   NOW()
+            '{$this->list_price}', '{$this->invoice_price}',   NOW()
         )";
 
 
@@ -97,7 +97,7 @@ class ArnItem
             `discount_3` = '{$this->discount_3}',
             `final_cost` = '{$this->final_cost}',
             `unit_total` = '{$this->unit_total}',
-            `cost` = '{$this->cost}',
+            `list_price` = '{$this->list_price}',
             `invoice_price` = '{$this->invoice_price}', 
             `margin_percent` = '{$this->margin_percent}',
             `updated_at` = NOW()
@@ -109,11 +109,11 @@ class ArnItem
     public function getArnCostByArnId($arn_id)
     {
         $db = new Database();
-        $query = "SELECT `cost` FROM `arn_items` WHERE `arn_id` = '{$arn_id}'";
+        $query = "SELECT `final_cost` FROM `arn_items` WHERE `arn_id` = '{$arn_id}'";
         $result = $db->readQuery($query);
 
         if ($row = mysqli_fetch_assoc($result)) {
-            return $row['cost'];
+            return $row['final_cost'];
         }
         
         return false;

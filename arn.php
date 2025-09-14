@@ -363,8 +363,7 @@ $arn_id = $COMPANY_PROFILE_DETAILS->company_code . '/ARN/00/' . ($lastId + 1);
 
 
                                             <hr class="my-4">
-
-
+ 
                                             <h5>Item Details</h5>
 
                                             <div class="row gx-2 gy-2" id="arn-item-table">
@@ -393,8 +392,8 @@ $arn_id = $COMPANY_PROFILE_DETAILS->company_code . '/ARN/00/' . ($lastId + 1);
 
 
                                                 <div class="col-6 col-sm-4 col-md-2 col-lg-1">
-                                                    <label class="form-label">List Price</label>
-                                                    <input type="text" id="cost" name="cost"
+                                                    <label class="form-label">List Price</label>
+                                                    <input type="text" id="list_price" name="list_price"
                                                         class="form-control form-control-sm"
                                                         oninput="calculatePayment()">
                                                 </div>
@@ -472,7 +471,7 @@ $arn_id = $COMPANY_PROFILE_DETAILS->company_code . '/ARN/00/' . ($lastId + 1);
                                                         <th>Dis 5%</th>
                                                         <th>Actual Cost</th>
                                                         <th>Unit Total</th>
-                                                        <th>Selling Price</th>
+                                                        <th>Invoice Price</th>
                                                         <th>Action</th>
                                                     </tr>
                                                 </thead>
