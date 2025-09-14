@@ -61,8 +61,8 @@ jQuery(document).ready(function () {
 
 
         $('#item_id').val(data.id);
-        $('#itemCode').val(data.code);
-        $('#itemName').val(data.name);
+        $('#itemCode').val(data.code + ' - ' + data.name);      
+          $('#itemName').val(data.name);
         $('#itemQty').val(1);
         $('#available_qty').val(data.qty);
         $('#cost').val(data.list_price);
@@ -83,15 +83,13 @@ jQuery(document).ready(function () {
         const categoryId = $('#category').val();    
 
         if (brandId) {
-            console.log('Fetching discount for brand:', brandId, 'category:', categoryId);
-            $.ajax({
+             $.ajax({
                 url: 'ajax/php/arn-master.php',
                 type: 'POST',
                 data: {brand_id: brandId, category_id: categoryId },
                 dataType: 'json',
                 success: function (res) {
-                    console.log('Discount response:', res);
-                    const discount = res && typeof res.discount !== 'undefined' ? res.discount : 0;
+                     const discount = res && typeof res.discount !== 'undefined' ? res.discount : 0;
                     $('#dis_1').val(discount);
                     calculatePayment();
                 },
