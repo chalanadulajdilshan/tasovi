@@ -371,7 +371,7 @@ $arn_id = $COMPANY_PROFILE_DETAILS->company_code . '/ARN/00/' . ($lastId + 1);
                                                 <!-- ────────── First Line of Fields ────────── -->
 
 
-                                                <div class="  col-sm-2 col-md-2 col-lg-2" style="max-width: 350px;">
+                                                <div class="  col-sm-2 col-md-2 col-lg-2" style="width: 345px;">
                                                     <label for="Description" class="form-label">Item Code</label>
                                                     <div class="input-group input-group-sm">
                                                         <input id="itemCode" name="itemCode" type="text"
