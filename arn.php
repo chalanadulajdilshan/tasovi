@@ -53,7 +53,7 @@ $arn_id = $COMPANY_PROFILE_DETAILS->company_code . '/ARN/00/' . ($lastId + 1);
                             <a href="#" class="btn btn-primary" id="create_arn">
                                 <i class="uil uil-save me-1"></i> Save
                             </a>
-                            <a href="#" class="btn btn-danger cancel-arn-btn">
+                            <a href="#" class="btn btn-danger cancel-arn-btn" style="display: none;">
                                 <i class="uil uil-trash-alt me-1"></i> Cancel ARN
                             </a>
 
@@ -404,6 +404,7 @@ $arn_id = $COMPANY_PROFILE_DETAILS->company_code . '/ARN/00/' . ($lastId + 1);
                                                     <input type="number" id="dis_1" class="form-control form-control-sm"
                                                         oninput="calculatePayment()" disabled>
                                                 </div>
+                                             
 
                                                 <div class="col-6 col-sm-4 col-md-2 col-lg-1">
                                                     <label class="form-label">Item Dis %</label>
@@ -427,6 +428,11 @@ $arn_id = $COMPANY_PROFILE_DETAILS->company_code . '/ARN/00/' . ($lastId + 1);
                                                     <input type="number" id="dis_5" class="form-control form-control-sm"
                                                         oninput="calculatePayment()">
                                                 </div>
+
+                                                <input type="hidden" id="dis_6" oninput="calculatePayment()">
+                                                <input type="hidden" id="dis_7" oninput="calculatePayment()"> 
+                                                <input type="hidden" id="dis_8" oninput="calculatePayment()"> 
+
                                                 <div class="col-6 col-sm-4 col-md-2 col-lg-1">
                                                     <label class="form-label">Actual Cost</label>
                                                     <input type="text" id="actual_cost"

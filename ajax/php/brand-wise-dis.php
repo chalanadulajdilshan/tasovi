@@ -10,7 +10,9 @@ if (isset($_POST['create'])) {
 
     $DISCOUNT->brand_id = $_POST['brand_id'];
     $DISCOUNT->category_id = $_POST['category'];
-    $DISCOUNT->discount_percent = $_POST['discount_percent'];
+    $DISCOUNT->discount_percent_01 = $_POST['discount_percent_01'];
+    $DISCOUNT->discount_percent_02 = $_POST['discount_percent_02'];
+    $DISCOUNT->discount_percent_03 = $_POST['discount_percent_03']; 
 
     $res = $DISCOUNT->create();
 
@@ -29,7 +31,9 @@ if (isset($_POST['update'])) {
 
     $DISCOUNT->brand_id = $_POST['brand_id'];
     $DISCOUNT->category_id = $_POST['category'];
-    $DISCOUNT->discount_percent = $_POST['discount_percent'];
+    $DISCOUNT->discount_percent_01 = $_POST['discount_percent_01'];
+    $DISCOUNT->discount_percent_02 = $_POST['discount_percent_02'];
+    $DISCOUNT->discount_percent_03 = $_POST['discount_percent_03'];   
 
     $res = $DISCOUNT->update();
 

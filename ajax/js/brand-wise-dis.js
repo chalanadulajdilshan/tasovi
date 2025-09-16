@@ -21,7 +21,7 @@ jQuery(document).ready(function () {
                 timer: 2000,
                 showConfirmButton: false
             });
-        } else if (!$('#discount_percent').val() || $('#discount_percent').val().length === 0) {
+        } else if (!$('#discount_percent_01').val() || $('#discount_percent_01').val().length === 0) {
             swal({
                 title: "Error!",
                 text: "Please enter discount percentage",
@@ -95,7 +95,7 @@ jQuery(document).ready(function () {
                 timer: 2000,
                 showConfirmButton: false
             });
-        } else if (!$('#discount_percent').val() || $('#discount_percent').val().length === 0) {
+        } else if (!$('#discount_percent_01').val() || $('#discount_percent_01').val().length === 0) {
             swal({
                 title: "Error!",
                 text: "Please enter discount percentage",
@@ -172,7 +172,9 @@ jQuery(document).ready(function () {
         $('#brand_id').val(brandId).trigger('change');
         
         // Update discount
-        $('#discount_percent').val($this.data('discount'));
+        $('#discount_percent_01').val($this.data('discount_01'));
+        $('#discount_percent_02').val($this.data('discount_02'));
+        $('#discount_percent_03').val($this.data('discount_03'));
 
         // Show update button and hide create button
         $("#create").hide();

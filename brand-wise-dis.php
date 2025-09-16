@@ -115,13 +115,25 @@ include 'auth.php';
                                                 </div>
 
                                                 <!-- Discount -->
-                                                <div class="col-md-3">
-                                                    <label for="discount_percent" class="form-label">Discount %</label>
+                                                <div class="col-md-2">
+                                                    <label for="discount_percent_01" class="form-label">Discount 01 %</label>
                                                     <div class="input-group mb-3">
-                                                        <input id="discount_percent" name="discount_percent" type="text" class="form-control" placeholder="Enter Discount %">
+                                                        <input id="discount_percent_01" name="discount_percent_01" type="text" class="form-control" placeholder="Enter Discount %">
                                                     </div>
                                                 </div>
 
+                                                <div class="col-md-2">
+                                                    <label for="discount_percent_02" class="form-label">Discount 02 %</label>
+                                                    <div class="input-group mb-3">
+                                                        <input id="discount_percent_02" name="discount_percent_02" type="text" class="form-control" placeholder="Enter Discount %">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-2">
+                                                    <label for="discount_percent_03" class="form-label">Discount 03 %</label>
+                                                    <div class="input-group mb-3">
+                                                        <input id="discount_percent_03" name="discount_percent_03" type="text" class="form-control" placeholder="Enter Discount %">
+                                                    </div>
+                                                </div>
                                                 <input type="hidden" id="dis_id" name="dis_id">
                                             </div>
                                         </form>
@@ -142,7 +154,10 @@ include 'auth.php';
                                                 <th>#ID</th>
                                                 <th>Category</th>
                                                 <th>Brand</th>
-                                                <th>Discount %</th>
+                                                <th>Discount 01 %</th>
+                                                <th>Discount 02 %</th>
+                                                <th>Discount 03 %</th>
+                                                <th>Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -157,13 +172,21 @@ include 'auth.php';
                                                     data-id="<?php echo $dis['id']; ?>"
                                                     data-category="<?php echo $dis['category_id']; ?>"
                                                     data-brand="<?php echo $dis['brand_id']; ?>"
-                                                    data-discount="<?php echo htmlspecialchars($dis['discount_percent']); ?>">
+                                                    data-discount_01="<?php echo htmlspecialchars($dis['discount_percent_01']); ?>"
+                                                    data-discount_02="<?php echo htmlspecialchars($dis['discount_percent_02']); ?>"
+                                                    data-discount_03="<?php echo htmlspecialchars($dis['discount_percent_03']); ?>">
 
                                                     <td><?php echo $key; ?></td>
                                                     <td><?php echo htmlspecialchars($CATEGORY->name); ?></td>
                                                     <td><?php echo htmlspecialchars($BRAND->name); ?></td>
-                                                    <td><?php echo htmlspecialchars($dis['discount_percent']); ?>%</td>
-                                                    
+                                                    <td><?php echo htmlspecialchars($dis['discount_percent_01']); ?>%</td>
+                                                    <td><?php echo htmlspecialchars($dis['discount_percent_02']); ?>%</td>
+                                                    <td><?php echo htmlspecialchars($dis['discount_percent_03']); ?>%</td>
+                                                    <td>
+                                                        <button type="button" class="btn btn-primary btn-sm edit-dis" data-id="<?php echo $dis['id']; ?>">
+                                                            <i class="mdi mdi-pencil"></i>
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                             <?php } ?>
                                         </tbody>
