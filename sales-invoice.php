@@ -334,17 +334,22 @@ include './auth.php';
                                                         placeholder="Price" oninput="calculatePayment()">
                                                 </div>
                                                 <div class="col-md-1">
+                                                    <label class="form-label">Cost</label>
+                                                    <input type="number" id="item_cost_arn" class="form-control"
+                                                        placeholder="Cost"  disabled>
+                                                </div>
+                                                <div class="col-md-1">
                                                     <label class="form-label">Qty</label>
                                                     <input type="number" id="itemQty" class="form-control"
                                                         placeholder="Qty" oninput="calculatePayment()">
                                                 </div>
-                                                <div class="col-md-2">
-                                                    <label class="form-label">Discount (%)</label>
+                                                <div class="col-md-1">
+                                                    <label class="form-label">Dis (%)</label>
                                                     <input type="number" id="itemDiscount" class="form-control"
-                                                        placeholder="Discount" oninput="calculatePayment()">
+                                                        placeholder="Dis %" oninput="calculatePayment()">
                                                 </div>
                                                 <div class="col-md-2">
-                                                    <label class="form-label">Sale Price</label>
+                                                    <label class="form-label">Salling Price</label>
                                                     <input type="number" id="itemSalePrice" class="form-control"
                                                         placeholder="Sale Price" oninput="calculatePayment()">
                                                 </div>

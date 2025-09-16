@@ -240,7 +240,11 @@ jQuery(document).ready(function () {
                         data-used="${usedQty}" 
                         data-arn-id="${arnId}">
                         
-                        <td colspan="1" style="width: 15%;"><strong>ARN:</strong> ${arnId}</td>
+                        <td colspan="1" style="width: 15%;"><strong>ARN:</strong> ${arnId}
+                        
+                        <div style="font-size: 12px; color: red">Cost: ${Number(row.final_cost).toLocaleString("en-US", { minimumFractionDigits: 2 })}</div>
+                        </td>
+                      
                         
                         <td>
                             <div><strong>Department:</strong></div>
@@ -249,7 +253,7 @@ jQuery(document).ready(function () {
                         
                         <td style="width: 15%;">
                             <div><strong>Available Qty:</strong></div>
-                            <div class="arn-qty">${remainingQty}</div>
+                            <div class="arn-qty">${remainingQty}</div> 
                         </td>
                     
                         <td style="width: 15%;">
@@ -491,6 +495,7 @@ jQuery(document).ready(function () {
     let itemSalePrice = mainRow.find("td").eq(4).text().trim(); // invoice_price is at index 4
     let item_id = mainRow.find("td").eq(5).text().trim(); // id is at index 5 and hidden
 
+
     $("#available_qty").val(availableQty);
 
     $("#itemCode").val(itemCode);
@@ -498,6 +503,7 @@ jQuery(document).ready(function () {
     $("#item_id").val(item_id);
     $("#itemPrice").val(itemPrice);
     $("#itemSalePrice").val(itemSalePrice);
+ 
 
     calculatePayment();
 
@@ -529,6 +535,10 @@ jQuery(document).ready(function () {
     let qtyMatch = availableQtyText.match(/Available Qty:\s*([\d.,]+)/i);
     let availableQty = qtyMatch ? parseFloat(qtyMatch[1].replace(/,/g, "")) : 0;
 
+    let costText = tdHtml.eq(0).find("div").text(); // <-- get only inside div
+let costMatch = costText.match(/Cost:\s*([\d.,]+)/i);
+let cost_arn = costMatch ? parseFloat(costMatch[1].replace(/,/g, "")) : 0;
+
     // Extract ARN (in td:eq(0))
     let arnText = tdHtml.eq(0).text();
     let arnMatch = arnText.match(/ARN:\s*(.+)/i);
@@ -552,6 +562,7 @@ jQuery(document).ready(function () {
     $("#itemName").val(itemName);
     $("#itemPrice").val(parseFloat(listPrice).toFixed(2));
     $("#itemSalePrice").val(parseFloat(invoicePrice).toFixed(2));
+    $("#item_cost_arn").val(parseFloat(cost_arn).toFixed(2));
 
     let invoice = parseFloat(invoicePrice);
     let list = parseFloat(listPrice);

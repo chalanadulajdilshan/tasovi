@@ -55,7 +55,7 @@
                                     <th>Name</th>
                                     <th>Category</th>
                                     <th>List Price</th>
-                                    <th>Invoice Price</th>
+                                    <th>Selling Price</th>
                                     <th>Available Qty</th>
                                 </tr>
                             </thead>
