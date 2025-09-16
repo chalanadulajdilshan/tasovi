@@ -62,9 +62,17 @@ if (isset($data['create'])) {
             $ARN_ITEM->item_code = $item['item_id'];
             $ARN_ITEM->order_qty = $item['order_qty'];
             $ARN_ITEM->received_qty = $item['rec_qty'];
-            $ARN_ITEM->discount_1 = $item['dis1'];
-            $ARN_ITEM->discount_2 = $item['dis2'];
+             $ARN_ITEM->discount_2 = $item['dis2'];
             $ARN_ITEM->discount_3 = $item['dis3'];
+            $ARN_ITEM->discount_4 = $item['dis4'];
+            $ARN_ITEM->discount_5 = $item['dis5'];
+            $ARN_ITEM->discount_6 = $item['dis6'];
+            $ARN_ITEM->discount_7 = $item['dis7'];
+            $ARN_ITEM->discount_8 = $item['dis8'];
+
+
+
+            
             $ARN_ITEM->final_cost = $item['actual_cost'];
             $ARN_ITEM->unit_total = $item['unit_total'];
             $ARN_ITEM->list_price = $item['list_price'];
@@ -172,9 +180,20 @@ if (isset($_POST['brand_id'], $_POST['category_id'])) {
 
     $brandWiseDis = new BrandWiseDis();
     $discounts = $brandWiseDis->getByBrand($brandId, $categoryId);
-
-    $discount = !empty($discounts) ? (float)$discounts[0]['discount_percent'] : 0;
-
-    echo json_encode(['discount' => $discount]);
+    
+    $discount_01 = 0;
+    $discount_02 = 0;
+    $discount_03 = 0;
+    
+    if (!empty($discounts)) {
+        $row = $discounts[0]; // first matching record
+        $discount_01 = isset($row['discount_percent_01']) ? (float)$row['discount_percent_01'] : 0;
+        $discount_02 = isset($row['discount_percent_02']) ? (float)$row['discount_percent_02'] : 0;
+        $discount_03 = isset($row['discount_percent_03']) ? (float)$row['discount_percent_03'] : 0;
+    }
+    
+    $total_discount = $discount_01 + $discount_02 + $discount_03;
+  
+    echo json_encode(['discount_01' => $discount_01, 'discount_02' => $discount_02, 'discount_03' => $discount_03, 'total_discount' => $total_discount]);
     exit();
 }

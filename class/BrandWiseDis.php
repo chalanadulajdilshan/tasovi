@@ -5,7 +5,9 @@ class BrandWiseDis
     public $dis_id;
     public $brand_id;
     public $category_id;
-    public $discount_percent;
+    public $discount_percent_01;
+    public $discount_percent_02;
+    public $discount_percent_03;
 
     public function __construct($dis_id = null)
     {
@@ -18,7 +20,9 @@ class BrandWiseDis
                 $this->dis_id = $result['id'];
                 $this->brand_id = $result['brand_id'];
                 $this->category_id = $result['category_id'];
-                $this->discount_percent = $result['discount_percent'];
+                $this->discount_percent_01 = $result['discount_percent_01'];
+                $this->discount_percent_02 = $result['discount_percent_02'];
+                $this->discount_percent_03 = $result['discount_percent_03'];
             }
         }
     }
@@ -26,11 +30,13 @@ class BrandWiseDis
     // Create new record
     public function create()
     {
-        $query = "INSERT INTO `brand_wise_dis` (`brand_id`, `category_id`, `discount_percent`) 
+        $query = "INSERT INTO `brand_wise_dis` (`brand_id`, `category_id`, `discount_percent_01`, `discount_percent_02`, `discount_percent_03`) 
                   VALUES (
                     '{$this->brand_id}', 
                     '{$this->category_id}', 
-                    '{$this->discount_percent}'
+                    '{$this->discount_percent_01}',
+                    '{$this->discount_percent_02}',
+                    '{$this->discount_percent_03}'
                   )";
         $db = new Database();
         return $db->readQuery($query) ? mysqli_insert_id($db->DB_CON) : false;
@@ -43,7 +49,9 @@ class BrandWiseDis
                   SET 
                     `brand_id` = '{$this->brand_id}', 
                     `category_id` = '{$this->category_id}', 
-                    `discount_percent` = '{$this->discount_percent}'
+                    `discount_percent_01` = '{$this->discount_percent_01}',
+                    `discount_percent_02` = '{$this->discount_percent_02}',
+                    `discount_percent_03` = '{$this->discount_percent_03}'
                   WHERE `id` = '{$this->dis_id}'";
         $db = new Database();
         return $db->readQuery($query);

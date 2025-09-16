@@ -10,6 +10,11 @@ class ArnItem
     public $discount_1;
     public $discount_2;
     public $discount_3;
+    public $discount_4;
+    public $discount_5;
+    public $discount_6;
+    public $discount_7;
+    public $discount_8;
     public $final_cost;
     public $unit_total;
     public $list_price;
@@ -33,6 +38,11 @@ class ArnItem
                 $this->discount_1 = $row['discount_1'];
                 $this->discount_2 = $row['discount_2'];
                 $this->discount_3 = $row['discount_3'];
+                $this->discount_4 = $row['discount_4'];
+                $this->discount_5 = $row['discount_5'];
+                $this->discount_6 = $row['discount_6'];
+                $this->discount_7 = $row['discount_7'];
+                $this->discount_8 = $row['discount_8'];
                 $this->final_cost = $row['final_cost'];
                 $this->unit_total = $row['unit_total'];
                 $this->list_price = $row['list_price'];
@@ -49,11 +59,11 @@ class ArnItem
         $db = new Database();
         $query = "INSERT INTO `arn_items` (
             `arn_id`, `item_code`, `order_qty`, `received_qty`,
-            `discount_1`, `discount_2`, `discount_3`, `final_cost`, `unit_total`,
+            `discount_1`, `discount_2`, `discount_3`, `discount_4`, `discount_5`, `discount_6`, `discount_7`, `discount_8`, `final_cost`, `unit_total`,
             `list_price`,`invoice_price`,   `created_at`
         ) VALUES (
             '{$this->arn_id}', '{$this->item_code}', '{$this->order_qty}', '{$this->received_qty}',
-            '{$this->discount_1}', '{$this->discount_2}', '{$this->discount_3}', '{$this->final_cost}', '{$this->unit_total}',
+            '{$this->discount_1}', '{$this->discount_2}', '{$this->discount_3}', '{$this->discount_4}', '{$this->discount_5}', '{$this->discount_6}', '{$this->discount_7}', '{$this->discount_8}', '{$this->final_cost}', '{$this->unit_total}',
             '{$this->list_price}', '{$this->invoice_price}',   NOW()
         )";
 
@@ -95,6 +105,11 @@ class ArnItem
             `discount_1` = '{$this->discount_1}',
             `discount_2` = '{$this->discount_2}',
             `discount_3` = '{$this->discount_3}',
+            `discount_4` = '{$this->discount_4}',
+            `discount_5` = '{$this->discount_5}',
+            `discount_6` = '{$this->discount_6}',
+            `discount_7` = '{$this->discount_7}',
+            `discount_8` = '{$this->discount_8}',
             `final_cost` = '{$this->final_cost}',
             `unit_total` = '{$this->unit_total}',
             `list_price` = '{$this->list_price}',

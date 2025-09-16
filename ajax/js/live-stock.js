@@ -222,12 +222,14 @@ jQuery(document).ready(function () {
         let html = '<div class="table-responsive"><table class="table table-sm table-bordered mb-0">';
         html += '<thead class="table-light"><tr>'+
                 '<th>ARN No</th>'+
-                '<th class="text-end">Last Price</th>'+
+                '<th>Cost</th>'+
+                '<th class="text-end">List Price</th>'+
                 '<th class="text-end">Invoice Price</th>'+
             '</tr></thead><tbody>';
         lots.forEach(function(l){
             html += '<tr>'+
                 '<td>'+(l.arn_no || '-')+'</td>'+
+                '<td class="text-end">'+Number(l.cost || 0).toFixed(2)+'</td>'+
                 '<td class="text-end">'+Number(l.list_price || 0).toFixed(2)+'</td>'+
                 '<td class="text-end">'+Number(l.invoice_price || 0).toFixed(2)+'</td>'+
             '</tr>';

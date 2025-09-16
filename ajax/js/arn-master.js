@@ -89,8 +89,18 @@ jQuery(document).ready(function () {
                 data: {brand_id: brandId, category_id: categoryId },
                 dataType: 'json',
                 success: function (res) {
-                     const discount = res && typeof res.discount !== 'undefined' ? res.discount : 0;
-                    $('#dis_1').val(discount);
+
+                     const totalDiscount = res && typeof res.total_discount !== 'undefined' ? res.total_discount : 0;
+
+                     const discount_01 = res && typeof res.discount_01 !== 'undefined' ? res.discount_01 : 0;
+                     const discount_02 = res && typeof res.discount_02 !== 'undefined' ? res.discount_02 : 0;
+                     const discount_03 = res && typeof res.discount_03 !== 'undefined' ? res.discount_03 : 0;
+
+                    $('#dis_1').val(totalDiscount);
+                    $('#dis_6').val(discount_01);
+                    $('#dis_7').val(discount_02);
+                    $('#dis_8').val(discount_03);
+                    
                     calculatePayment();
                 },
                 error: function (xhr, status, error) {
@@ -98,12 +108,17 @@ jQuery(document).ready(function () {
                     console.error('Response:', xhr.responseText);
                     console.error('Brand ID:', brandId, 'Category ID:', categoryId);
                     $('#dis_1').val(0);
+                    $('#dis_6').val(0);
+                    $('#dis_7').val(0);
+                    $('#dis_8').val(0);
                     calculatePayment();
                 }
             });
         } else {
             $('#dis_1').val(0);
-
+            $('#dis_6').val(0);
+            $('#dis_7').val(0);
+            $('#dis_8').val(0);
             calculatePayment();
         }
 
@@ -112,26 +127,26 @@ jQuery(document).ready(function () {
         
     });
 
-    $('#brand').on('change', function () {
-        const brandId = $(this).val();
+    // $('#brand').on('change', function () {
+    //     const brandId = $(this).val();
 
-        if (!brandId) return;
+    //     if (!brandId) return;
 
-        $.ajax({
-            url: 'ajax/php/arn-master.php',
-            type: 'POST',
-            data: { brand_id: brandId },
-            dataType: 'json',
-            success: function (res) {
-                const discount = res.discount || 0;
-                $('#dis_1').val(discount);
-                calculatePayment();
-            },
-            error: function () {
-                console.error('Failed to load brand discount');
-            }
-        });
-    });
+    //     $.ajax({
+    //         url: 'ajax/php/arn-master.php',
+    //         type: 'POST',
+    //         data: { brand_id: brandId },
+    //         dataType: 'json',
+    //         success: function (res) {
+    //             const totalDiscount = res.total_discount || 0;
+    //             $('#dis_1').val(totalDiscount);
+    //             calculatePayment();
+    //         },
+    //         error: function () {
+    //             console.error('Failed to load brand discount');
+    //         }
+    //     });
+    // });
 
 
     // Bind Enter key to add item
@@ -153,7 +168,7 @@ jQuery(document).ready(function () {
 
         // Clear item table
         $('#itemTableBody').empty();
-
+       
         // Optionally put a "no items" row
         $('#itemTableBody').append(`
         <tr id="noDataRow">
@@ -164,31 +179,34 @@ jQuery(document).ready(function () {
 
 
     function calculatePayment() {
-
         const recQty = parseFloat($('#rec_quantity').val()) || 0;
         const list_price = parseFloat($('#list_price').val()) || 0;
-
-        const dis1 = parseFloat($('#dis_1').val()) || 0;
+    
+        // Get discounts
         const dis2 = parseFloat($('#dis_2').val()) || 0;
         const dis3 = parseFloat($('#dis_3').val()) || 0;
         const dis4 = parseFloat($('#dis_4').val()) || 0;
         const dis5 = parseFloat($('#dis_5').val()) || 0;
-
-        // Calculate discounts
-        let disAmount1 = list_price * (dis1 / 100);
-        let disAmount2 = (list_price - disAmount1) * (dis2 / 100);
-        let disAmount3 = (list_price - disAmount1 - disAmount2) * (dis3 / 100);
-        let disAmount4 = (list_price - disAmount1 - disAmount2 - disAmount3) * (dis4 / 100);
-        let disAmount5 = (list_price - disAmount1 - disAmount2 - disAmount3 - disAmount4) * (dis5 / 100);
-        let finalCost = list_price - disAmount1 - disAmount2 - disAmount3 - disAmount4 - disAmount5;
-
+        const dis6 = parseFloat($('#dis_6').val()) || 0;
+        const dis7 = parseFloat($('#dis_7').val()) || 0;
+        const dis8 = parseFloat($('#dis_8').val()) || 0;
+    
+        // Calculate discounts step by step
+        let disAmount2 = list_price * (dis2 / 100);
+        let disAmount3 = (list_price - disAmount2) * (dis3 / 100);
+        let disAmount4 = (list_price - disAmount2 - disAmount3) * (dis4 / 100);
+        let disAmount5 = (list_price - disAmount2 - disAmount3 - disAmount4) * (dis5 / 100);
+        let disAmount6 = (list_price - disAmount2 - disAmount3 - disAmount4 - disAmount5) * (dis6 / 100);
+        let disAmount7 = (list_price - disAmount2 - disAmount3 - disAmount4 - disAmount5 - disAmount6) * (dis7 / 100);
+        let disAmount8 = (list_price - disAmount2 - disAmount3 - disAmount4 - disAmount5 - disAmount6 - disAmount7) * (dis8 / 100);
+    
+        let finalCost = list_price - disAmount2 - disAmount3 - disAmount4 - disAmount5 - disAmount6 - disAmount7 - disAmount8;
         let unitTotal = finalCost * recQty;
-
-
+    
         $('#actual_cost').val(finalCost.toFixed(2));
         $('#unit_total').val(unitTotal.toFixed(2));
-        // $('#tax').val(tax.toFixed(2));
     }
+    
 
     // Bind function to relevant input fields
     $('#arn-item-table').on('input', '#list_price,#rec_quantity, #actual_cost,#dis_3,#dis_4,#dis_5', calculatePayment);
@@ -199,12 +217,18 @@ jQuery(document).ready(function () {
         const code = $('#itemCode').val();
         const recQty = parseFloat($('#rec_quantity').val()) || 0;
         const brand = parseFloat($('#brand').val()) || 0;
-        const list_price = parseFloat($('#list_price').val()) || 0;
+ 
+        
+
         const dis1 = parseFloat($('#dis_1').val()) || 0; // Brand Discount
         const dis2 = parseFloat($('#dis_2').val()) || 0; // Item Discount
         const dis3 = parseFloat($('#dis_3').val()) || 0; // Dis 3
         const dis4 = parseFloat($('#dis_4').val()) || 0;
         const dis5 = parseFloat($('#dis_5').val()) || 0;
+
+        const dis6 = parseFloat($('#dis_6').val()) || 0;
+        const dis7 = parseFloat($('#dis_7').val()) || 0;
+        const dis8 = parseFloat($('#dis_8').val()) || 0;
 
         const actualCost = parseFloat($('#actual_cost').val()) || 0;
         const unitTotal = parseFloat($('#unit_total').val()) || 0;
@@ -256,7 +280,12 @@ jQuery(document).ready(function () {
             <td><input type="number" name="items[][order_qty]" class="form-control form-control-sm" readonly></td>
             <td><input type="number" name="items[][rec_qty]" class="form-control form-control-sm" value="${recQty}" readonly></td>
             <td><input type="number" name="items[][list_price]" class="form-control form-control-sm" value="${listPrice.toFixed(2)}" readonly></td>
-            <td><input type="number" name="items[][dis1]" class="form-control form-control-sm" value="${dis1}" readonly></td>
+            <td>
+            <input type="number"  class="form-control form-control-sm" value="${dis1}" readonly>
+            <input type="hidden" name="items[][dis6]" class="form-control form-control-sm" value="${dis6}" readonly>
+            <input type="hidden" name="items[][dis7]" class="form-control form-control-sm" value="${dis7}" readonly>
+            <input type="hidden" name="items[][dis8]" class="form-control form-control-sm" value="${dis8}" readonly>
+            </td>
             <td><input type="number" name="items[][dis2]" class="form-control form-control-sm" value="${dis2}" readonly></td>
             <td><input type="number" name="items[][dis3]" class="form-control form-control-sm" value="${dis3}" readonly></td>
             <td><input type="number" name="items[][dis4]" class="form-control form-control-sm" value="${dis4}" readonly></td>
@@ -292,7 +321,7 @@ jQuery(document).ready(function () {
         $('#itemCode').val('');
         $('#rec_quantity').val('');
         $('#list_price').val('');
-        $('#dis_1, #dis_2, #dis_3, #dis_4, #dis_5').val('');
+        $('#dis_1, #dis_2, #dis_3, #dis_4, #dis_5, #dis_6, #dis_7, #dis_8').val('');
         $('#actual_cost').val('');
         $('#unit_total').val('');
         $('#invoice_price').val('');
@@ -474,21 +503,24 @@ jQuery(document).ready(function () {
     function recalcRow($row) {
         const price = parseFloat($row.find('input[name*="[list_price]"]').val()) || 0;
         const qty = parseFloat($row.find('input[name*="[rec_qty]"]').val()) || 0;
-
-        const dis1 = parseFloat($row.find('input[name*="[brand_discount]"]').val()) || 0;
+ 
         const dis2 = parseFloat($row.find('input[name*="[item_discount]"]').val()) || 0;
         const dis3 = parseFloat($row.find('input[name*="[dis3]"]').val()) || 0;
         const dis4 = parseFloat($row.find('input[name*="[dis4]"]').val()) || 0;
         const dis5 = parseFloat($row.find('input[name*="[dis5]"]').val()) || 0;
+        const dis6 = parseFloat($row.find('input[name*="[dis6]"]').val()) || 0;
+        const dis7 = parseFloat($row.find('input[name*="[dis7]"]').val()) || 0;
+        const dis8 = parseFloat($row.find('input[name*="[dis8]"]').val()) || 0;
 
         // Apply discounts step by step
-        let disAmount1 = price * (dis1 / 100);
-        let disAmount2 = (price - disAmount1) * (dis2 / 100);
-        let disAmount3 = (price - disAmount1 - disAmount2) * (dis3 / 100);
-        let disAmount4 = (price - disAmount1 - disAmount2 - disAmount3) * (dis4 / 100);
-        let disAmount5 = (price - disAmount1 - disAmount2 - disAmount3 - disAmount4) * (dis5 / 100);
-
-        let finalCost = price - disAmount1 - disAmount2 - disAmount3 - disAmount4 - disAmount5;
+        let disAmount2 = (price) * (dis2 / 100);
+        let disAmount3 = (price - disAmount2) * (dis3 / 100);
+        let disAmount4 = (price - disAmount2 - disAmount3) * (dis4 / 100);
+        let disAmount5 = (price - disAmount2 - disAmount3 - disAmount4) * (dis5 / 100);
+        let disAmount6 = (price - disAmount2 - disAmount3 - disAmount4 - disAmount5) * (dis6 / 100);
+        let disAmount7 = (price - disAmount2 - disAmount3 - disAmount4 - disAmount5 - disAmount6) * (dis7 / 100);
+        let disAmount8 = (price - disAmount2 - disAmount3 - disAmount4 - disAmount5 - disAmount6 - disAmount7) * (dis8 / 100);
+        let finalCost = price - disAmount2 - disAmount3 - disAmount4 - disAmount5 - disAmount6 - disAmount7 - disAmount8;
 
         const actualCost = finalCost;
         const unitTotal = actualCost * qty;
@@ -525,15 +557,20 @@ jQuery(document).ready(function () {
 
         // Loop through each row in itemTable
         $('#itemTableBody tr').each(function () {
-            const dis1 = parseFloat($(this).find('[name*="[dis1]"]').val()) || 0;
+           
             const dis2 = parseFloat($(this).find('[name*="[dis2]"]').val()) || 0;
             const dis3 = parseFloat($(this).find('[name*="[dis3]"]').val()) || 0;
+            const dis4 = parseFloat($(this).find('[name*="[dis4]"]').val()) || 0;
+            const dis5 = parseFloat($(this).find('[name*="[dis5]"]').val()) || 0;
+            const dis6 = parseFloat($(this).find('[name*="[dis6]"]').val()) || 0;
+            const dis7 = parseFloat($(this).find('[name*="[dis7]"]').val()) || 0;
+            const dis8 = parseFloat($(this).find('[name*="[dis8]"]').val()) || 0;
             const vat = parseFloat($(this).find('[name*="[vat]"]').val()) || 0;
             const recQty = parseFloat($(this).find('[name*="[rec_qty]"]').val()) || 0;
             const orderQty = parseFloat($(this).find('[name*="[order_qty]"]').val()) || 0;
             const total = parseFloat($(this).find('[name*="[unit_total]"]').val()) || 0;
 
-            totalDiscount += dis1 + dis2 + dis3;
+            totalDiscount += dis2 + dis3 + dis4 + dis5 + dis6 + dis7 + dis8s;
             totalVAT += vat;
             totalReceivedQty += recQty;
             totalOrderQty += orderQty;
@@ -609,10 +646,17 @@ jQuery(document).ready(function () {
                 rec_qty: parseFloat($(cols[2]).find("input").val()) || 0,
                 list_price: parseFloat($(cols[3]).find("input").val()) || 0,
                 dis1: parseFloat($(cols[4]).find("input").val()) || 0,
+                
+                dis6: parseFloat($(cols[4]).find('input[name*="dis6"]').val()) || 0, 
+                dis7: parseFloat($(cols[4]).find('input[name*="dis7"]').val()) || 0, 
+                dis8: parseFloat($(cols[4]).find('input[name*="dis8"]').val()) || 0, 
+                
                 dis2: parseFloat($(cols[5]).find("input").val()) || 0,
                 dis3: parseFloat($(cols[6]).find("input").val()) || 0,
                 dis4: parseFloat($(cols[7]).find("input").val()) || 0,
                 dis5: parseFloat($(cols[8]).find("input").val()) || 0,
+                
+               
                 actual_cost: parseFloat($(cols[9]).find("input").val()) || 0,
                 unit_total: parseFloat($(cols[10]).find("input").val()) || 0, 
                 invoice_price: parseFloat($(cols[11]).find("input").val()) || 0,
@@ -758,11 +802,16 @@ jQuery(document).ready(function () {
         loadArnItems(arnData.id);
         if (arnData.is_cancelled === 1 || arnData.is_cancelled === '1') {
             $('.cancel-arn-btn').prop('disabled', true).text('Already Cancelled');
+            $('.cancel-arn-btn').show();
+            $('#create_arn').hide();
         } else {
+            $('.cancel-arn-btn').show();
+            $('#create_arn').hide();
             $('.cancel-arn-btn').prop('disabled', false).text('Cancel ARN');
         }
     });
 
+    //load arn items
     function loadArnItems(arnId) {
         $.ajax({
             url: "ajax/php/arn-master.php",
@@ -778,14 +827,20 @@ jQuery(document).ready(function () {
                     return;
                 }
 
-                items.forEach(item => {
+                items.forEach(item => { 
+                    const d6 = parseFloat(item.discount_6) || 0;
+                    const d7 = parseFloat(item.discount_7) || 0;
+                    const d8 = parseFloat(item.discount_8) || 0;
+                
+                    const dis1 = d6 + d7 + d8;
+
                     const row = `
                         <tr data-itemid="${item.item_code}">
                            <td>${item.item_code + ' - ' + item.item_name}  </td>
                             <td><input type="number" name="items[][order_qty]" class="form-control form-control-sm" value="${item.order_qty}" readonly></td>
                             <td><input type="number" name="items[][rec_qty]" class="form-control form-control-sm" value="${item.received_qty}" readonly></td>
                             <td><input type="number" name="items[][dis2]" class="form-control form-control-sm" value="${item.list_price}" readonly></td>
-                            <td><input type="number" name="items[][dis3]" class="form-control form-control-sm" value="${item.discount_1}" readonly></td>
+                            <td><input type="number" name="items[][dis3]" class="form-control form-control-sm" value="${dis1}" readonly></td>
                             <td><input type="number" name="items[][dis4]" class="form-control form-control-sm" value="${item.discount_2 || 0}" readonly></td>
                             <td><input type="number" name="items[][dis5]" class="form-control form-control-sm" value="${item.discount_3 || 0}" readonly></td>
                             <td><input type="number" name="items[][dis6]" class="form-control form-control-sm" value="${item.discount_4 || 0}" readonly></td>
@@ -805,6 +860,8 @@ jQuery(document).ready(function () {
         });
     }
 
+
+    //Cancel ARN
     $(document).on("click", ".cancel-arn-btn", function (e) {
         e.preventDefault();
 
