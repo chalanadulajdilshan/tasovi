@@ -335,7 +335,7 @@ include './auth.php';
                                                 </div>
                                                 <div class="col-md-1">
                                                     <label class="form-label">Cost</label>
-                                                    <input type="number" id="item_cost_arn" class="form-control"
+                                                    <input type="text" id="item_cost_arn" class="form-control"
                                                         placeholder="Cost"  disabled>
                                                 </div>
                                                 <div class="col-md-1">
