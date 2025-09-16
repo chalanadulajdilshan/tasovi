@@ -349,7 +349,7 @@ include './auth.php';
                                                         placeholder="Dis %" oninput="calculatePayment()">
                                                 </div>
                                                 <div class="col-md-2">
-                                                    <label class="form-label">Salling Price</label>
+                                                    <label class="form-label">Selling Price</label>
                                                     <input type="number" id="itemSalePrice" class="form-control"
                                                         placeholder="Sale Price" oninput="calculatePayment()">
                                                 </div>
@@ -460,7 +460,7 @@ include './auth.php';
                                                             <th>List Price</th>
                                                             <th>Qty</th>
                                                             <th>Discount</th>
-                                                            <th>Sale Price</th>
+                                                            <th>Selling Price</th>
                                                             <th>Total</th>
                                                             <th>Action</th>
                                                         </tr>
