@@ -436,7 +436,7 @@ $arn_id = $COMPANY_PROFILE_DETAILS->company_code . '/ARN/00/' . ($lastId + 1);
                                                 <div class="col-6 col-sm-4 col-md-2 col-lg-1">
                                                     <label class="form-label">Actual Cost</label>
                                                     <input type="text" id="actual_cost"
-                                                        class="form-control form-control-sm readonly">
+                                                        class="form-control form-control-sm  " readonly>
                                                 </div>
 
                                                 <div class="col-6 col-sm-4 col-md-2 col-lg-1">
