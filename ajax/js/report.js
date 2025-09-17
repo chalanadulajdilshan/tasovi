@@ -30,9 +30,7 @@ jQuery(document).ready(function () {
             { data: "category", title: "Category" },
             { data: "list_price", title: "List Price" },
             { data: "invoice_price", title: "Invoice Price" },
-            { data: "qty", title: "Quantity" },
-            { data: "discount", title: "Discount %" },
-            { data: "status_label", title: "Status" }
+            { data: "qty", title: "Quantity" }
         ],
         order: [[0, 'desc']],
         pageLength: 100
