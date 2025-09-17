@@ -85,7 +85,7 @@ class BrandWiseDis
     {
         $query = "SELECT * FROM `brand_wise_dis` 
               WHERE brand_id = " . (int)$brand_id . " 
-              OR category_id = " . (int)$category_id . " 
+              AND category_id = " . (int)$category_id . " 
               ORDER BY id ASC";
 
         $db = new Database();

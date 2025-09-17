@@ -179,6 +179,7 @@ jQuery(document).ready(function () {
         // Show update button and hide create button
         $("#create").hide();
         $("#update").show();
+        $(".delete-discount").show();
     });
 
     // Delete Discount
