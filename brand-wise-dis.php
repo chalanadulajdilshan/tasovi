@@ -39,13 +39,13 @@ include 'auth.php';
                             <?php endif; ?>
 
                             <?php if ($PERMISSIONS['edit_page']): ?>
-                                <a href="#" class="btn btn-warning" id="update">
+                                <a href="#" class="btn btn-warning" id="update" style="display: none;">
                                     <i class="uil uil-edit me-1"></i> Update
                                 </a>
                             <?php endif; ?>
 
                             <?php if ($PERMISSIONS['delete_page']): ?>
-                                <a href="#" class="btn btn-danger delete-discount">
+                                <a href="#" class="btn btn-danger delete-discount"  >
                                     <i class="uil uil-trash-alt me-1"></i> Delete
                                 </a>
                             <?php endif; ?>
