@@ -305,6 +305,7 @@ jQuery(document).ready(function () {
 
                 $('#remark').val(data.remark || '');
                 $("#create").hide();
+                $("#update").show();
                 // Close the modal
                 $('#AllCustomerModal').modal('hide');
             }

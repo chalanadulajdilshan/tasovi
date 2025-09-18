@@ -69,7 +69,7 @@ if ($action === 'get_settlement_data') {
                 FROM sales_invoice si
                 LEFT JOIN payment_receipt_method prm ON prm.invoice_id = si.id
                 LEFT JOIN payment_receipt pr ON pr.id = prm.receipt_id
-                WHERE 1=1";
+                WHERE si.sale_type = 2";
                 
     // Add customer filter to the main query if a customer is selected
     if ($customerId > 0) {
@@ -143,10 +143,12 @@ if ($action === 'get_settlement_data') {
                     prm.amount,
                     prm.is_settle,
                     prm.invoice_id,
-                    si.invoice_no
+                    si.invoice_no,
+                    pt.name as payment_method
                 FROM payment_receipt_method prm
                 INNER JOIN payment_receipt pr ON pr.id = prm.receipt_id
                 INNER JOIN sales_invoice si ON si.id = prm.invoice_id
+                LEFT JOIN payment_type pt ON pt.id = prm.payment_type_id
                 WHERE prm.invoice_id IN ($invoiceIdsStr)";
                 
     // Apply date filter to receipts as well
@@ -171,10 +173,18 @@ if ($action === 'get_settlement_data') {
         $amount = (float)$row['amount'];
         
         // Add receipt to its invoice
+        $paymentMethod = $row['payment_method'] ?? 'N/A';
+        
+        // Map payment method names for better display
+        if (strtolower($paymentMethod) === 'credit card') {
+            $paymentMethod = 'Cheque';
+        }
+        
         $invoices[$invoiceId]['receipts'][] = [
             'receipt_no' => $row['receipt_no'],
             'receipt_date' => $receiptDate,
-            'amount' => $amount
+            'amount' => $amount,
+            'payment_method' => $paymentMethod
         ];
         
         // Update invoice total receipts

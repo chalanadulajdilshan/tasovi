@@ -24,8 +24,8 @@ if (isset($_POST['create'])) {
     $CUSTOMER->remark = $_POST['remark'];
     $CUSTOMER->category = $_POST['category'];
     $CUSTOMER->district = $_POST['district'];
-    $CUSTOMER->province = $_POST['province'];
-    $CUSTOMER->vat_group = $_POST['vat_group'];
+    $CUSTOMER->province = isset($_POST['province']) ? $_POST['province'] : '';
+    $CUSTOMER->vat_group = isset($_POST['vat_group']) ? $_POST['vat_group'] : '';
     $CUSTOMER->is_vat = isset($_POST['is_vat']) ? 1 : 0;
     $CUSTOMER->is_active = isset($_POST['is_active']) ? 1 : 0;
 
@@ -104,7 +104,7 @@ if (isset($_POST['update'])) {
     $CUSTOMER->remark = $_POST['remark'];
     $CUSTOMER->category = $_POST['category'];
     $CUSTOMER->district = $_POST['district'];
-    $CUSTOMER->province = $_POST['province'];
+    $CUSTOMER->province = isset($_POST['province']) ? $_POST['province'] : '';
     $CUSTOMER->vat_group = isset($_POST['vat_group']) ? $_POST['vat_group'] : '';
     $CUSTOMER->is_vat = isset($_POST['is_vat']) ? 1 : 0;
     $CUSTOMER->is_active = isset($_POST['is_active']) ? 1 : 0;

@@ -45,7 +45,7 @@ include 'auth.php';
                             <?php endif; ?>
 
                             <?php if ($PERMISSIONS['edit_page']): ?>
-                                <a href="#" class="btn btn-warning" id="update">
+                                <a href="#" class="btn btn-warning" id="update" style="display: none;">
                                     <i class="uil uil-edit me-1"></i> Update
                                 </a>
                             <?php endif; ?>
@@ -150,7 +150,7 @@ include 'auth.php';
                                                 </div>
 
                                                 <!-- Direct Discount -->
-                                                <div class="col-md-3">
+                                                <div class="col-md-3" style="display: none;">
                                                     <label for="discount" class="form-label">Direct Discount %</label>
                                                     <div class="input-group mb-3">
                                                         <input id="discount" name="discount" type="text"

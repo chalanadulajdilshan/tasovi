@@ -205,10 +205,36 @@ $(document).ready(function () {
                                     .card-body { padding: 1.5rem; }
                                     .card-header { padding: 0.75rem 1.5rem; }
                                     .card-footer { padding: 0.75rem 1.5rem; }
+                                    /* Payment method styling */
+                                    .payment-cash {
+                                        background-color: #d4edda;
+                                        color: #155724;
+                                        padding: 2px 6px;
+                                        border-radius: 4px;
+                                        font-weight: 500;
+                                        display: inline-block;
+                                    }
+                                    .payment-cheque {
+                                        background-color: #fff3cd;
+                                        color: #856404;
+                                        padding: 2px 6px;
+                                        border-radius: 4px;
+                                        font-weight: 500;
+                                        display: inline-block;
+                                    }
+                                    .payment-other {
+                                        background-color: #e2e3e5;
+                                        color: #383d41;
+                                        padding: 2px 6px;
+                                        border-radius: 4px;
+                                        font-weight: 500;
+                                        display: inline-block;
+                                    }
                                 </style>
                                 <tr>
                                     <th>Receipt No</th>
                                     <th>Receipt Date</th>
+                                    <th>Payment Method</th>
                                     <th class="text-end">Amount</th>
                                 </tr>
                             </thead>
@@ -217,28 +243,32 @@ $(document).ready(function () {
             // Add receipt rows
             if (invoice.receipts && invoice.receipts.length > 0) {
                 invoice.receipts.forEach(receipt => {
+                    const paymentMethod = receipt.payment_method || 'N/A';
+                    const paymentMethodClass = getPaymentMethodClass(paymentMethod);
+                    
                     html += `
                                 <tr>
                                     <td>${receipt.receipt_no || '-'}</td>
                                     <td>${formatDate(receipt.receipt_date)}</td>
+                                    <td><span class="${paymentMethodClass}">${paymentMethod}</span></td>
                                     <td class="text-end">${formatCurrency(receipt.amount || 0)}</td>
                                 </tr>`;
                 });
             } else {
                 html += `
                                 <tr>
-                                    <td colspan="3" class="text-center">No receipts found for this invoice</td>
+                                    <td colspan="4" class="text-center">No receipts found for this invoice</td>
                                 </tr>`;
             }
 
             // Add summary row
             html += `
                                 <tr class="table-active fw-bold">
-                                    <td colspan="2" class="text-end">Total Receipts:</td>
+                                    <td colspan="3" class="text-end">Total Receipts:</td>
                                     <td class="text-end">${formatCurrency(invoice.total_receipts || 0)}</td>
                                 </tr>
                                 <tr class="table-${balance <= 0 ? 'success' : 'warning'} fw-bold">
-                                    <td colspan="2" class="text-end">Balance:</td>
+                                    <td colspan="3" class="text-end">Balance:</td>
                                     <td class="text-end">${formatCurrency(balance)}</td>
                                 </tr>
                             </tbody>
@@ -273,5 +303,16 @@ $(document).ready(function () {
     function formatCurrency(amount) {
         if (amount === null || amount === undefined) return 'LKR 0.00';
         return 'LKR ' + parseFloat(amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+    }
+
+    function getPaymentMethodClass(paymentMethod) {
+        const method = paymentMethod.toLowerCase();
+        if (method.includes('cash')) {
+            return 'payment-cash';
+        } else if (method.includes('cheque')) {
+            return 'payment-cheque';
+        } else {
+            return 'payment-other';
+        }
     }
 });

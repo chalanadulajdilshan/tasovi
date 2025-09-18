@@ -110,6 +110,7 @@ jQuery(document).ready(function ($) {
    $("#cheque_total").val(formatAmount(totalChequeAmount));
     updateChequeDropdowns();
     updateTotals();
+    updateChequePayDisabledState();
   }
 
   function calculateTotalCashPay($excludeRow = null) {
@@ -191,27 +192,19 @@ jQuery(document).ready(function ($) {
     $row.find(".balance-amount").text(formatAmount(remaining));
   }
 
-  function updateTotals() {
-    let totalOutstanding = 0;
-    let totalPaid = 0;
-    let totalBalance = 0;
-
-    $("#invoiceBody tr")
-      .not("#noItemRow")
-      .each(function () {
-        const overdue = parseAmount($(this).find(".invoice-overdue").text());
-        const chequePay = parseAmount($(this).find(".cheque-pay").val());
-        const cashPay = parseAmount($(this).find(".cash-pay").val());
-        const paidAmount = chequePay + cashPay;
-        const balance = overdue - paidAmount;
-
-        totalOutstanding += overdue;
-        totalPaid += paidAmount;
-        totalBalance += balance;
-      });
-
-    $("#total_outstanding").val(formatAmount(totalOutstanding));
-    $("#balance_amount").val(formatAmount(totalBalance));
+  function updateChequePayDisabledState() {
+    $(".cheque-select").each(function () {
+      const $select = $(this);
+      const $row = $select.closest("tr");
+      const $chequeInput = $row.find(".cheque-pay");
+      const selectedChequeId = $select.val();
+      
+      if (selectedChequeId) {
+        $chequeInput.prop("disabled", false);
+      } else {
+        $chequeInput.prop("disabled", true);
+      }
+    });
   }
 
   function validateChequePayment($input, $row) {
@@ -390,10 +383,18 @@ jQuery(document).ready(function ($) {
         if (prevChequeId !== selectedChequeId) {
           const chequeAmount = Math.min(remainingBalance, maxAmount);
           $chequeInput.val(formatAmount(chequeAmount));
+          // Focus on the cheque pay field immediately
+          setTimeout(() => {
+            $chequeInput.focus();
+          }, 0);
         }
       }
+      // Enable the cheque pay field when cheque is selected
+      $chequeInput.prop("disabled", false);
     } else {
       $chequeInput.val("0.00");
+      // Disable the cheque pay field when no cheque is selected
+      $chequeInput.prop("disabled", true);
     }
 
     updateRowBalance($row); // Update Paid Amount and Balance Amount
@@ -403,7 +404,11 @@ jQuery(document).ready(function ($) {
   $(document).on("focus", ".cheque-pay, .cash-pay", function () {
     const $input = $(this);
     let value = $input.val().replace(/[^0-9.]/g, "");
-    $input.val(value === "0" ? "" : value);
+    $input.val((value === "0" || value === "0.00") ? "" : value);
+    // Set cursor to the beginning of the input
+    setTimeout(() => {
+      $input[0].setSelectionRange(0, 0);
+    }, 0);
   });
 
   $(document).on(
@@ -415,6 +420,10 @@ jQuery(document).ready(function ($) {
       let value = $input.val().replace(/[^0-9.]/g, "");
       if (value === "") {
         $input.val("0.00");
+        // Set cursor to the beginning
+        setTimeout(() => {
+          $input[0].setSelectionRange(0, 0);
+        }, 0);
         updateRowBalance($row); // Update Paid Amount and Balance Amount
         updateState();
         return;
@@ -434,6 +443,10 @@ jQuery(document).ready(function ($) {
       let value = $input.val().replace(/[^0-9.]/g, "");
       if (value === "") {
         $input.val("0.00");
+        // Set cursor to the beginning
+        setTimeout(() => {
+          $input[0].setSelectionRange(0, 0);
+        }, 0);
         updateRowBalance($row); // Update Paid Amount and Balance Amount
         updateState();
         return;
@@ -703,6 +716,7 @@ jQuery(document).ready(function ($) {
         }
         updateState();
         toggleCashPay();
+        updateChequePayDisabledState();
       },
       error: function (xhr) {
         console.error("Failed to fetch invoices", xhr);
@@ -857,4 +871,5 @@ jQuery(document).ready(function ($) {
 
   // Initialize
   toggleCashPay();
+  updateChequePayDisabledState();
 });
