@@ -74,9 +74,9 @@ class SalesInvoice
             '{$this->sale_type}', '{$this->discount_type}', '{$this->final_cost}','{$this->payment_type}', '{$this->sub_total}', '{$this->discount}', 
             '{$this->tax}', '{$this->grand_total}', '{$this->remark}'
         )";
-        
 
-        
+
+
 
         $db = new Database();
         $result = $db->readQuery($query);
@@ -138,7 +138,7 @@ class SalesInvoice
         }
     }
 
-    
+
 
     // Delete a sales invoice record by ID
     public function delete()
@@ -466,9 +466,10 @@ class SalesInvoice
      * @param array $filters Array of filter criteria
      * @return array Processed data for DataTables
      */
-    public function getSalesSummaryReport($filters = []) {
+    public function getSalesSummaryReport($filters = [])
+    {
         $db = new Database();
-        
+
         // Base query
         $query = "SELECT 
                     si.id,
@@ -485,16 +486,16 @@ class SalesInvoice
                   FROM `sales_invoice` si
                   LEFT JOIN `department_master` dm ON si.department_id = dm.id
                   WHERE 1=1";
-        
+
         // Apply filters
         $params = [];
-        
+
         // Customer filter
         if (!empty($filters['customer_id'])) {
             $customerId = $db->escapeString($filters['customer_id']);
             $query .= " AND si.customer_id = '$customerId'";
         }
-        
+
         // Date range filter
         if (!empty($filters['from_date']) && !empty($filters['to_date'])) {
             $fromDate = $db->escapeString($filters['from_date']);
@@ -507,17 +508,17 @@ class SalesInvoice
             $toDate = $db->escapeString($filters['to_date']);
             $query .= " AND DATE(si.invoice_date) <= '$toDate'";
         }
-        
+
         // Get total records count for pagination
         $countQuery = "SELECT COUNT(*) as total FROM ($query) as total_count";
         $countResult = $db->readQuery($countQuery);
         $totalRecords = mysqli_fetch_assoc($countResult)['total'];
-        
+
         // Add sorting
         $orderColumn = $_POST['order'][0]['column'] ?? 2; // Default sort by date (column index 2)
         $orderDir = $_POST['order'][0]['dir'] ?? 'DESC';
         $orderColumnName = '';
-        
+
         // Map column index to database column name
         $columnMap = [
             0 => 'si.id',
@@ -528,24 +529,24 @@ class SalesInvoice
             5 => 'sales_type',
             6 => 'si.grand_total'
         ];
-        
+
         if (isset($columnMap[$orderColumn])) {
             $orderColumnName = $columnMap[$orderColumn];
             $query .= " ORDER BY $orderColumnName $orderDir";
         } else {
             $query .= " ORDER BY si.invoice_date DESC";
         }
-        
+
         // Add pagination
         $start = $_POST['start'] ?? 0;
         $length = $_POST['length'] ?? 25;
         $query .= " LIMIT $start, $length";
-        
+
         // Execute query
         $result = $db->readQuery($query);
         $data = [];
         $totalAmount = 0;
-        
+
         while ($row = mysqli_fetch_assoc($result)) {
             $amount = (float)$row['amount'];
             $totalAmount += $amount;
@@ -561,21 +562,41 @@ class SalesInvoice
                 'action' => '<a href="sales-invoice-view.php?inv=' . $row['invoice_id'] . '" class="btn btn-sm btn-info" target="_blank"><i class="uil uil-eye"></i> View</a>'
             ];
         }
-        
+
         return [
             'data' => $data,
             'total_records' => $totalRecords,
             'total_amount' => number_format($totalAmount, 2)
         ];
     }
-  
+
     public function updateInvoiceOutstanding($invoice_id, $amount)
     {
         $query = "UPDATE `sales_invoice` SET `outstanding_settle_amount` = `outstanding_settle_amount` + $amount WHERE `id` = $invoice_id";
-       
+
         $db = new Database();
         $result = $db->readQuery($query);
         return ($result) ? true : false;
     }
 
+    public function getMonthlyProfitByYear($year)
+    {
+        $db = new Database();
+        $query = "SELECT 
+                MONTH(invoice_date) as month,
+                SUM(grand_total - final_cost) as total_profit
+              FROM sales_invoice si
+              WHERE YEAR(invoice_date) = '" . $db->escapeString($year) . "'
+              AND is_cancel = 0
+              GROUP BY MONTH(invoice_date)";
+
+        $result = $db->readQuery($query);
+        $data = [];
+        if ($result) {
+            while ($row = mysqli_fetch_assoc($result)) {
+                $data[] = $row;
+            }
+        }
+        return $data;
+    }
 }
