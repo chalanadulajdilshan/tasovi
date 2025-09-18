@@ -228,7 +228,16 @@ $customer_id = 'CM/' . $_SESSION['id'] . '/0' . ($lastId + 1);
                                                 </div>
 
                                                 <!-- Hidden Customer Category with default value 'customer' -->
-                                                <input type="hidden" id="category" name="category" value="customer">
+                                                <div class="col-md-4 mt-3">
+                                                    <label for="category" class="form-label">Customer Category <span
+                                                            class="text-danger">*</span></label>
+                                                    <select id="category" name="category" class="form-select">
+                                                        <option value="" selected> -- Select category -- </option>
+                                                        <option value="1">Customer</option>
+                                                        <option value="2">Supplier</option>
+                                                        <option value="3">Both</option>
+                                                    </select>
+                                                </div>
 
                                                 <div class="col-md-4 mt-3">
                                                     <label for="province" class="form-label">Province <span
