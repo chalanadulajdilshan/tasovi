@@ -34,7 +34,7 @@ if (isset($_POST['action']) && $_POST['action'] === 'load_profit_report') {
         'to_date' => isset($_POST['to_date']) ? $_POST['to_date'] : '',
         'all_customers' => isset($_POST['all_customers']) ? $_POST['all_customers'] : false
     ];
-    
+
     // If item name is provided but not item code, we'll use that for filtering
     if (empty($filters['item_code']) && !empty($filters['item_name'])) {
         // No need to set item_code here as we'll use item_name in the query
@@ -87,6 +87,52 @@ if (isset($_POST['action']) && $_POST['action'] === 'update_stock_tmp_price') {
 }
 
 // Update item price
+// Handle monthly profit data request
+if (isset($_POST['action']) && $_POST['action'] === 'get_monthly_profit') {
+    try {
+        $year = isset($_POST['year']) ? (int)$_POST['year'] : date('Y');
+
+        $salesInvoice = new SalesInvoice();
+        $monthlySalesProfit = $salesInvoice->getMonthlyProfitByYear($year);
+
+        $expense = new Expense();
+        $monthlyExpenses = $expense->getMonthlyExpensesByYear($year);
+
+        $salesMap = [];
+        foreach ($monthlySalesProfit as $row) {
+            $salesMap[$row['month']] = (float)$row['total_profit'];
+        }
+
+        $expMap = [];
+        foreach ($monthlyExpenses as $row) {
+            $expMap[$row['month']] = (float)$row['total_amount'];
+        }
+
+        $data = [];
+        $monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        for ($m = 1; $m <= 12; $m++) {
+            $profit = ($salesMap[$m] ?? 0) - ($expMap[$m] ?? 0);
+            $data[] = [
+                'month' => $monthNames[$m - 1],
+                'value' => round($profit)
+            ];
+        }
+
+        echo json_encode([
+            'status' => 'success',
+            'data' => $data
+        ]);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Failed to load monthly profit data: ' . $e->getMessage()
+        ]);
+    }
+    exit;
+}
+
 if (isset($_POST['action']) && $_POST['action'] === 'update_item_price') {
     try {
         $item_id = (int)$_POST['item_id'];

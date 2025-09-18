@@ -1,58 +1,40 @@
-const salesData = [{
-    month: 'Jan',
-    value: 23000
-},
-{
-    month: 'Feb',
-    value: 11000
-},
-{
-    month: 'Mar',
-    value: 22000
-},
-{
-    month: 'Apr',
-    value: 27000
-},
-{
-    month: 'May',
-    value: 13000
-},
-{
-    month: 'Jun',
-    value: 22000
-},
-{
-    month: 'Jul',
-    value: 37000
-},
-{
-    month: 'Aug',
-    value: 21000
-},
-{
-    month: 'Sep',
-    value: 44000
-},
-{
-    month: 'Oct',
-    value: 22000
-},
-{
-    month: 'Nov',
-    value: 30000
-},
-{
-    month: 'Dec',
-    value: 45000
+async function loadChartData(year = new Date().getFullYear()) {
+    try {
+        const response = await fetch('ajax/php/report.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `action=get_monthly_profit&year=${year}`
+        });
+        const json = await response.json();
+        if (json.status === 'success') {
+            return json.data;
+        }
+    } catch (e) {
+        console.error(e);
+    }
+    return [
+        { month: 'Jan', value: 0 },
+        { month: 'Feb', value: 0 },
+        { month: 'Mar', value: 0 },
+        { month: 'Apr', value: 0 },
+        { month: 'May', value: 0 },
+        { month: 'Jun', value: 0 },
+        { month: 'Jul', value: 0 },
+        { month: 'Aug', value: 0 },
+        { month: 'Sep', value: 0 },
+        { month: 'Oct', value: 0 },
+        { month: 'Nov', value: 0 },
+        { month: 'Dec', value: 0 }
+    ]; // fallback
 }
-];
 
-function initChart() {
+async function initChart() {
+    const salesData = await loadChartData();
     const barContainer = document.getElementById('bar-container');
     const chartGrid = document.getElementById('chart-grid');
 
-    const maxValue = Math.max(...salesData.map(d => d.value));
+    const values = salesData.map(d => d.value);
+    const maxValue = Math.max(...values, 0); // Handle possible negative values
     const chartHeight = 420; // Available height for bars
 
     // Create grid lines
@@ -109,18 +91,18 @@ function initChart() {
     });
 
     // Calculate and display statistics
-    updateStatistics();
+    updateStatistics(salesData);
 }
 
-function updateStatistics() {
-    const totalSales = salesData.reduce((sum, data) => sum + data.value, 0);
-    const avgSales = totalSales / salesData.length;
+function updateStatistics(salesData) {
+    const totalProfit = salesData.reduce((sum, data) => sum + data.value, 0);
+    const avgProfit = totalProfit / salesData.length;
     const bestMonth = salesData.reduce((max, data) =>
         data.value > max.value ? data : max, salesData[0]);
 
     // Animate counting up
-    animateValue('total-sales', 0, totalSales, 2000, (val) => `Rs. ${val.toLocaleString()}`);
-    animateValue('avg-sales', 0, avgSales, 2000, (val) => `Rs. ${Math.round(val).toLocaleString()}`);
+    animateValue('total-sales', 0, totalProfit, 2000, (val) => `Rs. ${val.toLocaleString()}`);
+    animateValue('avg-sales', 0, avgProfit, 2000, (val) => `Rs. ${Math.round(val).toLocaleString()}`);
 
     setTimeout(() => {
         document.getElementById('best-month').textContent = bestMonth.month;

@@ -221,4 +221,22 @@ class Expense
         error_log('Total expenses found: ' . $totalExpenses);
         return $totalExpenses;
     }
+
+    public function getMonthlyExpensesByYear($year)
+    {
+        $db = new Database();
+        $query = "SELECT 
+                MONTH(expense_date) as month,
+                SUM(amount) as total_amount
+              FROM expenses
+              WHERE YEAR(expense_date) = '$year'
+              GROUP BY MONTH(expense_date)";
+
+        $result = $db->readQuery($query);
+        $expenses = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $expenses[] = $row;
+        }
+        return $expenses;
+    }
 }
