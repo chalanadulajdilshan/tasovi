@@ -140,6 +140,7 @@ jQuery(document).ready(function () {
         $('#form-data')[0].reset();
         $('#category_id').prop('selectedIndex', 0);
         $("#create").show();
+        $("#update").hide();
     });
 
 
@@ -159,6 +160,7 @@ jQuery(document).ready(function () {
         }
 
         $("#create").hide();
+        $("#update").show();
         $('#brand_master').modal('hide');
     });
 

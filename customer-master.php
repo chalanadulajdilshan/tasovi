@@ -52,7 +52,7 @@ $customer_id = 'CM/' . $_SESSION['id'] . '/0' . ($lastId + 1);
                             <?php endif; ?>
 
                             <?php if ($PERMISSIONS['edit_page']): ?>
-                                <a href="#" class="btn btn-warning" id="update">
+                                <a href="#" class="btn btn-warning" id="update" style="display: none;">
                                     <i class="uil uil-edit me-1"></i> Update
                                 </a>
                             <?php endif; ?>
@@ -127,7 +127,7 @@ $customer_id = 'CM/' . $_SESSION['id'] . '/0' . ($lastId + 1);
                                                 <div class="col-md-4">
                                                     <label for="fullName" class="form-label">Full Name <span
                                                             class="text-danger">*</span></label>
-                                                    <input id="name" name="name"  onkeyup="toUpperCaseInput(this)"  type="text" class="form-control"
+                                                    <input id="name" name="name" onkeyup="toUpperCaseInput(this)" type="text" class="form-control"
                                                         placeholder="Enter full name">
                                                 </div>
 
@@ -197,19 +197,19 @@ $customer_id = 'CM/' . $_SESSION['id'] . '/0' . ($lastId + 1);
                                                 <div class="col-md-4 mt-3">
                                                     <label for="credit_limit" class="form-label">Credit Limit <span
                                                             class="text-danger">*</span></label>
-                                                    <input id="credit_limit" name="credit_limit" type="text"
+                                                    <input id="credit_limit" name="credit_limit" type="number"
                                                         class="form-control" placeholder="Enter credit limit">
                                                 </div>
                                                 <div class="col-md-4 mt-3">
                                                     <label for="outstanding" class="form-label">Outstanding Balance
                                                         <span class="text-danger">*</span></label>
-                                                    <input id="outstanding" name="outstanding" type="text"
+                                                    <input id="outstanding" name="outstanding" type="number"
                                                         class="form-control" placeholder="Enter outstanding balance">
                                                 </div>
                                                 <div class="col-md-4 mt-3">
                                                     <label for="overdue" class="form-label">Overdue <span
                                                             class="text-danger">*</span></label>
-                                                    <input id="overdue" name="overdue" type="text" class="form-control"
+                                                    <input id="overdue" name="overdue" type="number" class="form-control"
                                                         placeholder="Enter overdue amount">
                                                 </div>
 

@@ -21,6 +21,14 @@ jQuery(document).ready(function () {
                 timer: 2000,
                 showConfirmButton: false
             });
+        } else if (!$('#category').val() || $('#category').val() == 0) {
+            swal({
+                title: "Error!",
+                text: "Please select customer category",
+                type: 'error',
+                timer: 2000,
+                showConfirmButton: false
+            });
         } else {
 
             $('.someBlock').preloader();
@@ -162,16 +170,14 @@ jQuery(document).ready(function () {
                 timer: 2000,
                 showConfirmButton: false
             });
-        } else if (!$('#province').val() || $('#province').val() == 0) {
+        } else if (!$('#category').val() || $('#category').val() == 0) {
             swal({
                 title: "Error!",
-                text: "Please Select Province",
+                text: "Please select customer category",
                 type: 'error',
                 timer: 2000,
                 showConfirmButton: false
             });
-
-
         } else {
 
             $('.someBlock').preloader();
@@ -226,6 +232,7 @@ jQuery(document).ready(function () {
         $('#form-data')[0].reset();
         $('#category').prop('selectedIndex', 0); // Optional, if using dropdowns
         $("#create").show();
+        $("#update").hide();
     });
 
 
