@@ -74,6 +74,12 @@ include_once(dirname(__FILE__) . '/PaymentReceiptMethod.php');
 include_once(dirname(__FILE__) . '/ServiceItem.php');
 include_once(dirname(__FILE__) . '/Service.php');
 include_once(dirname(__FILE__) . '/BrandWiseDis.php');
+include_once(dirname(__FILE__) . '/CustomerComplaint.php');
+include_once(dirname(__FILE__) . '/CompanyHandling.php');
+include_once(dirname(__FILE__) . '/DagCustomer.php');
+include_once(dirname(__FILE__) . '/DagCompanyAssignment.php');
+include_once(dirname(__FILE__) . '/CompanyMaster.php');
+
 
 session_start();
 function dd($data)
