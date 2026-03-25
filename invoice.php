@@ -104,7 +104,7 @@ $CUSTOMER_MASTER = new CustomerMaster($SALES_INVOICE->customer_id);
         }
     </style>
 
-</head
+    </head>
 
     <body data-layout="horizontal" data-topbar="colored">
 

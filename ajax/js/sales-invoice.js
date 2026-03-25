@@ -95,7 +95,7 @@ jQuery(document).ready(function () {
     let category_id = $("#item_category_id").val();
     let group_id = $("#item_group_id").val();
     let department_id = $("#item_department_id").val();
-    let item_code = $("#item_item_code").val().trim();
+    let item_code = ($("#item_item_code").val() || "").trim();
 
     $.ajax({
       url: "ajax/php/report.php",
@@ -129,7 +129,7 @@ jQuery(document).ready(function () {
     let category_id = $("#item_category_id").val();
     let group_id = $("#item_group_id").val();
     let department_id = $("#item_department_id").val();
-    let item_code = $("#item_item_code").val().trim();
+    let item_code = ($("#item_item_code").val() || "").trim();
 
     $.ajax({
       url: "ajax/php/report.php",
@@ -340,7 +340,7 @@ jQuery(document).ready(function () {
     const selectedId = $(this).val();
     if (selectedId) {
       // Get the selected option's text (item name)
-      const selectedText = $(this).find("option:selected").text().trim();
+      const selectedText = ($(this).find("option:selected").text() || "").trim();
 
       // Update the item code and name fields
       $("#itemCode").val("SI/" + selectedId.padStart(4, "0"));
@@ -353,7 +353,7 @@ jQuery(document).ready(function () {
 
   $(document).on("change", "#service", function () {
     // Get selected service name
-    const selectedText = $(this).find("option:selected").text().trim();
+    const selectedText = ($(this).find("option:selected").text() || "").trim();
 
     // Update service name field
     $("#itemName").val(selectedText);
@@ -448,7 +448,7 @@ jQuery(document).ready(function () {
     let mainRow = $(this).prevAll("tr.table-primary").first();
     let infoRow = $(this).prev("tr.table-info");
 
-    let itemText = mainRow.find("td").eq(1).text().trim();
+    let itemText = (mainRow.find("td").eq(1).text() || "").trim();
     let parts = itemText.split(" - ");
     let itemCode = parts[0] || "";
     let itemName = parts[1] || "";
@@ -488,12 +488,12 @@ jQuery(document).ready(function () {
   $(document).on("click", "#all_itemMaster tbody tr", function () {
     let mainRow = $(this).closest("tr.table-primary"); // ✅ pick the clicked row
 
-    let itemCode = mainRow.find("td").eq(1).text().trim().split(" - ")[0] || "";
-    let itemName = mainRow.find("td").eq(1).text().trim().split(" - ")[1] || "";
-    let availableQty = mainRow.find("td").eq(2).text().trim();
-    let itemPrice = mainRow.find("td").eq(3).text().trim(); // invoice_price is at index 4
-    let itemSalePrice = mainRow.find("td").eq(4).text().trim(); // invoice_price is at index 4
-    let item_id = mainRow.find("td").eq(5).text().trim(); // id is at index 5 and hidden
+    let itemCode = (mainRow.find("td").eq(1).text() || "").trim().split(" - ")[0] || "";
+    let itemName = (mainRow.find("td").eq(1).text() || "").trim().split(" - ")[1] || "";
+    let availableQty = (mainRow.find("td").eq(2).text() || "").trim();
+    let itemPrice = (mainRow.find("td").eq(3).text() || "").trim(); // invoice_price is at index 4
+    let itemSalePrice = (mainRow.find("td").eq(4).text() || "").trim(); // invoice_price is at index 4
+    let item_id = (mainRow.find("td").eq(5).text() || "").trim(); // id is at index 5 and hidden
 
 
     $("#available_qty").val(availableQty);
@@ -524,7 +524,7 @@ jQuery(document).ready(function () {
 
     $("#item_id").val(lastColValue);
 
-    let itemText = mainRow.find("td").eq(1).text().trim();
+    let itemText = (mainRow.find("td").eq(1).text() || "").trim();
     let parts = itemText.split(" - ");
     let itemCode = parts[0] || "";
     let itemName = parts[1] || "";
@@ -542,7 +542,7 @@ let cost_arn = costMatch ? parseFloat(costMatch[1].replace(/,/g, "")) : 0;
     // Extract ARN (in td:eq(0))
     let arnText = tdHtml.eq(0).text();
     let arnMatch = arnText.match(/ARN:\s*(.+)/i);
-    let arn = arnMatch ? arnMatch[1].trim() : "";
+    let arn = arnMatch ? (arnMatch[1] || "").trim() : "";
 
     //Extract Invoice Price (now from td:eq(5))
     let invoicePriceText = tdHtml.eq(4).text();
@@ -719,7 +719,7 @@ let cost_arn = costMatch ? parseFloat(costMatch[1].replace(/,/g, "")) : 0;
       return;
     }
 
-    const invoiceNo = $("#invoice_no").val().trim();
+    const invoiceNo = ($("#invoice_no").val() || "").trim();
     const dag_id = $("#dag_id").val();
 
     if (dag_id != 0) {
@@ -776,7 +776,7 @@ let cost_arn = costMatch ? parseFloat(costMatch[1].replace(/,/g, "")) : 0;
       return;
     }
 
-    const invoiceNo = $("#invoice_no").val().trim();
+    const invoiceNo = ($("#invoice_no").val() || "").trim();
     const dag_id = $("#dag_id").val();
 
     if (dag_id != 0) {
@@ -826,8 +826,8 @@ let cost_arn = costMatch ? parseFloat(costMatch[1].replace(/,/g, "")) : 0;
 
     //  item invoice to send this php file
     $("#invoiceItemsBody tr").each(function () {
-      const code = $(this).find("td:eq(0)").text().trim();
-      const name = $(this).find("td:eq(1)").text().trim();
+      const code = ($(this).find("td:eq(0)").text() || "").trim();
+      const name = ($(this).find("td:eq(1)").text() || "").trim();
       const price = parseFloat($(this).find("td:eq(2)").text()) || 0;
       let qty = parseFloat($(this).find("td:eq(3)").text()) || 0;
       const discount = parseFloat($(this).find("td:eq(4)").text()) || 0;
@@ -1072,8 +1072,8 @@ let cost_arn = costMatch ? parseFloat(costMatch[1].replace(/,/g, "")) : 0;
     const dagItems = [];
 
     $("#dagItemsBodyInvoice tr.dag-item-row").each(function () {
-      const code = $(this).find("td:eq(0)").text().trim();
-      const name = $(this).find("td:eq(1)").text().trim();
+      const code = ($(this).find("td:eq(0)").text() || "").trim();
+      const name = ($(this).find("td:eq(1)").text() || "").trim();
       const price = parseFloat($(this).find("td:eq(2)").text()) || 0;
       const qty = parseFloat($(this).find("td:eq(3)").text()) || 0;
       const payment = parseFloat($(this).find("input.price").val()) || 0;
@@ -1156,9 +1156,9 @@ let cost_arn = costMatch ? parseFloat(costMatch[1].replace(/,/g, "")) : 0;
 
   //ADD ITEM TO INVOICE TABLE
   function addItem() {
-    const item_id = $("#item_id").val().trim();
-    const code = $("#itemCode").val().trim();
-    const name = $("#itemName").val().trim();
+    const item_id = ($("#item_id").val() || "").trim();
+    const code = ($("#itemCode").val() || "").trim();
+    const name = ($("#itemName").val() || "").trim();
     const price = parseFloat($("#itemPrice").val()) || 0;
     const qty = parseFloat($("#itemQty").val()) || 0;
     const discount = parseFloat($("#itemDiscount").val()) || 0;
