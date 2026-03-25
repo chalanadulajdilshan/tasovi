@@ -35,7 +35,7 @@ if (isset($_POST['create'])) {
     foreach ($items as $item) {
         $price = floatval($item['price']);
         $qty = floatval($item['qty']);
-        $discount = isset($item['discount']) ? floatval($item['discount']) : 0; // item-wise discount
+        $discount_percentage = isset($item['discount']) ? floatval($item['discount']) : 0; // item-wise discount percentage
 
         //GET ARN ID BY ARN NO
         $ARN_MASTER = new ArnMaster(NULL);
@@ -47,17 +47,19 @@ if (isset($_POST['create'])) {
         if (!str_starts_with($item['code'], 'SI')) {
             $ARN_ITEM = new ArnItem(NULL);
             $cost = $ARN_ITEM->getArnCostByArnId($arn_id);
-            $final_cost_item = $cost * $item['qty'];
+            $final_cost_item = $cost * $qty;
             $final_cost += $final_cost_item;
         } else {
             $SERVICE_ITEM = new ServiceItem($item['item_id']);
-            $final_cost_item = $SERVICE_ITEM->cost * $item['service_qty'];
+            $final_cost_item = $SERVICE_ITEM->cost * ($item['service_qty'] ?? 1);
             $final_cost += $final_cost_item;
         }
 
         $itemTotal = $price * $qty;
+        $itemDiscount = $itemTotal * ($discount_percentage / 100);
+        
         $totalSubTotal += $itemTotal;
-        $totalDiscount += $discount;
+        $totalDiscount += $itemDiscount;
     }
 
     $netTotal = $totalSubTotal - $totalDiscount;
@@ -119,7 +121,10 @@ if (isset($_POST['create'])) {
 
         foreach ($items as $item) {
 
-            $item_discount = isset($item['discount']) ? $item['discount'] : 0;
+            $price = floatval($item['price']);
+            $qty = floatval($item['qty']);
+            $item_discount_percentage = isset($item['discount']) ? floatval($item['discount']) : 0;
+            $item_discount_amount = ($price * $qty) * ($item_discount_percentage / 100);
 
             $ITEM_MASTER = new ItemMaster($item['item_id']);
 
@@ -127,10 +132,10 @@ if (isset($_POST['create'])) {
             $SALES_ITEM->invoice_id = $invoiceTableId;
             $SALES_ITEM->item_code = $item['item_id'];
             $SALES_ITEM->item_name = $item['name'];
-            $SALES_ITEM->price = $item['price'];
-            $SALES_ITEM->quantity = $item['qty'];
-            $SALES_ITEM->discount = $item_discount;
-            $SALES_ITEM->total = ($item['price'] * $item['qty']) - $item_discount;
+            $SALES_ITEM->price = $price;
+            $SALES_ITEM->quantity = $qty;
+            $SALES_ITEM->discount = $item_discount_percentage;
+            $SALES_ITEM->total = ($price * $qty) - $item_discount_amount;
 
             $SALES_ITEM->created_at = date("Y-m-d H:i:s");
             $SALES_ITEM->create();
@@ -163,7 +168,7 @@ if (isset($_POST['create'])) {
             $STOCK_TRANSACTION->date = date("Y-m-d");
             $STOCK_TRANSACTION->qty_in = 0;
             $STOCK_TRANSACTION->qty_out = $item['qty'];
-            $STOCK_TRANSACTION->remark = "INVOICE #$invoiceId " . (!empty($item['arn_id']) ? "(ARN: {$item['arn']}) " : "") . "Issued " . date("Y-m-d H:i:s");
+            $STOCK_TRANSACTION->remark = "INVOICE #$invoiceId " . (!empty($item['arn_no']) ? "(ARN: {$item['arn_no']}) " : "") . "Issued " . date("Y-m-d H:i:s");
             $STOCK_TRANSACTION->created_at = date("Y-m-d H:i:s");
             $STOCK_TRANSACTION->create();
 
@@ -177,7 +182,7 @@ if (isset($_POST['create'])) {
                         $INVOICE_PAYMENT->method_id   = $payment['method_id'];
                         $INVOICE_PAYMENT->amount      = $payment['amount'];
                         $INVOICE_PAYMENT->reference_no = $payment['reference_no'] ?? null;
-                        $INVOICE_PAYMENT->bank_name    = $pssayment['bank_name'] ?? null;
+                        $INVOICE_PAYMENT->bank_name    = $payment['bank_name'] ?? null;
                         $INVOICE_PAYMENT->cheque_date  = $payment['cheque_date'] ?? null;
 
                         $res = $INVOICE_PAYMENT->create();
@@ -187,7 +192,7 @@ if (isset($_POST['create'])) {
 
 
             //audit log 
-            $AUDIT_LOG = new AuditLog(NUll);
+            $AUDIT_LOG = new AuditLog(NULL);
             $AUDIT_LOG->ref_id = $invoiceTableId;
             $AUDIT_LOG->ref_code = $_POST['invoice_no'];
             $AUDIT_LOG->action = 'CREATE';

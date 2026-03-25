@@ -53,6 +53,7 @@ if (isset($_POST['create'])) {
     $USER = new User($_SESSION['id']);
     $COMPANY_PROFILE = new CompanyProfile($USER->company_id);
 
+    $vat = 0;
     if ($COMPANY_PROFILE->is_vat == 1) {
         $vat = round(($net_total * $COMPANY_PROFILE->vat_percentage) / 100, 2);
         $grand_total = $net_total + $vat;
