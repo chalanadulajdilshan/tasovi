@@ -1,4 +1,5 @@
 jQuery(document).ready(function () {
+  let focusAfterModal = false;
   //WINDOWS LOADER
   loadCustomer();
   getInvoiceData();
@@ -1193,7 +1194,7 @@ let cost_arn = costMatch ? parseFloat(costMatch[1].replace(/,/g, "")) : 0;
     const arnId = activeArn.data("arn-id"); // Now declared early
     const arnQty = parseFloat(activeArn.data("qty"));
     const usedQty = parseFloat(activeArn.data("used")) || 0;
-    const remainingQty = arnQty - usedQty;
+    let remainingQty = arnQty - usedQty;
 
     if (qty > remainingQty) {
       swal(
