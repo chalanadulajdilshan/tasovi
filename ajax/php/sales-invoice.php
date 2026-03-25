@@ -44,7 +44,7 @@ if (isset($_POST['create'])) {
         $ITEM_MASTER = new ItemMaster($item['item_id']);
 
         // Skip ARN cost calculation for items with code starting with 'SI'
-        if (!str_starts_with($item['code'], 'SI')) {
+        if (substr($item['code'], 0, 2) !== 'SI') {
             $ARN_ITEM = new ArnItem(NULL);
             $cost = $ARN_ITEM->getArnCostByArnId($arn_id);
             $final_cost_item = $cost * $qty;
