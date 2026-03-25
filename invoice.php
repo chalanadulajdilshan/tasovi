@@ -35,38 +35,52 @@ $CUSTOMER_MASTER = new CustomerMaster($SALES_INVOICE->customer_id);
                 width: 100%;
                 margin: 0;
                 padding: 0;
+                font-size: 13px !important;
             }
 
             #invoice-content,
             .card {
                 width: 100% !important;
                 max-width: 100% !important;
-                box-shadow: none;
+                box-shadow: none !important;
+                border: none !important;
+                margin: 0 !important;
+                padding: 0 !important;
             }
 
             .container {
                 width: 100% !important;
                 max-width: 100% !important;
                 padding: 0 !important;
+                margin: 0 !important;
             }
 
-            /* Use full page without A5 restriction */
+            /* Set A5 page size */
             @page {
-                size: auto;
-                /* remove specific page size */
-                margin: 10mm;
-                /* optional margin */
+                size: A5 portrait;
+                margin: 5mm;
             }
 
+            /* Reduce spacing for items */
+            .invoice-title .row {
+                margin-bottom: 10px !important;
+            }
 
+            .table {
+                margin-bottom: 10px !important;
+            }
+
+            /* Ensure signatures stay on the same page */
+            tr {
+                page-break-inside: avoid;
+            }
         }
 
         /* Remove padding and spacing in invoice table */
         #invoice-content table,
         #invoice-content th,
         #invoice-content td {
-            padding: 2px !important;
-            /* reduce padding */
+            padding: 4px !important;
             margin: 0 !important;
             border-spacing: 0 !important;
             border-collapse: collapse !important;
@@ -75,15 +89,18 @@ $CUSTOMER_MASTER = new CustomerMaster($SALES_INVOICE->customer_id);
         #invoice-content th,
         #invoice-content td {
             vertical-align: middle !important;
-            /* optional: center content vertically */
         }
 
-        /* Optional: remove Bootstrap table styles */
         #invoice-content .table {
             width: 100%;
-
             border-top-width: 0 !important;
             border-style: none !important;
+        }
+
+        .company-logo {
+            max-height: 80px;
+            width: auto;
+            object-fit: contain;
         }
     </style>
 
@@ -115,43 +132,50 @@ $CUSTOMER_MASTER = new CustomerMaster($SALES_INVOICE->customer_id);
                         return $number;
                     }
                     ?>
-                    <div class="col-md-5 text-muted">
-                        <p class="mb-1" style="font-weight:bold;font-size:18px;"><?php echo $COMPANY_PROFILE->name ?></p>
-                        <p class="mb-1" style="font-size:13px;"><?php echo $COMPANY_PROFILE->address ?></p>
-                        <p class="mb-1" style="font-size:13px;"><?php echo $COMPANY_PROFILE->email ?> | <?php echo formatPhone($COMPANY_PROFILE->mobile_number_1); ?></p>
+                    <div class="col-md-6 d-flex align-items-start">
+                        <?php 
+                        $logo_path = './uploads/company-logos/' . $COMPANY_PROFILE->image_name;
+                        if (!empty($COMPANY_PROFILE->image_name) && file_exists(__DIR__ . '/uploads/company-logos/' . $COMPANY_PROFILE->image_name)) { ?>
+                            <img src="<?php echo $logo_path; ?>" class="company-logo me-3" alt="logo">
+                        <?php } ?>
+                        <div class="text-muted">
+                            <p class="mb-0" style="font-weight:bold;font-size:15px;"><?php echo str_replace('Â', '', $COMPANY_PROFILE->name) ?></p>
+                            <p class="mb-0" style="font-size:11px;"><?php echo $COMPANY_PROFILE->address ?></p>
+                            <p class="mb-0" style="font-size:11px;"><?php echo $COMPANY_PROFILE->email ?></p>
+                            <p class="mb-0" style="font-size:11px;"><?php echo formatPhone($COMPANY_PROFILE->mobile_number_1); ?></p>
+                        </div>
                     </div>
-                    <div class="col-md-4 text-sm-start text-md-start">
-                        <h3 style="font-weight:bold;font-size:18px;">
+                    <div class="col-md-6 text-start">
+                        <h4 style="font-weight:bold;font-size:15px; margin-bottom:5px;">
                             <?php echo ($SALES_INVOICE->payment_type == 1) ? "CASH SALES INVOICE" : "CREDIT SALES INVOICE"; ?>
-                        </h3>
-                        <p class="mb-1 text-muted" style="font-size:14px;"><strong>Customer Name:</strong> <?php echo $SALES_INVOICE->customer_name ?></p>
-                        <p class="mb-1 text-muted" style="font-size:14px;"><strong>Customer Contact:</strong> <?php echo !empty($SALES_INVOICE->customer_address) ? $SALES_INVOICE->customer_address : '.................................' ?> - <?php echo !empty($SALES_INVOICE->customer_mobile) ? $SALES_INVOICE->customer_mobile : '.................................' ?></p>
-
-                    </div>
-
-                    <div class="col-md-3 text-sm-start text-md-end  ">
-                        <p class="mb-1" style="font-size:14px;"><strong>Inv No:</strong> <?php echo $SALES_INVOICE->invoice_no ?></p>
-                        <p class="mb-1" style="font-size:14px;"><strong>Inv Date:</strong> <?php echo date('d M, Y', strtotime($SALES_INVOICE->invoice_date)); ?></p>
+                        </h4>
+                        <div style="font-size:11px; line-height:1.2;">
+                            <p class="mb-0 text-muted"><strong>Customer:</strong> <?php echo $SALES_INVOICE->customer_name ?></p>
+                            <p class="mb-0 text-muted"><strong>Contact:</strong> <?php echo !empty($SALES_INVOICE->customer_mobile) ? $SALES_INVOICE->customer_mobile : '.................................' ?></p>
+                            <p class="mb-0 text-muted"><strong>VAT No:</strong> <?php echo !empty($COMPANY_PROFILE->vat_number) ? $COMPANY_PROFILE->vat_number : '.................................' ?></p>
+                            <p class="mb-0 text-muted"><strong>Inv No:</strong> <?php echo $SALES_INVOICE->invoice_no ?></p>
+                            <p class="mb-0 text-muted"><strong>Inv Date:</strong> <?php echo date('d M, Y', strtotime($SALES_INVOICE->invoice_date)); ?></p>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- ITEM INVOICE PRINT -->
             <?php if ($SALES_INVOICE->invoice_type == 'INV') { ?>
-                <div class="table-responsive">
-                    <table class="table table-centered">
+                <div class="table-responsive" style="overflow-x: hidden !important;">
+                    <table class="table table-centered mb-0" style="width: 100%; table-layout: fixed;">
                         <thead>
-                            <tr>
-                                <th>No.</th>
+                            <tr style="font-size: 11px;">
+                                <th style="width: 30px;">No.</th>
                                 <th>Item</th>
-                                <th>List Price</th>
-                                <th>Dis %</th>
-                                <th>Selling Price</th>
-                                <th>Qty</th>
-                                <th class="text-end">Total</th>
+                                <th style="width: 70px;" class="text-end">List Price</th>
+                                <th style="width: 45px;" class="text-end">Dis %</th>
+                                <th style="width: 70px;" class="text-end">Selling Price</th>
+                                <th style="width: 35px;" class="text-end">Qty</th>
+                                <th style="width: 80px;" class="text-end">Total</th>
                             </tr>
                         </thead>
-                        <tbody style="font-size:13px;" class="font-bold">
+                        <tbody style="font-size:11px;" class="font-bold">
                             <?php
                             $TEMP_SALES_ITEM = new SalesInvoiceItem(null);
                             $temp_items_list = $TEMP_SALES_ITEM->getItemsByInvoiceId($invoice_id);
@@ -172,11 +196,11 @@ $CUSTOMER_MASTER = new CustomerMaster($SALES_INVOICE->customer_id);
                             ?>
                                 <tr>
                                     <td>0<?php echo $key; ?></td>
-                                    <td><?php echo $ITEM_MASTER->code . ' ' . $temp_items['item_name']; ?></td>
-                                    <td><?php echo number_format($price, 2); ?></td>
-                                    <td><?php echo $discount_percentage; ?>%</td>
-                                    <td><?php echo number_format($selling_price, 2); ?></td>
-                                    <td><?php echo $quantity; ?></td>
+                                    <td style="word-break: break-all;"><?php echo $ITEM_MASTER->code . ' ' . $temp_items['item_name']; ?></td>
+                                    <td class="text-end"><?php echo number_format($price, 2); ?></td>
+                                    <td class="text-end"><?php echo $discount_percentage; ?>%</td>
+                                    <td class="text-end"><?php echo number_format($selling_price, 2); ?></td>
+                                    <td class="text-end"><?php echo $quantity; ?></td>
                                     <td class="text-end"><?php echo number_format($line_total, 2); ?></td>
                                 </tr>
                             <?php } ?>
@@ -209,7 +233,7 @@ $CUSTOMER_MASTER = new CustomerMaster($SALES_INVOICE->customer_id);
                                 <td class="text-end"><strong><?php echo number_format($subtotal - $total_discount, 2); ?></strong></td>
                             </tr>
                             <tr>
-                                <td colspan="7" style="padding-top:50px;">
+                                <td colspan="7" style="padding-top:20px;">
                                     <table style="width:100%;">
                                         <tr>
                                             <td style="text-align:center;">_________________________<br><strong>Prepared By</strong></td>
